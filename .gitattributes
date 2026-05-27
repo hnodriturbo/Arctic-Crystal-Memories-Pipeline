@@ -1,0 +1,76 @@
+# Defaults
+* text=auto eol=lf
+
+# Windows scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Unix/Linux scripts
+*.sh text eol=lf
+
+# Web / app text files
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.css text
+*.scss text diff=scss
+*.html text
+*.json text
+*.yml text
+*.yaml text
+*.sql text
+*.md text
+*.txt text
+*.config text diff=xml
+
+# Config / repo files
+.gitattributes text eol=lf
+.gitignore text eol=lf
+.editorconfig text eol=lf
+
+# Documents
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.pdf binary
+
+# Images / design files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg text
+*.ico binary
+*.ai binary
+*.psd binary
+
+# Fonts
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+
+# Archives / binaries
+*.zip binary
+*.7z binary
+*.rar binary
+*.tar binary
+*.gz binary
+*.exe binary
+*.dll binary
+
+# Minified assets
+*.min.js binary
+*.min.css binary
+
+# GitHub archive export
+.gitattributes export-ignore
+.gitignore export-ignore
+
+# GitHub linguist hints
+documentation/* linguist-generated=true
+docs/generated/* linguist-generated=true
+*.log linguist-detected=false
