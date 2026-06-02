@@ -9,6 +9,22 @@
 
 
 # ========================================
+# 3D Mesh / Point Cloud Output Files
+# ========================================
+
+*.obj
+*.ply
+*.stl
+*.glb
+*.gltf
+*.fbx
+*.dae
+*.3ds
+
+# .obj is already listed above under C/C++ — intentionally also blocked here
+# for clarity: all generated 3D mesh output must stay local
+
+# ========================================
 # Critical Secret Files
 # ========================================
 
@@ -341,7 +357,6 @@ site/
 *.msi
 *.dll
 *.out
-*.obj
 *.app
 *.ipa
 *.apk
