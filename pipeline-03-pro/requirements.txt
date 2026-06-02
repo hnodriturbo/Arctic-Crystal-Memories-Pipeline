@@ -1,0 +1,46 @@
+# requirements.txt — pipeline-03-pro
+# CONFIG B: Full Professional Pipeline
+# Stages: 01, 02, 03, 04b, 05, 06
+# Phase 3 reconstruction: STUBBED (packages installed, logic not active)
+#
+# IMPORTANT: Install PyTorch FIRST before this file:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+# Then:
+#   pip install -r requirements.txt
+#
+# DO NOT pin timm. This pipeline uses Depth Anything V2, not ZoeDepth.
+# ZoeDepth requires timm==0.9.16 — that constraint lives only in pipeline-02.
+
+# ── Core scientific stack ──────────────────────────────────────
+numpy
+scipy
+Pillow
+opencv-python
+tqdm
+python-dotenv
+
+# ── Background removal ─────────────────────────────────────────
+rembg[gpu]
+
+# ── Depth estimation ───────────────────────────────────────────
+transformers
+timm
+einops
+huggingface_hub
+
+# ── 3D geometry and mesh ───────────────────────────────────────
+open3d
+trimesh
+fast-simplification
+
+# ── Texture pipeline ───────────────────────────────────────────
+pymeshlab
+xatlas
+
+# ── Human / facial reconstruction (Phase 3 — stubbed) ─────────
+mediapipe
+face-alignment
+
+# ── Visualization and reporting ────────────────────────────────
+matplotlib
+plotly

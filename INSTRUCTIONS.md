@@ -26,6 +26,15 @@ Primary Focus: Research, Development, Testing, and Refinement of Professional K9
 16. Lessons Learned Process
 17. Future Expansion
 18. Project Memory Rules
+19. Current Pipeline Chapters
+20. Documentation Model
+21. SSLE Machine Technology
+22. SSLE Machine Types
+23. Chinese SSLE Manufacturers
+24. SSLE Software Ecosystem
+25. File Formats
+26. Full Pipeline
+27. Applications and Tools
 
 ---
 
@@ -497,7 +506,107 @@ This document should evolve continuously throughout the life of the project.
 
 ---
 
-# 19. SSLE Machine Technology — How It Actually Works
+# 19. Current Pipeline Chapters
+
+This repository is expected to contain many pipelines over time. Each pipeline is
+an isolated local experiment or workflow with its own environment, inputs,
+outputs, dependency choices, and practical operating guide.
+
+This section records the purpose of each major pipeline at a project level. The
+exact folder structure, commands, stage flags, and setup details belong in each
+pipeline's `pipeline-guide.md` or in the root `md_helpers/pipeline-setup.md`.
+
+---
+
+## pipeline-01 — General Depth Anything V2 Pipeline
+
+`pipeline-01` is the main general-purpose portrait pipeline and the current
+baseline for K9 crystal image-to-mesh work.
+
+Its default direction is:
+
+1. Real-ESRGAN upscaling
+2. REMBG background removal
+3. Depth Anything V2 depth estimation
+4. Open3D point cloud and mesh generation
+5. Full-size export preparation
+6. Crystal-size scaling
+
+The pipeline is intended to stay as modern and clean as practical. It should not
+be forced to downgrade dependencies just to support one older model. When a model
+needs unusual pins, create or use a separate pipeline instead.
+
+Important notes:
+
+- Default depth model: Depth Anything V2
+- Useful fallback: MiDaS
+- Current depth profile work: `standard`, `soft_edges_v1`, and `soft_edges_feathered`
+- Stage 04 mesh generation exists and uses Open3D
+- Stage 05 exports validated full-size OBJ/STL/PLY files
+- Stage 06 crystal scaling converts full-size exports to physical crystal dimensions
+
+This pipeline is the preferred starting point for general portrait workflow
+experiments.
+
+---
+
+## pipeline-02-zoedepth — Isolated ZoeDepth Pipeline
+
+`pipeline-02-zoedepth` is an isolated test environment for ZoeDepth.
+
+It exists because ZoeDepth failed inside the newer `pipeline-01` environment when
+used with `timm >= 1.0`. Rather than downgrading the main pipeline and risking
+other model compatibility, ZoeDepth gets its own virtual environment and
+dependency pins.
+
+Important notes:
+
+- Default depth model: ZoeDepth
+- Required compatibility pin: `timm==0.9.16`
+- Purpose: compare metric ZoeDepth maps against the main Depth Anything V2 workflow
+- Stage 04 mesh generation is copied from the main pipeline and should be tested against ZoeDepth outputs
+- Stage 05 is still a stub
+- Stage 06 is not currently included
+
+This pipeline should stay focused on ZoeDepth until that model has been fully
+tested and compared against the baseline.
+
+---
+
+## Web Frontend
+
+The `web/` folder is the local Next.js operator interface for the pipeline
+system. It is intended as a local tool, not a hosted public application.
+
+The web app should wrap the Python pipeline scripts without replacing the CLI
+workflow. Python remains the processing backend; Next.js provides browsing,
+uploading, triggering stages, viewing logs, and inspecting outputs.
+
+The frontend should eventually support multiple pipelines, but only after each
+pipeline works correctly from the command line.
+
+---
+
+# 20. Documentation Model
+
+This project uses different markdown files for different jobs:
+
+- Root `INSTRUCTIONS.md` holds project purpose, business context, SSLE knowledge,
+  workflow philosophy, and high-level pipeline chapters.
+- Root `md_helpers/pipeline-setup.md` holds reusable setup instructions for
+  creating future pipelines.
+- Root `md_helpers/pipeline-guide.template.md` is copied into a new pipeline as
+  that pipeline's `pipeline-guide.md`.
+- Each pipeline root has `pipeline-guide.md` as its official practical guide.
+- Each pipeline may keep `DEPTH_DECISIONS.md` for model and profile decisions.
+- `web/INSTRUCTIONS.md` describes the local Next.js frontend.
+
+Pipeline folders should not have their own `INSTRUCTIONS.md`. Their practical
+instructions belong in `pipeline-guide.md`.
+
+---
+
+# 21. SSLE Machine Technology — How It Actually Works
 
 ## The Laser Type
 
@@ -545,7 +654,7 @@ The original photo is NOT sent to the machine. Its data (shading, texture) was u
 
 ---
 
-# 20. SSLE Machine Types — Green Beam vs UV
+# 22. SSLE Machine Types — Green Beam vs UV
 
 ## Green Beam Machines (Recommended Starting Point)
 
@@ -590,7 +699,7 @@ The original photo is NOT sent to the machine. Its data (shading, texture) was u
 
 ---
 
-# 21. Chinese SSLE Manufacturers — Research Notes
+# 23. Chinese SSLE Manufacturers — Research Notes
 
 ## Established Brands to Research
 
@@ -642,7 +751,7 @@ The original photo is NOT sent to the machine. Its data (shading, texture) was u
 
 ---
 
-# 22. SSLE Software Ecosystem
+# 24. SSLE Software Ecosystem
 
 ## Point Cloud / SSLE Production Software
 
@@ -724,7 +833,7 @@ These are Python libraries/models, not standalone applications:
 
 ---
 
-# 23. File Formats — Where Each Belongs in the Pipeline
+# 25. File Formats — Where Each Belongs in the Pipeline
 
 ## OBJ (.obj)
 
@@ -779,7 +888,7 @@ These are Python libraries/models, not standalone applications:
 
 ---
 
-# 24. Full Pipeline — Expanded (All Steps)
+# 26. Full Pipeline — Expanded (All Steps)
 
 The workflows in Section 5 are high-level. This is the detailed version for portrait photos:
 
@@ -833,7 +942,7 @@ The workflows in Section 5 are high-level. This is the detailed version for port
 
 ---
 
-# 25. Applications and Tools — Required List
+# 27. Applications and Tools — Required List
 
 ## Must Have
 
