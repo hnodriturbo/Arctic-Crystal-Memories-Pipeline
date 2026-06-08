@@ -424,6 +424,15 @@ Pods/
 
 
 # ========================================
+# Pipeline Input / Output / Models (large files — keep local only)
+# ========================================
+
+pipeline-*/input/
+pipeline-*/output/
+pipeline-*/models/
+
+
+# ========================================
 # Local Project Folders
 # ========================================
 
