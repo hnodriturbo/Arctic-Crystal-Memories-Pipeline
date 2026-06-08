@@ -64,7 +64,7 @@ except ImportError:
 # ----------------------------------------------------------------
 # DEFAULTS
 # ----------------------------------------------------------------
-DEFAULT_UV_TOOL = os.getenv("UV_TOOL", "xatlas")
+DEFAULT_UV_TOOL = os.getenv("UV_TOOL", "planar")
 DEFAULT_ATLAS_SIZE = int(os.getenv("TEXTURE_ATLAS_SIZE", "4096"))
 
 
@@ -73,16 +73,38 @@ DEFAULT_ATLAS_SIZE = int(os.getenv("TEXTURE_ATLAS_SIZE", "4096"))
 # ----------------------------------------------------------------
 
 
+def uv_with_planar(
+    vertices: np.ndarray, faces: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Planar (orthographic front-projection) UV mapping.
+
+    Maps each vertex UV = (normalised_x, normalised_y) from its XY screen
+    position. The atlas is the photo projected straight onto the front face —
+    correct for portrait crystals viewed from the front.
+
+    Returns (uvs, vmapping, indices) in the same contract as xatlas:
+        uvs:      (V, 2) float32 — one UV per original vertex
+        vmapping: (V,) int       — identity mapping (index i -> vertex i)
+        indices:  (F, 3) int     — same face array as input
+    """
+    x = vertices[:, 0]
+    y = vertices[:, 1]
+    x_min, x_max = x.min(), x.max()
+    y_min, y_max = y.min(), y.max()
+    u = (x - x_min) / (x_max - x_min + 1e-8)
+    v = 1.0 - (y - y_min) / (y_max - y_min + 1e-8)  # flip Y: top of photo = v=0
+    uvs = np.stack([u, v], axis=1).astype(np.float32)
+    vmapping = np.arange(len(vertices), dtype=np.int32)
+    return uvs, vmapping, faces.astype(np.int32)
+
+
 def uv_with_xatlas(
     vertices: np.ndarray, faces: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Generate UV coordinates using xatlas.
-
-    Returns (uvs, vmapping, indices) where:
-        uvs:      (N, 2) float32 UV coordinates for the new vertex set
-        vmapping: (N,) original vertex indices
-        indices:  (F, 3) face indices into the new vertex set
+    Generate UV coordinates using xatlas (geometry-optimised UV islands).
+    NOTE: produces chaotic texture for photo projection — use planar instead.
     """
     try:
         import xatlas
@@ -117,6 +139,7 @@ def uv_with_mof(
 
 
 UV_TOOLS = {
+    "planar": uv_with_planar,
     "xatlas": uv_with_xatlas,
     "rizomuv": uv_with_rizomuv,
     "mof": uv_with_mof,
@@ -137,80 +160,64 @@ def project_photo_to_atlas(
     atlas_size: int,
 ) -> np.ndarray:
     """
-    Project photo colors onto a UV atlas by rasterizing UV triangles.
+    Build a UV atlas by sampling the source photo at each atlas pixel's UV position.
 
-    For each UV triangle, samples the corresponding pixel region
-    from the source photo using barycentric coordinates.
+    With planar UV mapping, UV coords map directly to photo pixel coords, so this
+    is a vectorised bilinear lookup — fast regardless of triangle count.
 
-    Args:
-        vertices:   (V, 3) float32 original vertices
-        uvs:        (N, 2) float32 UV coordinates
-        vmapping:   (N,) original vertex indices
-        faces_uv:   (F, 3) face indices into the UV vertex set
-        photo_rgb:  (H, W, 3) uint8 source photo in RGB
-        atlas_size: Output atlas resolution in pixels
-
-    Returns:
-        (atlas_size, atlas_size, 3) uint8 RGB atlas image
+    With non-planar UV tools (xatlas), falls back to per-triangle barycentric
+    rasterization (slow).
     """
-    # Map UV vertices back to 3D positions
-    uv_vertices_3d = vertices[vmapping]  # (N, 3)
+    from PIL import Image as PILImage
 
     H, W = photo_rgb.shape[:2]
-    atlas = np.zeros((atlas_size, atlas_size, 3), dtype=np.uint8)
 
-    # Precompute UV pixel coords
+    # Fast path: planar UVs are a direct photo lookup.
+    # Detect planar: vmapping is identity (arange) and uvs.shape[0] == len(vertices)
+    is_planar = (
+        len(vmapping) == len(vertices)
+        and np.array_equal(vmapping, np.arange(len(vertices), dtype=vmapping.dtype))
+    )
+
+    if is_planar:
+        # Resize photo to atlas_size using high-quality Lanczos — instant.
+        photo_pil = PILImage.fromarray(photo_rgb).resize(
+            (atlas_size, atlas_size), PILImage.Resampling.LANCZOS
+        )
+        return np.array(photo_pil)
+
+    # Slow fallback for non-planar UV tools: per-triangle barycentric rasterization.
+    uv_vertices_3d = vertices[vmapping]
+    atlas = np.zeros((atlas_size, atlas_size, 3), dtype=np.uint8)
     uv_px = (uvs * (atlas_size - 1)).astype(np.float32)
 
-    for face in faces_uv:
+    for face in tqdm(faces_uv, desc="  Rasterizing", leave=False):
         i0, i1, i2 = face
-        # 3D positions (for photo sampling)
         p0, p1, p2 = uv_vertices_3d[i0], uv_vertices_3d[i1], uv_vertices_3d[i2]
-        # UV positions in atlas space
         u0, u1, u2 = uv_px[i0], uv_px[i1], uv_px[i2]
 
-        # Bounding box in atlas
-        min_u = int(np.floor(min(u0[0], u1[0], u2[0])))
-        max_u = int(np.ceil(max(u0[0], u1[0], u2[0])))
-        min_v = int(np.floor(min(u0[1], u1[1], u2[1])))
-        max_v = int(np.ceil(max(u0[1], u1[1], u2[1])))
+        min_u = max(0, int(np.floor(min(u0[0], u1[0], u2[0]))))
+        max_u = min(atlas_size - 1, int(np.ceil(max(u0[0], u1[0], u2[0]))))
+        min_v = max(0, int(np.floor(min(u0[1], u1[1], u2[1]))))
+        max_v = min(atlas_size - 1, int(np.ceil(max(u0[1], u1[1], u2[1]))))
 
-        min_u = max(0, min_u)
-        max_u = min(atlas_size - 1, max_u)
-        min_v = max(0, min_v)
-        max_v = min(atlas_size - 1, max_v)
-
-        # Sample pixels inside the bounding box
         for ay in range(min_v, max_v + 1):
             for ax in range(min_u, max_u + 1):
                 p = np.array([ax, ay], dtype=np.float32)
-
-                # Barycentric coordinates in UV space
-                v0 = u1 - u0
-                v1 = u2 - u0
-                v2 = p - u0
-                d00 = np.dot(v0, v0)
-                d01 = np.dot(v0, v1)
-                d11 = np.dot(v1, v1)
-                d20 = np.dot(v2, v0)
-                d21 = np.dot(v2, v1)
+                v0 = u1 - u0; v1 = u2 - u0; v2 = p - u0
+                d00 = np.dot(v0, v0); d01 = np.dot(v0, v1); d11 = np.dot(v1, v1)
+                d20 = np.dot(v2, v0); d21 = np.dot(v2, v1)
                 denom = d00 * d11 - d01 * d01
                 if abs(denom) < 1e-10:
                     continue
                 bv = (d11 * d20 - d01 * d21) / denom
                 bw = (d00 * d21 - d01 * d20) / denom
                 bu = 1.0 - bv - bw
-
                 if bu < 0 or bv < 0 or bw < 0:
                     continue
-
-                # Interpolate 3D position
                 pos = bu * p0 + bv * p1 + bw * p2
-
-                # Map 3D position to photo pixel (X,Y map to W,H; Z ignored)
                 px = int(np.clip((pos[0] + 1.0) / 2.0 * (W - 1), 0, W - 1))
                 py = int(np.clip((-pos[1] + 1.0) / 2.0 * (H - 1), 0, H - 1))
-
                 atlas[ay, ax] = photo_rgb[py, px]
 
     return atlas
@@ -377,17 +384,13 @@ def bake_mesh(
 
 
 def list_geometry_meshes(run: str) -> list[Path]:
-    """Find all _mesh.obj or _mesh.ply files in output/meshes/{run}/geometry/."""
+    """Find _mesh.obj files in output/meshes/{run}/geometry/. OBJ only — PLY is a duplicate."""
     mesh_base = get_output_dir("mesh", run)
     geo_dir = mesh_base / "geometry"
     if not geo_dir.exists():
         return []
     files = sorted(
-        [
-            p
-            for p in geo_dir.iterdir()
-            if p.suffix in (".obj", ".ply") and "_mesh" in p.name
-        ],
+        [p for p in geo_dir.iterdir() if p.suffix == ".obj" and "_mesh" in p.name],
         key=lambda p: p.name.lower(),
     )
     print(f"Found {len(files)} geometry mesh(es) in: {geo_dir}")

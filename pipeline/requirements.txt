@@ -1,0 +1,30 @@
+# requirements.txt — image-enhancement-pipeline
+#
+# IMPORTANT: Install PyTorch with CUDA FIRST before this file:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+# Then:
+#   pip install -r requirements.txt
+#
+# After install, apply the basicsr patch (see pipeline-setup.md section 4).
+
+# ── Core ──────────────────────────────────────────────────────────
+numpy
+Pillow
+opencv-python
+tqdm
+python-dotenv
+requests
+
+# ── Background removal ────────────────────────────────────────────
+rembg[gpu]
+carvekit
+
+# ── Upscaling ─────────────────────────────────────────────────────
+basicsr
+realesrgan
+spandrel
+
+# ── Face restoration / enhancement ────────────────────────────────
+gfpgan
+# CodeFormer — not on PyPI. Arch files (codeformer_arch.py, vqgan_arch.py)
+# are vendored into code/. Weights auto-download on first run.

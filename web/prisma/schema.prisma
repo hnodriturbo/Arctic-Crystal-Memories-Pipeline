@@ -1,0 +1,33 @@
+// prisma/schema.prisma
+// K9 Crystal Pipeline — database schema
+// Prisma 7: datasource URL lives in prisma.config.ts, not here.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProcessRun {
+  id         String   @id @default(cuid())
+  imageName  String
+  operation  String   // "upscale" | "enhance" | "remove_bg"
+  engine     String
+  status     String   @default("pending") // "pending" | "running" | "done" | "error"
+  outputPath String?
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

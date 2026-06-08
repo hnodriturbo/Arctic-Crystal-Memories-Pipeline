@@ -1,49 +1,53 @@
 # K9 Crystal Pipeline — Web Frontend Spec
 
-> **Purpose:** This file is the shared contract between the developer and Claude Code for the `web/` Next.js application. It describes what has been built, what is planned, and how the frontend connects to the Python pipeline backend.
+> **Purpose:** Shared contract between the developer and Claude Code for the `web/` Next.js application. Describes what has been built, how it connects to the Python pipeline backend, and how to run it.
 
 ---
 
 ## What This App Is
 
-A local operator UI for the K9 Crystal Pipeline. It wraps the Python CLI scripts in `pipeline-01/` so that:
+A local operator UI for the K9 Crystal Pipeline. It wraps the Python CLI scripts in `pipeline/` so that:
 
-- You can browse and upload source photos without touching the filesystem
-- You can trigger each pipeline stage from a button, with live log output streaming to the browser
-- You can review output images and decide "use this in the next step" or "recreate"
+- You can browse all pipeline images (input + all output folders) without touching the filesystem
+- You can trigger upscale, enhance, or background removal from a button with live log streaming
+- You can preview images in a modal before and after processing
+- You can approve or deny each result — denied outputs are deleted automatically
 - You never need to type a terminal command to process a photo
 
 This is a **single-user local dev tool**, not a hosted web app. It runs via `npm run dev` on `localhost:3000`.
+Login is required — admin credentials are set up via `prisma/seed.js`.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router) |
-| UI | React 19, Tailwind CSS 4 |
-| Backend | Next.js Route Handlers (Node.js) |
-| Python bridge | `child_process.spawn()` in Route Handlers |
-| Streaming | Server-Sent Events (SSE) for live log output |
-| State | React `useState` / `useReducer` — no external state lib |
+| Layer       | Technology                                              |
+|-------------|---------------------------------------------------------|
+| Framework   | Next.js 16 (App Router)                                 |
+| UI          | React 19, Tailwind CSS 4                                |
+| Backend     | Next.js Route Handlers (Node.js)                        |
+| Python bridge | `child_process.spawn()` in Route Handlers             |
+| Streaming   | Server-Sent Events (SSE) for live terminal output       |
+| Auth        | NextAuth v5 (credentials, JWT sessions)                 |
+| Database    | PostgreSQL via Prisma 7 + `@prisma/adapter-pg`          |
+| State       | React context (`AppContext`) — no external state lib    |
+| Font        | Inter (UI) + JetBrains Mono (terminal)                  |
 
 ---
 
 ## How Python Gets Triggered
 
-Next.js Route Handlers in `src/app/api/` use Node.js `child_process.spawn()` to run Python scripts:
-
 ```
-Browser button click
-  → POST /api/run-stage  { pipeline, stage, args }
-  → Node.js spawns: python 01_upscale.py --file X --run my_session
+Browser clicks Run
+  → POST /api/process  { operation, file, engine, ... }
+  → Node.js spawns: pipeline/.venv/Scripts/python.exe code/upscale.py --file X --engine Y
   → stdout/stderr lines streamed back as SSE
-  → Browser LogStream component renders each line live
-  → On exit code 0: OutputViewer fetches the result images
+  → Terminal component renders each line live
+  → On exit code 0: output image preview loads
+  → Approve → keep file | Deny → DELETE /api/run removes the output file
 ```
 
-The Python scripts are called with their existing CLI interface. No Python server, no FastAPI, no message queue. One spawn per button press.
+Python is called with its existing CLI interface. No Python server, no FastAPI, no message queue. One spawn per button press.
 
 ---
 
@@ -51,26 +55,45 @@ The Python scripts are called with their existing CLI interface. No Python serve
 
 ```
 web/
+├── prisma/
+│   ├── schema.prisma        ← User + ProcessRun tables
+│   ├── seed.js              ← Creates admin user (node prisma/seed.js)
+│   └── prisma.md            ← Setup guide (database creation + push steps)
+├── prisma.config.ts         ← Prisma 7 config (requires .ts — Prisma 7 does not support .js config)
 ├── src/
-│   ├── app/
-│   │   ├── page.js                  ← Landing page (orchestrator)
-│   │   ├── layout.js                ← Root layout (TopNav lives here)
-│   │   ├── globals.css
-│   │   ├── api/
-│   │   │   ├── pipelines/route.js   ← GET: list available pipelines
-│   │   │   ├── files/route.js       ← GET: list files in a dir
-│   │   │   ├── upload/route.js      ← POST: save file to input/
-│   │   │   ├── run-stage/route.js   ← POST: spawn Python, stream SSE
-│   │   │   ├── delete-run/route.js  ← DELETE: remove output run folder
-│   │   │   └── output-image/route.js← GET: serve output image as binary
-│   │   └── components/
-│   │       ├── TopNav.jsx           ← Title bar + pipeline selector
-│   │       ├── InputBrowser.jsx     ← Source input + mid-pipeline file browser
-│   │       ├── StagePanel.jsx       ← Per-stage controls + Run button
-│   │       ├── OutputViewer.jsx     ← Image canvas + Use/Recreate actions
-│   │       └── LogStream.jsx        ← Live stdout display via SSE
-├── INSTRUCTIONS.md                  ← This file
-├── AGENTS.md
+│   ├── auth.js              ← NextAuth v5 config (credentials + JWT)
+│   ├── core/
+│   │   └── prisma.js        ← Singleton Prisma client (@prisma/adapter-pg)
+│   └── app/
+│       ├── layout.js        ← Root layout (Inter + JetBrains Mono fonts, dark class default)
+│       ├── globals.css      ← Tailwind 4, dark/light vars, scrollbar, checkerboard bg
+│       ├── page.jsx         ← Main dashboard (server component → ClientShell)
+│       ├── login/
+│       │   └── page.jsx     ← Login form (NextAuth credentials)
+│       ├── process/
+│       │   └── page.jsx     ← Processing page: preview → run → terminal → approve/deny
+│       ├── context/
+│       │   └── AppContext.jsx ← Global state: images, modal, theme, sort, selectedImage
+│       ├── components/
+│       │   ├── ClientShell.jsx     ← Wraps AppProvider, Navbar, Sidebar, ImageGrid, ImageModal
+│       │   ├── Navbar.jsx          ← Top bar: logo, theme toggle, sign-out
+│       │   ├── Sidebar.jsx         ← Folder filter (desktop: sidebar, mobile: pills)
+│       │   ├── ImageGrid.jsx       ← Thumbnail grid with sort, select, double-click modal
+│       │   ├── ImageModal.jsx      ← Responsive modal viewer (Esc / backdrop to close)
+│       │   ├── ProcessingPanel.jsx ← Operation tabs: Upscale / Enhance / Remove BG + options
+│       │   ├── Terminal.jsx        ← SSE terminal output (stdout white, stderr amber)
+│       │   └── ThemeToggle.jsx     ← Light/dark toggle button
+│       └── api/
+│           ├── auth/[...nextauth]/route.js  ← NextAuth handler
+│           ├── images/route.js              ← GET: list all pipeline images
+│           ├── image/[...imgpath]/route.js  ← GET: serve image binary from disk
+│           ├── process/route.js             ← POST: spawn Python script, SSE stream
+│           └── run/route.js                 ← DELETE: remove a denied output file
+├── middleware.js            ← Redirects unauthenticated requests to /login
+├── .env.local               ← DATABASE_URL, AUTH_SECRET, PIPELINE_ROOT (not committed)
+├── .env.example             ← Template for .env.local
+├── INSTRUCTIONS.md          ← This file
+├── AGENTS.md                ← Next.js 16 agent rules (read before editing)
 └── package.json
 ```
 
@@ -78,174 +101,101 @@ web/
 
 ## API Routes
 
-| Route | Method | Query / Body | Returns |
-|-------|--------|-------------|---------|
-| `/api/pipelines` | GET | — | `{ pipelines: ["pipeline-01"] }` |
-| `/api/files` | GET | `?pipeline=pipeline-01&dir=input` | `{ files: [{name, size, mtime}] }` |
-| `/api/upload` | POST | `FormData` with `file`, `pipeline` | `{ saved: "filename.jpg" }` |
-| `/api/run-stage` | POST | `{ pipeline, stage, args }` | SSE stream of stdout lines |
-| `/api/delete-run` | DELETE | `{ pipeline, stage, run }` | `{ deleted: true }` |
-| `/api/output-image` | GET | `?pipeline=pipeline-01&path=output/upscaled/my_run/img.png` | image binary |
+| Route                        | Method | Body / Query                              | Returns                          |
+|------------------------------|--------|-------------------------------------------|----------------------------------|
+| `/api/images`                | GET    | —                                         | `{ files: [...], threshold }`    |
+| `/api/image/[folder]/[file]` | GET    | —                                         | Image binary                     |
+| `/api/process`               | POST   | `{ operation, file, engine, model, ... }` | SSE stream of stdout/stderr      |
+| `/api/run`                   | DELETE | `{ filePath }`                            | `{ ok: true }`                   |
+| `/api/auth/[...nextauth]`    | GET/POST | —                                       | NextAuth session handlers        |
 
 ---
 
-## Page Layout (Phase 1)
+## Operations (Python Scripts)
+
+| Operation    | Script             | Output folder        | Output filename pattern     |
+|--------------|--------------------|----------------------|-----------------------------|
+| `upscale`    | `code/upscale.py`  | `output/upscaled/`   | `<stem>_upscaled.png`       |
+| `enhance`    | `code/enhance.py`  | `output/enhanced/`   | `<stem>_enhanced.png`       |
+| `remove_bg`  | `code/remove_bg.py`| `output/bg_removed/` | `<stem>_bg_removed.png`     |
+
+All three are independent — no ordering required.
+
+---
+
+## Image Folders Exposed in UI
+
+| Folder key   | Pipeline path              | Description                    |
+|--------------|----------------------------|--------------------------------|
+| `input`      | `pipeline/input/`          | Source images                  |
+| `upscaled`   | `pipeline/output/upscaled/`| AI-upscaled outputs            |
+| `enhanced`   | `pipeline/output/enhanced/`| Face-restored/enhanced outputs |
+| `bg_removed` | `pipeline/output/bg_removed/` | Transparent-background outputs |
+
+---
+
+## Environment Variables (.env.local)
+
+| Variable            | Description                                      | Example                                                    |
+|---------------------|--------------------------------------------------|------------------------------------------------------------|
+| `DATABASE_URL`      | PostgreSQL connection string (URL-encoded password) | `postgresql://postgres:pass%21@localhost:5432/k9-crystal-pipeline` |
+| `AUTH_SECRET`       | NextAuth JWT signing secret                      | random 32-char string                                      |
+| `PIPELINE_ROOT`     | Absolute path to `pipeline/` folder              | `D:\\Hnodri\\Repos\\K9-Crystal-Pipeline\\pipeline`         |
+| `UPSCALE_THRESHOLD` | Long-edge px below which "upscale recommended" badge shows | `1800`                              |
+
+---
+
+## Page Flow
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  K9 Crystal Pipeline                       [Pipeline: ▼]     │  TopNav
-├──────────────────┬───────────────────────────────────────────┤
-│  SOURCE INPUT    │  STAGE PANELS (accordion)                 │
-│  [input/ files]  │                                           │
-│  □ image_01.jpg  │  ▼ Stage 01 — Upscale                     │
-│  [+ Upload]      │    Model ▼  Factor ▼  Tile  Run name      │
-│                  │    [▶ Run Stage 01]                        │
-│  MID-PIPELINE    │                                           │
-│  upscaled/       │  ▼ Stage 02 — Remove BG                   │
-│  □ my_run/…      │    Model ▼  From run ▼                    │
-│  bg_removed/     │    [▶ Run Stage 02]                        │
-│  □ my_run/…      │                                           │
-│  depth_maps/     │  ▼ Stage 03 — Depth Estimation            │
-│  □ my_run/…      │    Model ▼  Size ▼  From run ▼            │
-│                  │    [▶ Run Stage 03]                        │
-└──────────────────┴───────────────────────────────────────────┘
+/login
+  → credentials form → NextAuth JWT → redirect to /
 
-┌──────────────────────────────────────────────────────────────┐
-│  LOG                                                         │
-│  > Loading model...                                          │
-│  > Processing image_01_upscaled.png                          │
-│  > Done. Saved to output/depth_maps/my_run/                  │
-└──────────────────┬───────────────────────────────────────────┘
+/ (dashboard)
+  → Sidebar folder filter + ImageGrid thumbnails
+  → Single click = select image
+  → Double click (or click selected again) = ImageModal preview
+  → "Process" button → /process?file=X&folder=Y
 
-┌──────────────────────────────────────────────────────────────┐
-│  OUTPUT VIEWER                                               │
-│  [image canvas — full display of result]                     │
-│  [✓ Use in Next Step]          [↺ Recreate]                  │
-└──────────────────────────────────────────────────────────────┘
+/process?file=X&folder=Y
+  → Input image preview (click to open modal)
+  → ProcessingPanel: Upscale / Enhance / Remove BG tabs + engine options
+  → Run button → POST /api/process → SSE terminal stream
+  → On success: output image preview appears
+  → Approve: keep file as-is
+  → Deny: DELETE /api/run removes the output file
 ```
 
 ---
 
-## Component Details
+## Dark / Light Mode
 
-### TopNav
-- "K9 Crystal Pipeline" title on the left
-- Pipeline selector dropdown on the right — populated by `GET /api/pipelines`
-- Breadcrumbs placeholder (Phase 2 — not wired in Phase 1)
-
-### InputBrowser
-Two sections stacked vertically:
-
-**Section 1 — Source Input (`input/`)**
-- Lists files in `pipeline-01/input/` via `GET /api/files?dir=input`
-- Click to select a file → sets `selectedFile` in page state
-- Upload button → `POST /api/upload` → file appears in list
-
-**Section 2 — Mid-Pipeline Files**
-- Lists run folders under `output/upscaled/`, `output/bg_removed/`, `output/depth_maps/`
-- Grouped by stage, then by run folder
-- Click a file → pre-fills the matching StagePanel's `fromRun` field and scrolls to it
-- Lets you jump back in at any stage without re-running earlier steps
-
-### StagePanel
-One accordion panel per stage (01–05). Fields:
-
-| Stage | Fields |
-|-------|--------|
-| 01 Upscale | model (RealESRGAN_x4plus / _x2plus / _anime_6B), factor (2/4), tile size, run name |
-| 02 Remove BG | model (isnet-general-use / u2net / u2netp / sam), from-run |
-| 03 Depth | model (depth_anything_v2 / depth_pro / marigold / patchfusion), size (Small/Base/Large), from-run |
-| 04 Mesh | placeholder — "not yet implemented" |
-| 05 Export | placeholder — "not yet implemented" |
-
-Run button → `POST /api/run-stage` → opens SSE stream → LogStream renders lines live.
-
-### OutputViewer
-- Appears after a stage completes successfully
-- Displays output image(s) via `GET /api/output-image?path=...`
-- Stage 02 shows `_nobg.png` and `_mask.png` side by side
-- **"✓ Use in Next Step"** → sets the next StagePanel's `fromRun` to the just-completed run, scrolls down
-- **"↺ Recreate"** → `DELETE /api/delete-run` removes the output folder, resets that StagePanel to idle
-
-### LogStream
-- Subscribes to SSE stream from `/api/run-stage`
-- Renders each stdout line in a fixed-height scrolling log box
-- On `event: done` → marks stage complete, triggers OutputViewer refresh
-- On `event: error` → marks stage failed in red
-
----
-
-## Pipeline-to-Web Folder Path
-
-All API routes resolve the pipeline folder relative to the Next.js project root:
-
-```js
-// In every route handler:
-const PIPELINE_ROOT = path.resolve(process.cwd(), '..', 'pipeline-01')
-```
-
-This assumes `web/` and `pipeline-01/` are siblings under the repo root. Do not hardcode absolute paths.
-
----
-
-## Python Script Interface (what the web calls)
-
-```bash
-# Stage 01
-python 01_upscale.py --file image_01.jpg --run my_session [--factor 4] [--model RealESRGAN_x4plus] [--tile 400]
-
-# Stage 02
-python 02_remove_bg.py --from-run my_session --run my_session [--model isnet-general-use]
-
-# Stage 03
-python 03_depth_estimate.py --from-run my_session --run my_session [--model depth_anything_v2] [--size Large]
-```
-
-The `--run` argument accepts a user-supplied name (e.g. `my_session`) OR omit it for auto-increment (`try_01`, `try_02`, ...). This required a small change to `utils/file_utils.py` — see Python Modifications section in the plan.
-
----
-
-## Depth Models Available (Stage 03)
-
-| Model key | Description | Speed |
-|-----------|------------|-------|
-| `depth_anything_v2` | Default. Best speed/quality for portraits. | ~3s on RTX 3060 |
-| `depth_pro` | Apple Depth Pro. Sharper boundaries. | Medium |
-| `marigold` | Diffusion-based. Best surface detail. | Slow (minutes) |
-| `patchfusion` | High-res tile fusion. Complex setup. | Slow |
-
-All four are in `MODEL_REGISTRY` in `03_depth_estimate.py`. Models auto-download on first use.
-
----
-
-## Phase Status
-
-| Phase | Description | Status |
-|-------|------------|--------|
-| Phase 1 | Landing page: InputBrowser, StagePanels 01–03, OutputViewer, LogStream, all API routes | **In progress** |
-| Phase 2 | Breadcrumb navigation, multi-session management, run history | Planned |
-| Phase 3 | Stage 04 mesh viewer (3D canvas), Stage 05 export | Planned |
+Default is dark (`.dark` class on `<html>`). ThemeToggle in the navbar switches via `AppContext.theme`. The class is applied by `ClientShell` and `ProcessPageInner` via a `useEffect`.
 
 ---
 
 ## Running the Dev Server
 
 ```powershell
+# 1. Set up database (first time only — see prisma/prisma.md)
+psql -U postgres -c 'CREATE DATABASE "k9-crystal-pipeline";'
 cd web
+npx prisma db push
+node prisma/seed.js
+
+# 2. Start the app
 npm run dev
 # Opens on http://localhost:3000
 ```
 
-Python venv must be activated for the API routes to spawn scripts correctly:
-```powershell
-cd ..\pipeline-01
-.\.venv\Scripts\Activate.ps1
-```
+The Python venv at `pipeline/.venv/` must exist and have dependencies installed. The web app calls it via the absolute path in `PIPELINE_ROOT` — no manual activation needed.
 
-Then keep the venv active in the same terminal session before starting `npm run dev`, or configure the Route Handlers to call the venv Python path explicitly (preferred for reliability):
+---
 
-```js
-// Preferred: explicit venv python path
-const PYTHON = path.resolve(PIPELINE_ROOT, '.venv', 'Scripts', 'python.exe')
-spawn(PYTHON, ['01_upscale.py', '--file', ...], { cwd: PIPELINE_ROOT })
-```
+## Prisma Notes
+
+- Prisma 7 requires `prisma.config.ts` (`.js` is not supported by Prisma 7's config parser)
+- `prisma.config.ts` loads `.env.local` via `dotenv/config` for CLI commands
+- `src/core/prisma.js` uses `@prisma/adapter-pg` in the Next.js runtime
+- After schema changes: `npx prisma db push && npx prisma generate`
+- To inspect data: `npx prisma studio` (opens at http://localhost:5555)
