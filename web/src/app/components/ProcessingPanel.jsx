@@ -1,7 +1,5 @@
 // src/app/components/ProcessingPanel.jsx
-// Two-column operation selector: Upscale (left) and Remove BG / Enhance (right).
-// Each operation has its own engine/options dropdowns.
-// Emits onRun(config) when the Run button is pressed.
+// Operation selector: Upscale / Enhance / Remove BG tabs with per-op options.
 
 "use client";
 
@@ -14,32 +12,51 @@ const UPSCALE_ENGINES = [
 ];
 
 const ENHANCE_ENGINES = [
-  { value: "gfpgan",      label: "GFPGAN — face restoration" },
-  { value: "codeformer",  label: "CodeFormer — sharper faces" },
-  { value: "pillow",      label: "Pillow — brightness/contrast" },
+  { value: "gfpgan",     label: "GFPGAN — face restoration" },
+  { value: "codeformer", label: "CodeFormer — sharper faces" },
+  { value: "pillow",     label: "Pillow — brightness/contrast" },
 ];
 
 const REMBG_MODELS = [
-  { value: "isnet-general-use",  label: "isnet-general (recommended)" },
-  { value: "birefnet-portrait",  label: "BiRefNet Portrait" },
-  { value: "birefnet-general",   label: "BiRefNet General" },
-  { value: "u2net_human_seg",    label: "U²Net Human" },
-  { value: "u2net",              label: "U²Net General" },
+  { value: "isnet-general-use", label: "isnet-general (recommended)" },
+  { value: "birefnet-portrait", label: "BiRefNet Portrait" },
+  { value: "birefnet-general", label: "BiRefNet General" },
+  { value: "u2net_human_seg",   label: "U²Net Human" },
+  { value: "u2net",             label: "U²Net General" },
 ];
 
 const REMBG_ENGINES = [
-  { value: "rembg",     label: "rembg (GPU-accelerated)" },
-  { value: "carvekit",  label: "CarveKit (best edges, slow)" },
+  { value: "rembg",    label: "rembg (GPU-accelerated)" },
+  { value: "carvekit", label: "CarveKit (best edges, slow)" },
 ];
+
+const inputCls = "w-full rounded-lg px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+
+function Field({ label, children }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function Select({ value, onChange, options }) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </select>
+  );
+}
 
 export default function ProcessingPanel({ file, folder, onRun, running }) {
   const [operation, setOperation] = useState("upscale");
 
-  // Upscale options
   const [upscaleEngine, setUpscaleEngine] = useState("realesrgan");
   const [upscaleTarget, setUpscaleTarget] = useState(1800);
 
-  // Enhance options
   const [enhanceEngine, setEnhanceEngine] = useState("gfpgan");
   const [fidelity, setFidelity] = useState(0.7);
   const [brightness, setBrightness] = useState(1.0);
@@ -47,7 +64,6 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
   const [sharpness, setSharpness] = useState(1.0);
   const [color, setColor] = useState(1.0);
 
-  // Remove BG options
   const [bgEngine, setBgEngine] = useState("rembg");
   const [bgModel, setBgModel] = useState("isnet-general-use");
 
@@ -63,10 +79,7 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
   }
 
   return (
-    <div className="
-      rounded-xl border border-slate-200 dark:border-slate-700
-      bg-white dark:bg-slate-900 overflow-hidden
-    ">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
       {/* Operation tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-700">
         {[
@@ -77,12 +90,7 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
           <button
             key={key}
             onClick={() => setOperation(key)}
-            className={`
-              flex-1 py-3 text-sm font-medium transition-colors duration-150
-              ${operation === key
-                ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-b-2 border-indigo-500"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}
-            `}
+            className={`flex-1 py-3 text-sm font-medium transition-colors duration-150 ${operation === key ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-b-2 border-indigo-500" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
           >
             {label}
           </button>
@@ -90,7 +98,6 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
       </div>
 
       <div className="p-5 flex flex-col gap-4">
-        {/* Upscale options */}
         {operation === "upscale" && (
           <>
             <Field label="Engine">
@@ -108,7 +115,6 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
           </>
         )}
 
-        {/* Enhance options */}
         {operation === "enhance" && (
           <>
             <Field label="Engine">
@@ -143,7 +149,6 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
           </>
         )}
 
-        {/* Remove BG options */}
         {operation === "remove_bg" && (
           <>
             <Field label="Engine">
@@ -157,48 +162,14 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
           </>
         )}
 
-        {/* Run button */}
         <button
           onClick={handleRun}
           disabled={running}
-          className="
-            w-full py-3 rounded-xl font-semibold text-white
-            bg-indigo-600 hover:bg-indigo-700 active:scale-95
-            disabled:opacity-50 disabled:cursor-not-allowed
-            shadow-md shadow-indigo-600/20
-            transition-all duration-150 mt-2
-          "
+          className="w-full py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-600/20 transition-all duration-150 mt-2"
         >
           {running ? "Running…" : `Run ${operation.replace("_", " ")}`}
         </button>
       </div>
     </div>
-  );
-}
-
-const inputCls = `
-  w-full rounded-lg px-3 py-2 text-sm
-  bg-slate-50 dark:bg-slate-800
-  border border-slate-300 dark:border-slate-600
-  text-slate-800 dark:text-slate-200
-  focus:outline-none focus:ring-2 focus:ring-indigo-500
-`;
-
-function Field({ label, children }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function Select({ value, onChange, options }) {
-  return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
-      ))}
-    </select>
   );
 }

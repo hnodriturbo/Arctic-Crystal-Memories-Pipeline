@@ -11,6 +11,7 @@ CLI:  python code/upscale.py --file <name> [--engine realesrgan] [--target 1800]
 """
 
 import argparse
+import shutil
 from pathlib import Path
 
 import cv2
@@ -85,7 +86,9 @@ def process(src: Path, engine: str, target: int, device: str) -> None:
     w, h = img.size
 
     if max(w, h) >= target:
-        print(f"  skip {src.name} — already {w}x{h}")
+        out = OUTPUT_DIR / f"{src.stem}_upscaled.png"
+        shutil.copy2(src, out)
+        print(f"  skip {src.name} — already {w}x{h}, copied as-is to output")
         return
 
     print(f"  {src.name} {w}x{h} [{engine}]")

@@ -42,6 +42,7 @@ function ProcessPageInner() {
   const [exitCode, setExitCode] = useState(null);
   const [lastOperation, setLastOperation] = useState(null);
   const [outputFile, setOutputFile] = useState(null); // filename in output folder
+  const [outputTs, setOutputTs] = useState(0);        // cache-bust timestamp, set once on completion
   const [approvalVisible, setApprovalVisible] = useState(false);
   const [approved, setApproved] = useState(false);
   const [denied, setDenied] = useState(false);
@@ -98,6 +99,7 @@ function ProcessPageInner() {
               const stem = file.replace(/\.[^.]+$/, "");
               const suffix = OUTPUT_SUFFIX_MAP[config.operation] || "";
               setOutputFile(`${stem}${suffix}.png`);
+              setOutputTs(Date.now());
               setApprovalVisible(true);
             }
           }
@@ -193,7 +195,7 @@ function ProcessPageInner() {
             <div className="p-4 bg-[#f0f0f0] dark:bg-slate-950 flex justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${outputSrc}?t=${Date.now()}`}
+                src={`${outputSrc}?t=${outputTs}`}
                 alt={outputFile}
                 onClick={() => openModal({ name: outputFile, folder: outFolder, relativePath: `${outFolder}/${outputFile}` })}
                 className="max-h-64 md:max-h-96 max-w-full object-contain rounded-lg cursor-pointer

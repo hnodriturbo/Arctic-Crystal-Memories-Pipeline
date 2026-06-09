@@ -427,9 +427,14 @@ Pods/
 # Pipeline Input / Output / Models (large files — keep local only)
 # ========================================
 
+pipeline/input/
+pipeline/output/
+pipeline/models/
 pipeline-*/input/
 pipeline-*/output/
 pipeline-*/models/
+pipeline-converter/input/
+pipeline-converter/output/
 
 
 # ========================================

@@ -62,6 +62,9 @@ export async function POST(req) {
       const enc = (obj) => `data: ${JSON.stringify(obj)}\n\n`;
       const push = (obj) => controller.enqueue(new TextEncoder().encode(enc(obj)));
 
+      // Emit the exact command so the terminal shows what was run
+      push({ type: "cmd", line: [pythonExe, ...args].map((a) => a.includes(" ") ? `"${a}"` : a).join(" ") });
+
       let proc;
       try {
         proc = spawn(pythonExe, args, { cwd: PIPELINE_ROOT });

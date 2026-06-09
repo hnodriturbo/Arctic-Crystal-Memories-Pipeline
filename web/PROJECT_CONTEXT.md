@@ -1,6 +1,6 @@
 # K9 Crystal Pipeline — Web Frontend Spec
 
-> **Purpose:** Shared contract between the developer and Claude Code for the `web/` Next.js application. Describes what has been built, how it connects to the Python pipeline backend, and how to run it.
+> **Purpose:** Shared contract between the developer and Claude Code, Codex and Github Copilot for the `web/` Next.js application. Describes what has been built, how it connects to the Python pipeline backend, and how to run it.
 
 ---
 
@@ -21,17 +21,17 @@ Login is required — admin credentials are set up via `prisma/seed.js`.
 
 ## Tech Stack
 
-| Layer       | Technology                                              |
-|-------------|---------------------------------------------------------|
-| Framework   | Next.js 16 (App Router)                                 |
-| UI          | React 19, Tailwind CSS 4                                |
-| Backend     | Next.js Route Handlers (Node.js)                        |
-| Python bridge | `child_process.spawn()` in Route Handlers             |
-| Streaming   | Server-Sent Events (SSE) for live terminal output       |
-| Auth        | NextAuth v5 (credentials, JWT sessions)                 |
-| Database    | PostgreSQL via Prisma 7 + `@prisma/adapter-pg`          |
-| State       | React context (`AppContext`) — no external state lib    |
-| Font        | Inter (UI) + JetBrains Mono (terminal)                  |
+| Layer         | Technology                                           |
+| ------------- | ---------------------------------------------------- |
+| Framework     | Next.js 16 (App Router)                              |
+| UI            | React 19, Tailwind CSS 4                             |
+| Backend       | Next.js Route Handlers (Node.js)                     |
+| Python bridge | `child_process.spawn()` in Route Handlers            |
+| Streaming     | Server-Sent Events (SSE) for live terminal output    |
+| Auth          | NextAuth v5 (credentials, JWT sessions)              |
+| Database      | PostgreSQL via Prisma 7 + `@prisma/adapter-pg`       |
+| State         | React context (`AppContext`) — no external state lib |
+| Font          | Inter (UI) + JetBrains Mono (terminal)               |
 
 ---
 
@@ -101,23 +101,23 @@ web/
 
 ## API Routes
 
-| Route                        | Method | Body / Query                              | Returns                          |
-|------------------------------|--------|-------------------------------------------|----------------------------------|
-| `/api/images`                | GET    | —                                         | `{ files: [...], threshold }`    |
-| `/api/image/[folder]/[file]` | GET    | —                                         | Image binary                     |
-| `/api/process`               | POST   | `{ operation, file, engine, model, ... }` | SSE stream of stdout/stderr      |
-| `/api/run`                   | DELETE | `{ filePath }`                            | `{ ok: true }`                   |
-| `/api/auth/[...nextauth]`    | GET/POST | —                                       | NextAuth session handlers        |
+| Route                        | Method   | Body / Query                              | Returns                       |
+| ---------------------------- | -------- | ----------------------------------------- | ----------------------------- |
+| `/api/images`                | GET      | —                                         | `{ files: [...], threshold }` |
+| `/api/image/[folder]/[file]` | GET      | —                                         | Image binary                  |
+| `/api/process`               | POST     | `{ operation, file, engine, model, ... }` | SSE stream of stdout/stderr   |
+| `/api/run`                   | DELETE   | `{ filePath }`                            | `{ ok: true }`                |
+| `/api/auth/[...nextauth]`    | GET/POST | —                                         | NextAuth session handlers     |
 
 ---
 
 ## Operations (Python Scripts)
 
-| Operation    | Script             | Output folder        | Output filename pattern     |
-|--------------|--------------------|----------------------|-----------------------------|
-| `upscale`    | `code/upscale.py`  | `output/upscaled/`   | `<stem>_upscaled.png`       |
-| `enhance`    | `code/enhance.py`  | `output/enhanced/`   | `<stem>_enhanced.png`       |
-| `remove_bg`  | `code/remove_bg.py`| `output/bg_removed/` | `<stem>_bg_removed.png`     |
+| Operation   | Script              | Output folder        | Output filename pattern |
+| ----------- | ------------------- | -------------------- | ----------------------- |
+| `upscale`   | `code/upscale.py`   | `output/upscaled/`   | `<stem>_upscaled.png`   |
+| `enhance`   | `code/enhance.py`   | `output/enhanced/`   | `<stem>_enhanced.png`   |
+| `remove_bg` | `code/remove_bg.py` | `output/bg_removed/` | `<stem>_bg_removed.png` |
 
 All three are independent — no ordering required.
 
@@ -125,23 +125,23 @@ All three are independent — no ordering required.
 
 ## Image Folders Exposed in UI
 
-| Folder key   | Pipeline path              | Description                    |
-|--------------|----------------------------|--------------------------------|
-| `input`      | `pipeline/input/`          | Source images                  |
-| `upscaled`   | `pipeline/output/upscaled/`| AI-upscaled outputs            |
-| `enhanced`   | `pipeline/output/enhanced/`| Face-restored/enhanced outputs |
+| Folder key   | Pipeline path                 | Description                    |
+| ------------ | ----------------------------- | ------------------------------ |
+| `input`      | `pipeline/input/`             | Source images                  |
+| `upscaled`   | `pipeline/output/upscaled/`   | AI-upscaled outputs            |
+| `enhanced`   | `pipeline/output/enhanced/`   | Face-restored/enhanced outputs |
 | `bg_removed` | `pipeline/output/bg_removed/` | Transparent-background outputs |
 
 ---
 
 ## Environment Variables (.env.local)
 
-| Variable            | Description                                      | Example                                                    |
-|---------------------|--------------------------------------------------|------------------------------------------------------------|
-| `DATABASE_URL`      | PostgreSQL connection string (URL-encoded password) | `postgresql://postgres:pass%21@localhost:5432/k9-crystal-pipeline` |
-| `AUTH_SECRET`       | NextAuth JWT signing secret                      | random 32-char string                                      |
-| `PIPELINE_ROOT`     | Absolute path to `pipeline/` folder              | `D:\\Hnodri\\Repos\\K9-Crystal-Pipeline\\pipeline`         |
-| `UPSCALE_THRESHOLD` | Long-edge px below which "upscale recommended" badge shows | `1800`                              |
+| Variable            | Description                                                | Example                                                            |
+| ------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`      | PostgreSQL connection string (URL-encoded password)        | `postgresql://postgres:pass%21@localhost:5432/k9-crystal-pipeline` |
+| `AUTH_SECRET`       | NextAuth JWT signing secret                                | random 32-char string                                              |
+| `PIPELINE_ROOT`     | Absolute path to `pipeline/` folder                        | `D:\\Hnodri\\Repos\\K9-Crystal-Pipeline\\pipeline`                 |
+| `UPSCALE_THRESHOLD` | Long-edge px below which "upscale recommended" badge shows | `1800`                                                             |
 
 ---
 

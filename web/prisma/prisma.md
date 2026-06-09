@@ -5,7 +5,7 @@
 Open PowerShell (Admin) and run:
 
 ```powershell
-psql -U postgres -c "CREATE DATABASE \"k9-crystal-pipeline\";"
+psql -U postgres -c "CREATE DATABASE \"k9_crystal_nodepipeline\";"
 ```
 
 ## 2. Set up your .env.local
@@ -51,8 +51,7 @@ npx prisma generate
 
 ## Tables
 
-| Table        | Purpose                                     |
-|--------------|---------------------------------------------|
-| User         | Login accounts (username + hashed password) |
-| Session      | NextAuth v5 sessions                        |
-| ProcessRun   | History of pipeline runs per image          |
+| Table      | Purpose                                     |
+| ---------- | ------------------------------------------- |
+| User       | Login accounts (username + hashed password) |
+| ProcessRun | History of pipeline runs per image          |

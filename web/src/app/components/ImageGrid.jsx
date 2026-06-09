@@ -38,8 +38,7 @@ function SizeTag({ image }) {
   if (!small) return null;
 
   return (
-    <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-semibold
-      bg-amber-400 text-amber-900 shadow">
+    <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-400 text-amber-900 shadow">
       ↑ upscale
     </span>
   );
@@ -76,7 +75,6 @@ export default function ImageGrid({ folder }) {
 
   function handleClick(img) {
     if (selectedImage?.relativePath === img.relativePath) {
-      // second click on same → open modal
       openModal(img);
     } else {
       setSelectedImage(img);
@@ -95,13 +93,7 @@ export default function ImageGrid({ folder }) {
         <select
           value={sortValue}
           onChange={handleSortChange}
-          className="
-            text-sm rounded-lg px-3 py-1.5
-            bg-white dark:bg-slate-800
-            border border-slate-300 dark:border-slate-600
-            text-slate-700 dark:text-slate-200
-            focus:outline-none focus:ring-2 focus:ring-indigo-500
-          "
+          className="text-sm rounded-lg px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -133,27 +125,18 @@ export default function ImageGrid({ folder }) {
                 key={img.relativePath}
                 onClick={() => handleClick(img)}
                 onDoubleClick={() => handleDblClick(img)}
-                className={`
-                  group relative aspect-square rounded-xl overflow-hidden
-                  border-2 transition-all duration-150 text-left
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500
-                  ${isSelected
-                    ? "border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]"
-                    : "border-transparent hover:border-slate-300 dark:hover:border-slate-600"}
-                `}
+                className={`group relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-150 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isSelected ? "border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]" : "border-transparent hover:border-slate-300 dark:hover:border-slate-600"}`}
               >
                 <SizeTag image={img} />
                 {/* Folder badge */}
-                <span className="absolute bottom-1.5 left-1.5 z-10 px-1.5 py-0.5 rounded text-[10px]
-                  font-medium bg-black/50 text-white backdrop-blur-sm">
+                <span className="absolute bottom-1.5 left-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-medium bg-black/50 text-white backdrop-blur-sm">
                   {img.folder}
                 </span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imgSrc(img)}
                   alt={img.name}
-                  className="w-full h-full object-cover bg-slate-100 dark:bg-slate-800
-                    group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover bg-slate-100 dark:bg-slate-800 group-hover:scale-105 transition-transform duration-300"
                 />
                 {isSelected && (
                   <div className="absolute inset-0 bg-indigo-600/10 flex items-center justify-center">
@@ -173,12 +156,7 @@ export default function ImageGrid({ folder }) {
         <div className="sticky bottom-4 flex justify-center">
           <button
             onClick={() => router.push(`/process?file=${encodeURIComponent(selectedImage.name)}&folder=${selectedImage.folder}`)}
-            className="
-              px-6 py-3 rounded-xl font-semibold text-white
-              bg-indigo-600 hover:bg-indigo-700 active:scale-95
-              shadow-lg shadow-indigo-600/30
-              transition-all duration-150
-            "
+            className="px-6 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-lg shadow-indigo-600/30 transition-all duration-150"
           >
             Process: {selectedImage.name} →
           </button>

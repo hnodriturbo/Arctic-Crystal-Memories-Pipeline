@@ -43,14 +43,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`${inter.className} min-h-screen flex items-center justify-center
-      bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4`}>
+    <div className={`${inter.className} min-h-screen flex items-center justify-center bg-linear-to-br from-slate-950 via-slate-900 to-indigo-950 p-4`}>
       <div className="w-full max-w-sm">
 
         {/* Logo card */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl
-            bg-indigo-600 text-white font-bold text-2xl shadow-lg shadow-indigo-600/40 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white font-bold text-2xl shadow-lg shadow-indigo-600/40 mb-4">
             K9
           </div>
           <h1 className="text-2xl font-bold text-white">Crystal Pipeline</h1>
@@ -58,9 +56,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}
-          className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl
-            border border-slate-200 dark:border-slate-700 flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-5">
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -73,14 +69,7 @@ export default function LoginPage() {
               required
               autoFocus
               placeholder="hnodri"
-              className="
-                rounded-xl px-4 py-3 text-sm
-                bg-slate-50 dark:bg-slate-800
-                border border-slate-300 dark:border-slate-600
-                text-slate-800 dark:text-slate-200
-                placeholder:text-slate-400 dark:placeholder:text-slate-600
-                focus:outline-none focus:ring-2 focus:ring-indigo-500
-              "
+              className="rounded-xl px-4 py-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -94,21 +83,12 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••••"
-              className="
-                rounded-xl px-4 py-3 text-sm
-                bg-slate-50 dark:bg-slate-800
-                border border-slate-300 dark:border-slate-600
-                text-slate-800 dark:text-slate-200
-                placeholder:text-slate-400
-                focus:outline-none focus:ring-2 focus:ring-indigo-500
-              "
+              className="rounded-xl px-4 py-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950
-              border border-rose-200 dark:border-rose-800
-              text-rose-700 dark:text-rose-300 text-sm">
+            <div className="px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm">
               {error}
             </div>
           )}
@@ -116,13 +96,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="
-              w-full py-3 rounded-xl font-semibold text-white
-              bg-indigo-600 hover:bg-indigo-700 active:scale-95
-              disabled:opacity-60 disabled:cursor-not-allowed
-              shadow-lg shadow-indigo-600/30
-              transition-all duration-150
-            "
+            className="w-full py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/30 transition-all duration-150"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>

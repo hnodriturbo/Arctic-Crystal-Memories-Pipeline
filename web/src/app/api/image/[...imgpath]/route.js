@@ -29,7 +29,8 @@ export async function GET(req, { params }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const parts = params.imgpath;
+  const { imgpath } = await params;
+  const parts = imgpath;
   if (!parts || parts.length < 2) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
