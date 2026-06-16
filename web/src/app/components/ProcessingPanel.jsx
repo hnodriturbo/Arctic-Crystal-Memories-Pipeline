@@ -68,7 +68,7 @@ export default function ProcessingPanel({ file, folder, onRun, running }) {
   const [bgModel, setBgModel] = useState("isnet-general-use");
 
   function handleRun() {
-    const base = { operation, file };
+    const base = { operation, file, folder };
     if (operation === "upscale") {
       onRun({ ...base, engine: upscaleEngine, target: upscaleTarget });
     } else if (operation === "enhance") {

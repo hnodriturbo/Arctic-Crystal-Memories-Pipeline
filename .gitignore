@@ -435,6 +435,23 @@ pipeline-*/output/
 pipeline-*/models/
 pipeline-converter/input/
 pipeline-converter/output/
+pipeline-converter/models/
+**/pipeline/**/input/
+**/pipeline/**/output/
+**/pipeline/**/models/
+**/pipeline-*/**/input/
+**/pipeline-*/**/output/
+**/pipeline-*/**/models/
+
+
+# ========================================
+# Local K9 Crystal Asset Folders
+# ========================================
+
+3d_files/
+**/3d_files/
+videos/
+**/videos/
 
 
 # ========================================

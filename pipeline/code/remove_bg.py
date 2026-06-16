@@ -76,7 +76,7 @@ def process(src: Path, engine: str, model: str) -> None:
     else:
         raise ValueError(f"Unknown engine: {engine}")
 
-    out = OUTPUT_DIR / f"{src.stem}_bg_removed.png"
+    out = OUTPUT_DIR / f"{src.stem}-bg-removed.png"
     result.save(out, "PNG")
     print(f"  -> {out}")
 
@@ -99,7 +99,7 @@ def main():
     else:
         exts = ("*.png", "*.jpg", "*.jpeg", "*.webp", "*.tiff", "*.bmp")
         targets = sorted(p for ext in exts for p in input_dir.glob(ext))
-        targets = [p for p in targets if "_bg_removed" not in p.stem]
+        targets = [p for p in targets if "-bg-removed" not in p.stem]
 
     if not targets:
         print("No images found.")

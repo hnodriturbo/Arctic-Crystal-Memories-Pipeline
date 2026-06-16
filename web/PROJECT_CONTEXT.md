@@ -92,7 +92,7 @@ web/
 ├── middleware.js            ← Redirects unauthenticated requests to /login
 ├── .env.local               ← DATABASE_URL, AUTH_SECRET, PIPELINE_ROOT (not committed)
 ├── .env.example             ← Template for .env.local
-├── INSTRUCTIONS.md          ← This file
+├── PROJECT_CONTEXT.md          ← This file
 ├── AGENTS.md                ← Next.js 16 agent rules (read before editing)
 └── package.json
 ```

@@ -149,7 +149,7 @@ def process(src: Path, engine: str, fidelity: float,
         combined = np.dstack([out_rgb, alpha_r]).astype(np.uint8)
         result_img = Image.fromarray(combined, "RGBA")
 
-    out = OUTPUT_DIR / f"{src.stem}_enhanced.png"
+    out = OUTPUT_DIR / f"{src.stem}-enhanced.png"
     result_img.save(out, "PNG")
     print(f"  -> {out}")
 

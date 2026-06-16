@@ -1,0 +1,40 @@
+# requirements.txt
+# 🧊 Core libraries for crystal 2.5D depth → mesh pipeline
+
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# 🔥 Core
+torch==2.3.1+cu121          # ⚙️ PyTorch with CUDA 12.1 wheels
+torchvision==0.18.1+cu121   # 🖼️ Vision helpers for PyTorch
+numpy<2.0.0                 # 🧮 onnxruntime-gpu 1.18.0 requires numpy 1.x
+opencv-python==4.10.0.84    # 📸 Image IO + processing
+Pillow==11.0.0              # 🖼️ PIL image handling
+
+# 🌊 Depth model (Marigold)
+diffusers==0.35.2           # 💧 MarigoldDepthPipeline host
+transformers==4.49.0        # 🧠 HuggingFace model layers
+
+accelerate==1.2.0           # 🚀 Device placement & optimization
+huggingface_hub>=0.34.0     # ☁️ Model download from HF Hub
+peft==0.17.0
+
+# 🙂 Face detection (RetinaFace via InsightFace)
+insightface==0.7.3          # 😊 FaceAnalysis for multi-face detection
+onnxruntime-gpu==1.18.0     # ⚙️ GPU-accelerated ONNX runtime (faces)
+
+# 🧱 3D mesh & export
+trimesh==4.4.0              # 🔺 Mesh building + export
+ezdxf==1.1.4                # 📐 DXF export (points)
+
+# 🧼 Background removal (optional but recommended)
+rembg==2.0.59               # ✂️ AI background removal
+
+# 📊 Progress bar/logging
+tqdm                        # 📈 Progress visualization
+
+# OPTIONAL: DECA for face refinement
+# NOTE: DECA has major version conflicts with modern PyTorch.
+# The pipeline works WITHOUT DECA - it will skip face refinement gracefully.
+# If DECA is needed, use a separate virtual environment with Python 3.7-3.8 and:
+#   pip install torch==1.6.0 torchvision==0.7.0 numpy==1.18.5
+#   cd DECA && pip install -r requirements.txt

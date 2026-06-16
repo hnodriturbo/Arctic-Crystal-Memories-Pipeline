@@ -39,8 +39,9 @@ def _build_realesrgan(model_name: str, url: str, device: str):
     model_dir.mkdir(parents=True, exist_ok=True)
     model_path = model_dir / f"{model_name}.pth"
 
-    model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64,
-                    num_block=23, num_grow_ch=32, scale=4)
+    model = RRDBNet(
+        num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4
+    )
     return RealESRGANer(
         scale=4,
         model_path=str(model_path) if model_path.exists() else url,
@@ -86,7 +87,7 @@ def process(src: Path, engine: str, target: int, device: str) -> None:
     w, h = img.size
 
     if max(w, h) >= target:
-        out = OUTPUT_DIR / f"{src.stem}_upscaled.png"
+        out = OUTPUT_DIR / f"{src.stem}-upscaled.png"
         shutil.copy2(src, out)
         print(f"  skip {src.name} — already {w}x{h}, copied as-is to output")
         return
@@ -124,7 +125,7 @@ def process(src: Path, engine: str, target: int, device: str) -> None:
 
         result_img = Image.fromarray(combined, "RGBA")
 
-    out = OUTPUT_DIR / f"{src.stem}_upscaled.png"
+    out = OUTPUT_DIR / f"{src.stem}-upscaled.png"
     result_img.save(out, "PNG")
     fw, fh = result_img.size
     print(f"  -> {out}  ({fw}x{fh})")
@@ -134,8 +135,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", help="Filename in input/ (or full path)")
     parser.add_argument("--engine", default="realesrgan", choices=ENGINES)
-    parser.add_argument("--target", type=int, default=TARGET_LONG_EDGE,
-                        help="Target long edge in pixels (default 1800)")
+    parser.add_argument(
+        "--target",
+        type=int,
+        default=TARGET_LONG_EDGE,
+        help="Target long edge in pixels (default 1800)",
+    )
     parser.add_argument("--input-dir", default=str(INPUT_DIR))
     args = parser.parse_args()
 
@@ -151,7 +156,7 @@ def main():
     else:
         exts = ("*.png", "*.jpg", "*.jpeg", "*.webp", "*.tiff", "*.bmp")
         targets = sorted(p for ext in exts for p in input_dir.glob(ext))
-        targets = [p for p in targets if "_upscaled" not in p.stem]
+        targets = [p for p in targets if "-upscaled" not in p.stem]
 
     if not targets:
         print("No images found.")

@@ -24,6 +24,13 @@ const SCRIPT_MAP = {
   remove_bg: "remove_bg.py",
 };
 
+const FOLDER_PATH_MAP = {
+  input:      path.join(PIPELINE_ROOT || "", "input"),
+  upscaled:   path.join(PIPELINE_ROOT || "", "output", "upscaled"),
+  enhanced:   path.join(PIPELINE_ROOT || "", "output", "enhanced"),
+  bg_removed: path.join(PIPELINE_ROOT || "", "output", "bg_removed"),
+};
+
 const ALLOWED_OPERATIONS = new Set(Object.keys(SCRIPT_MAP));
 
 export async function POST(req) {
@@ -31,7 +38,7 @@ export async function POST(req) {
   if (!session) return new Response("Unauthorized", { status: 401 });
 
   const body = await req.json();
-  const { operation, file, engine, model, target, fidelity,
+  const { operation, file, folder, engine, model, target, fidelity,
           brightness, contrast, sharpness, color } = body;
 
   if (!ALLOWED_OPERATIONS.has(operation)) {
@@ -41,12 +48,12 @@ export async function POST(req) {
   const scriptName = SCRIPT_MAP[operation];
   const scriptPath = path.join(PIPELINE_ROOT, "code", scriptName);
   const pythonExe = path.join(PIPELINE_ROOT, ".venv", "Scripts", "python.exe");
-  const inputDir = path.join(PIPELINE_ROOT, "input");
+  const fileDir = FOLDER_PATH_MAP[folder] ?? FOLDER_PATH_MAP.input;
 
   const args = [scriptPath];
 
   if (file) {
-    args.push("--file", path.join(inputDir, file));
+    args.push("--file", path.join(fileDir, file));
   }
   if (engine) args.push("--engine", engine);
   if (model) args.push("--model", model);

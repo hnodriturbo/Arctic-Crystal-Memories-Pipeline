@@ -19,9 +19,9 @@ const OUTPUT_FOLDER_MAP = {
 };
 
 const OUTPUT_SUFFIX_MAP = {
-  upscale:   "_upscaled",
-  enhance:   "_enhanced",
-  remove_bg: "_bg_removed",
+  upscale:   "-upscaled",
+  enhance:   "-enhanced",
+  remove_bg: "-bg-removed",
 };
 
 function imgSrc(folder, filename) {
