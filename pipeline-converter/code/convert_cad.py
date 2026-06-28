@@ -73,12 +73,17 @@ def write_conversion_report(file_path, points, stats, output_paths, options):
 def main():
     parser = argparse.ArgumentParser(description="Convert Cockpit3D-style CAD files to point clouds.")
     parser.add_argument("--file", required=True, help="Path to the .cad file to convert.")
-    parser.add_argument("--formats", nargs="+", default=["xyz"], choices=["xyz", "ply", "obj"], help="Output formats.")
+    parser.add_argument("--formats", nargs="+", default=["xyz"], choices=["xyz", "obj", "stl"],
+                        help="Output formats (xyz, obj, stl).")
     parser.add_argument("--limit", type=int, default=None, help="Export only the first N points.")
     parser.add_argument("--sample-rate", type=int, default=1, help="Export every Nth candidate point.")
     parser.add_argument("--scale", type=float, default=1.0, help="Multiply all coordinates by this scale factor.")
     parser.add_argument("--center", action="store_true", help="Center point cloud around the origin.")
     parser.add_argument("--dedupe", action="store_true", help="Remove duplicate XYZ rows.")
+    parser.add_argument("--stl-method", default="delaunay", choices=["delaunay", "convex"],
+                        help="STL mesh method: delaunay (2.5D surface) or convex (closed hull). Default: delaunay.")
+    parser.add_argument("--stl-limit", type=int, default=None,
+                        help="Downsample to N points before STL triangulation.")
     args = parser.parse_args()
 
     file_path = Path(args.file).resolve()
@@ -102,7 +107,9 @@ def main():
     if args.center:
         points = center_points(points)
 
-    output_paths = write_selected_formats(points, file_path.stem, args.formats, PROJECT_ROOT)
+    output_paths = write_selected_formats(points, file_path.stem, args.formats, PROJECT_ROOT,
+                                          stl_method=getattr(args, "stl_method", "delaunay"),
+                                          stl_limit=getattr(args, "stl_limit", None))
     options = {
         "formats": args.formats,
         "limit": args.limit,

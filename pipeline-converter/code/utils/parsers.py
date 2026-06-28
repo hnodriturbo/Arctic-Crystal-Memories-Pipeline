@@ -1,7 +1,7 @@
 """
 File: code/utils/parsers.py
 Purpose:
- - Parse coordinate-like rows from Cockpit3D CAD files and transform point lists.
+ - Parse coordinate-like rows from Cockpit3D CAD and DXF files and transform point lists.
 """
 
 import math
@@ -160,3 +160,39 @@ def calculate_bounds(points):
         "min_z": min(z_values),
         "max_z": max(z_values),
     }
+
+
+def parse_dxf_points_fast(file_path, limit=None, scale=1.0):
+    """Extract XYZ from DXF POINT entities without ezdxf — scans group codes 10/20/30 in ENTITIES section."""
+    points = []
+    in_entities = False
+    current_x = None
+    current_y = None
+
+    with open(file_path, "r", encoding="utf-8", errors="replace") as source:
+        it = iter(source)
+        for raw_code in it:
+            code = raw_code.strip()
+            try:
+                value = next(it).strip()
+            except StopIteration:
+                break
+
+            if code == "2" and value == "ENTITIES":
+                in_entities = True
+            elif code == "0" and value == "ENDSEC" and in_entities:
+                break
+            elif in_entities:
+                if code == "10":
+                    current_x = float(value) * scale
+                    current_y = None
+                elif code == "20" and current_x is not None:
+                    current_y = float(value) * scale
+                elif code == "30" and current_x is not None and current_y is not None:
+                    points.append((current_x, current_y, float(value) * scale))
+                    current_x = None
+                    current_y = None
+                    if limit is not None and len(points) >= limit:
+                        break
+
+    return points
