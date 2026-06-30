@@ -1,8 +1,8 @@
 """
-code/purify_dxf.py
+code/purify_dxf.py  —  DXF Fixer
 
-Converts minimal Cockpit3D DXF exports into standards-compliant
-AC1015 (AutoCAD 2000 / R2000) DXF files that open in all laser printer software.
+Fixes minimal Cockpit3D DXF exports into standards-compliant
+AC1015 (AutoCAD 2000 / R2000) DXF files that open in all laser-engraving software.
 
 Changes made — structural only, coordinates are never modified:
   - Adds $ACADVER = AC1015 to HEADER
@@ -32,11 +32,22 @@ from rich.console import Console
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.parsers import calculate_bounds, parse_cad_points  # noqa: E402
-
 console = Console()
 
-OUTPUT_DIR = PROJECT_ROOT / "output" / "purified_dxf"
+PURIFIED_ROOT = PROJECT_ROOT / "output" / "purified_dxf"
+
+
+def next_batch_dir():
+    """Return the next batch_N directory under output/purified_dxf/."""
+    existing = [
+        d for d in PURIFIED_ROOT.iterdir()
+        if d.is_dir() and d.name.startswith("batch_") and d.name[6:].isdigit()
+    ] if PURIFIED_ROOT.exists() else []
+    next_n = max((int(d.name[6:]) for d in existing), default=0) + 1
+    return PURIFIED_ROOT / f"batch_{next_n}"
+
+
+OUTPUT_DIR = None  # resolved once in main() so multi-file runs share one batch
 
 # Known crystal template settings from Cockpit3D screenshots.
 # Used to set $LIMMAX correctly. Any file not listed here falls back
@@ -57,6 +68,15 @@ CRYSTAL_METADATA = {
     "volcanic-activity-120mm-80mm-40mm-3244427points": {
         "width": 120.0, "height": 80.0, "depth": 40.0,
         "type": "3D large", "margin": 3, "bevel": 3, "article_id": "A0009",
+    },
+    # batch_2 — X area adjusted re-exports
+    "volcanic-activity-120mm-80mm-40mm-2795289points": {
+        "width": 120.0, "height": 80.0, "depth": 40.0,
+        "type": "3D large", "margin": 3, "bevel": 3, "article_id": "A0009",
+    },
+    "me-guitar-tenerife-60mm-80mm-40mm-462706points": {
+        "width": 60.0, "height": 80.0, "depth": 40.0,
+        "type": "3D small", "margin": 3, "bevel": 3, "article_id": "",
     },
 }
 
@@ -336,9 +356,9 @@ def stream_dxf_entities(src_path, out_file, start_handle=0x100):
     return handle
 
 
-def purify_from_dxf(src_path, meta=None):
+def purify_from_dxf(src_path, out_dir, meta=None):
     """DXF → standards-compliant AC1015 DXF. Two-pass streaming, no full file in memory."""
-    out_path = OUTPUT_DIR / f"{src_path.stem}_purified.dxf"
+    out_path = out_dir / f"{src_path.stem}_purified.dxf"
     console.print(f"[bold cyan]DXF source:[/bold cyan] {src_path.name}")
 
     console.print("  Pass 1: scanning bounds...")
@@ -361,7 +381,7 @@ def purify_from_dxf(src_path, meta=None):
             f"  Template: {meta['type']}  {meta['width']} x {meta['height']} x {meta['depth']} mm"
         )
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
     console.print("  Pass 2: writing purified DXF...")
     with open(out_path, "w", encoding="utf-8", newline="\n") as out:
         out.write(build_header(bounds, meta))
@@ -380,36 +400,37 @@ def purify_from_dxf(src_path, meta=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Purify Cockpit3D DXF exports into standards-compliant AC1015 DXF."
+        description="DXF Fixer — convert minimal Cockpit3D DXF exports to standards-compliant AC1015 DXF."
     )
     parser.add_argument(
-        "--file", default=None,
-        help="Path to a single .dxf file to purify. "
-             "If omitted, all registered files in input/new/ are processed."
+        "--file", nargs="+", default=None,
+        help="One or more .dxf files to fix. All land in the same new batch folder."
     )
     args = parser.parse_args()
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    console.print("[bold]K9 Crystal Pipeline — DXF Purifier[/bold]")
-    console.print(f"Output: {OUTPUT_DIR}\n")
+    out_dir = next_batch_dir()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    console.print("[bold]K9 Crystal Pipeline — DXF Fixer[/bold]")
+    console.print(f"Output: {out_dir}\n")
 
     if args.file:
-        src = Path(args.file).resolve()
-        if not src.exists():
-            console.print(f"[red]File not found: {src}[/red]")
-            sys.exit(1)
-        meta = CRYSTAL_METADATA.get(src.stem)
-        purify_from_dxf(src, meta)
+        for file_arg in args.file:
+            src = Path(file_arg).resolve()
+            if not src.exists():
+                console.print(f"[red]File not found: {src}[/red]")
+                sys.exit(1)
+            meta = CRYSTAL_METADATA.get(src.stem)
+            purify_from_dxf(src, out_dir, meta)
     else:
-        INPUT_DIR = PROJECT_ROOT / "input" / "new"
+        INPUT_DIR = PROJECT_ROOT / "input" / "dxf"
         console.print(f"Input:  {INPUT_DIR}\n")
-        for stem, meta in CRYSTAL_METADATA.items():
-            src = INPUT_DIR / f"{stem}.dxf"
-            if src.exists():
-                purify_from_dxf(src, meta)
-            else:
-                console.print(f"[yellow]Missing: {src.name}[/yellow]\n")
-        console.print("[bold green]All registered DXF files processed.[/bold green]")
+        dxf_files = [f for f in INPUT_DIR.glob("*.dxf") if f.is_file()]
+        if not dxf_files:
+            console.print("[yellow]No .dxf files found in input/dxf/[/yellow]")
+        for src in sorted(dxf_files):
+            meta = CRYSTAL_METADATA.get(src.stem)
+            purify_from_dxf(src, out_dir, meta)
+        console.print("[bold green]All DXF files processed.[/bold green]")
 
 
 if __name__ == "__main__":
