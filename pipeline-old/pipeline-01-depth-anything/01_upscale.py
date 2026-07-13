@@ -14,6 +14,15 @@
 #   Real-ESRGAN is specifically trained to restore realistic
 #   detail, not just scale pixels — it adds plausible texture.
 #
+# WHY NOT ALWAYS:
+#   Upscaling is only useful up to a point — past ~1800px on the
+#   long edge, Real-ESRGAN is mostly inventing texture rather than
+#   recovering real detail, while adding processing time and disk
+#   space. Default behaviour (auto mode) skips images that already
+#   meet the target and only upscales enough to reach it, not a
+#   fixed 2x/4x regardless of starting size. Pass --factor to force
+#   a fixed multiplier on every image instead (old behaviour).
+#
 # MODEL USED:
 #   RealESRGAN_x4plus        — general photo upscaling (portraits, customer photos)
 #   RealESRGAN_x2plus        — 2x variant for already high-res input
@@ -22,17 +31,22 @@
 #
 # INPUTS:
 #   - Source image(s) from INPUT_DIR (.jpg, .png, etc.)
-#   - UPSCALE_FACTOR from .env (default: 4)
+#   - UPSCALE_TARGET_LONG_SIDE from .env (default: 1800) — auto mode target
+#   - UPSCALE_FACTOR from .env — only used when --factor forces fixed mode
 #
 # OUTPUTS:
 #   - Upscaled PNG saved to: OUTPUT_DIR/upscaled/{stem}_upscaled.png
 #   - Always PNG (lossless) — no quality loss before the next step
+#   - Images already at/above the target long side are copied through
+#     as PNG unchanged (no model run) rather than skipped entirely, so
+#     every step downstream can always read from output/upscaled/.
 #
 # USAGE:
-#   python 01_upscale.py                         # all images in input/
-#   python 01_upscale.py --file photo.jpg        # single file
-#   python 01_upscale.py --factor 2              # override scale factor
-#   python 01_upscale.py --tile 256              # smaller tiles (low VRAM)
+#   python 01_upscale.py                              # auto mode, target 1800px long edge
+#   python 01_upscale.py --file photo.jpg              # single file, auto mode
+#   python 01_upscale.py --target-long-side 2200       # different auto target
+#   python 01_upscale.py --factor 2                    # force fixed 2x on every image
+#   python 01_upscale.py --tile 256                    # smaller tiles (low VRAM)
 #   python 01_upscale.py --model RealESRGAN_x4plus_anime_6B  # artwork
 #
 # DEPENDENCIES: realesrgan, basicsr, opencv-python, Pillow, torch, python-dotenv
@@ -42,6 +56,11 @@
 #   - Models folder is gitignored — downloaded automatically on first run.
 #   - Do not upscale above 4x (diminishing returns, very large intermediate files).
 #   - Real-ESRGAN expects BGR input (OpenCV convention). Conversion is handled here.
+#   - "Long side" = width for landscape images, height for portrait images —
+#     whichever is larger, regardless of orientation.
+#   - Model weights are only loaded if at least one image in the batch
+#     actually needs upscaling — an all-already-large-enough batch never
+#     pays the ~5-10s model load cost.
 # =============================================================
 
 from pathlib import Path
@@ -148,6 +167,84 @@ DEFAULT_MODEL = "RealESRGAN_x4plus"
 
 # Where model weight files are cached locally after first download
 MODELS_DIR = PIPELINE_DIR / "models" / "realesrgan"
+
+# Default auto-mode target for the long edge (width for landscape, height
+# for portrait). Past this, Real-ESRGAN adds invented texture rather than
+# recovering real detail — not worth the time/disk cost. Override via
+# UPSCALE_TARGET_LONG_SIDE in .env or --target-long-side on the CLI.
+DEFAULT_TARGET_LONG_SIDE = int(os.getenv("UPSCALE_TARGET_LONG_SIDE", "1800"))
+
+
+# =============================================================
+# AUTO-MODE SIZE DECISION
+# =============================================================
+
+def resolve_outscale_for_image(
+    width: int,
+    height: int,
+    target_long_side: int,
+    model_scale: int,
+) -> float | None:
+    """
+    Decide the upscale factor for one image in auto mode.
+
+    "Long side" is whichever of width/height is larger — this makes the
+    threshold orientation-independent, so a 1800x1200 landscape and a
+    1200x1800 portrait are judged the same way.
+
+    Args:
+        width, height:    Source image dimensions in pixels
+        target_long_side: Auto-mode target for the long edge
+        model_scale:      Native scale of the selected model (e.g. 4)
+
+    Returns:
+        None if the image already meets/exceeds target_long_side — caller
+        should skip the model and copy the image through unchanged.
+        Otherwise the float outscale needed to reach target_long_side,
+        clamped to model_scale. Asking Real-ESRGAN for more than its
+        native scale just adds a bicubic resize on top of the model
+        output, which looks worse than accepting a smaller result.
+    """
+    long_side = max(width, height)
+    if long_side >= target_long_side:
+        return None
+    return min(target_long_side / long_side, float(model_scale))
+
+
+def copy_passthrough(image_path: Path, run: str) -> Path:
+    """
+    Copy a source image straight to output/upscaled/ as PNG, no upscaling.
+
+    Used in auto mode when the image already meets the target long side.
+    Keeps output/upscaled/ as the single, reliable input folder for step 02
+    regardless of whether a given image actually needed the model.
+
+    Args:
+        image_path: Path to the source image file
+        run:        Run subfolder name, e.g. 'try_01'
+
+    Returns:
+        Path to the saved PNG
+    """
+    info = get_image_info(image_path)
+    tqdm.write(
+        f"  Input:   {image_path.name}  "
+        f"{info['width']} x {info['height']} px  |  "
+        f"already >= target long side — skipping model, copying through"
+    )
+
+    # IMREAD_UNCHANGED preserves alpha if present, matching upscale_image()'s behaviour
+    img_bgr = cv2.imread(str(image_path), cv2.IMREAD_UNCHANGED)
+    if img_bgr is None:
+        raise RuntimeError(f"cv2.imread returned None for '{image_path}'.")
+
+    output_path = build_output_path(image_path.name, "upscaled", "png", run=run)
+    success = cv2.imwrite(str(output_path), img_bgr)
+    if not success:
+        raise RuntimeError(f"cv2.imwrite failed to write to '{output_path}'.")
+
+    tqdm.write(f"  Saved:   {output_path.name}  (unchanged)")
+    return output_path
 
 
 # =============================================================
@@ -350,17 +447,17 @@ def parse_args() -> argparse.Namespace:
     script works with zero arguments after the environment is configured.
     CLI arguments always override .env values when both are present.
     """
-    env_factor = os.getenv("UPSCALE_FACTOR", "4")
     env_device = os.getenv("DEVICE", "cpu")
 
     parser = argparse.ArgumentParser(
-        description="Step 01 — Upscale source images with Real-ESRGAN.",
+        description="Step 01 — Upscale source images with Real-ESRGAN (auto mode by default).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  python 01_upscale.py\n"
+            "  python 01_upscale.py                          # auto mode, target 1800px long edge\n"
             "  python 01_upscale.py --file portrait.jpg\n"
-            "  python 01_upscale.py --factor 2 --tile 256\n"
+            "  python 01_upscale.py --target-long-side 2200\n"
+            "  python 01_upscale.py --factor 2 --tile 256     # force fixed 2x on every image\n"
             "  python 01_upscale.py --model RealESRGAN_x4plus_anime_6B\n"
         ),
     )
@@ -377,13 +474,24 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--factor",
-        type=int,
+        type=float,
         default=None,
-        choices=[2, 4],
         metavar="N",
         help=(
-            f"Output scale factor: 2 or 4. "
-            f"Overrides UPSCALE_FACTOR in .env (currently: {env_factor})."
+            "Force this exact scale factor on every image, skipping auto "
+            "mode's per-image 1800px-long-side decision entirely. "
+            "Not set by default — auto mode is the default behaviour."
+        ),
+    )
+    parser.add_argument(
+        "--target-long-side",
+        type=int,
+        default=DEFAULT_TARGET_LONG_SIDE,
+        metavar="PIXELS",
+        help=(
+            f"Auto-mode target for the long edge (default: {DEFAULT_TARGET_LONG_SIDE}). "
+            "Images already at/above this are copied through unchanged. "
+            "Ignored when --factor is set."
         ),
     )
     parser.add_argument(
@@ -435,28 +543,27 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    # Resolve final settings — CLI overrides .env, .env overrides hardcoded defaults
-    upscale_factor = args.factor if args.factor is not None else int(os.getenv("UPSCALE_FACTOR", "4"))
-    device_setting  = args.device  if args.device  is not None else os.getenv("DEVICE", "cpu")
+    device_setting = args.device if args.device is not None else os.getenv("DEVICE", "cpu")
     model_name = args.model
+    model_scale = MODEL_CONFIGS[model_name]["scale"]
+    forced_factor = args.factor  # None unless caller explicitly forced fixed mode
 
     print("=" * 60)
     print("K9 Crystal Pipeline  —  Step 01: Upscale")
     print("=" * 60)
     print(f"  Model:   {model_name}")
     print(f"           {MODEL_CONFIGS[model_name]['description']}")
-    print(f"  Scale:   {upscale_factor}x")
+    if forced_factor is not None:
+        print(f"  Mode:    fixed  —  {forced_factor}x on every image")
+    else:
+        print(f"  Mode:    auto  —  target {args.target_long_side}px on the long edge")
     print(f"  Tile:    {args.tile if args.tile > 0 else 'disabled (full image at once)'}")
-
-    # Verify CUDA availability and print final device choice
-    device = resolve_device(device_setting)
     print()
 
     # -------------------------------------------------------
     # Collect images to process
     # -------------------------------------------------------
     if args.file:
-        # Single-file mode: look in INPUT_DIR for the given filename
         single_path = get_input_dir() / args.file
         if not single_path.exists():
             print(f"ERROR: File not found: {single_path}")
@@ -470,42 +577,64 @@ def main() -> None:
             print("Drop .jpg or .png files there and re-run.")
             sys.exit(0)
 
-    print(f"Processing {len(images_to_process)} image(s).\n")
+    print(f"Found {len(images_to_process)} image(s).\n")
 
     # -------------------------------------------------------
-    # Load the model — done once, reused for every image
-    # Loading is slow (~5–10 s) so it must not happen inside the loop
+    # Decide per-image plan BEFORE loading the model.
+    # Auto mode: images already at/above the target long side never touch
+    # Real-ESRGAN — this lets us skip the ~5-10s model load entirely when
+    # nothing in the batch actually needs upscaling.
     # -------------------------------------------------------
-    print("Loading model weights...")
-    upsampler = load_model(model_name, device, tile=args.tile)
-    print("Model ready.\n")
+    plan: list[tuple[Path, float | None]] = []  # (path, outscale) — outscale None = passthrough
+    for image_path in images_to_process:
+        if forced_factor is not None:
+            plan.append((image_path, forced_factor))
+            continue
 
-    # -------------------------------------------------------
-    # Process images
-    # tqdm shows overall progress; per-image details print inside upscale_image()
-    # -------------------------------------------------------
-    total_start = time.perf_counter()
-    success_count = 0
-    failed: list[str] = []
+        info = get_image_info(image_path)
+        outscale = resolve_outscale_for_image(
+            info["width"], info["height"], args.target_long_side, model_scale
+        )
+        plan.append((image_path, outscale))
 
-    progress_bar = tqdm(
-        images_to_process,
-        desc="Upscaling",
-        unit="img",
-        leave=True,
-        dynamic_ncols=True,
-    )
+    needs_model = any(outscale is not None for _, outscale in plan)
 
     # Resolve run name once so every image in this batch lands in the same folder
     tag = Path(args.file).stem if args.file else None
     run = resolve_run_name("upscaled", args.run, tag=tag)
     print(f"Run:     {run}  →  output/upscaled/{run}/\n")
 
-    for image_path in progress_bar:
-        progress_bar.set_description(f"Upscaling: {image_path.name}")
+    # -------------------------------------------------------
+    # Load the model only if at least one image needs it
+    # -------------------------------------------------------
+    upsampler = None
+    if needs_model:
+        device = resolve_device(device_setting)
+        print("Loading model weights...")
+        upsampler = load_model(model_name, device, tile=args.tile)
+        print("Model ready.\n")
+    else:
+        print("All images already meet the target long side — model not loaded.\n")
+
+    # -------------------------------------------------------
+    # Process images
+    # -------------------------------------------------------
+    total_start = time.perf_counter()
+    success_count = 0
+    skipped_count = 0
+    failed: list[str] = []
+
+    progress_bar = tqdm(plan, desc="Upscaling", unit="img", leave=True, dynamic_ncols=True)
+
+    for image_path, outscale in progress_bar:
+        progress_bar.set_description(f"Processing: {image_path.name}")
         try:
-            upscale_image(image_path, upsampler, outscale=upscale_factor, run=run)
-            success_count += 1
+            if outscale is None:
+                copy_passthrough(image_path, run=run)
+                skipped_count += 1
+            else:
+                upscale_image(image_path, upsampler, outscale=outscale, run=run)
+                success_count += 1
         except Exception as exc:
             tqdm.write(f"\nERROR — '{image_path.name}': {exc}")
             tqdm.write("  Skipping this file and continuing with the rest.\n")
@@ -519,7 +648,8 @@ def main() -> None:
     print()
     print("=" * 60)
     print(f"Step 01 complete.")
-    print(f"  Upscaled:  {success_count} image(s)")
+    print(f"  Upscaled:        {success_count} image(s)")
+    print(f"  Copied unchanged: {skipped_count} image(s) (already >= target long side)")
     if failed:
         print(f"  Failed:    {len(failed)} image(s)")
         for name in failed:

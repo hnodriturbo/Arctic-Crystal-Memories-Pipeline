@@ -78,6 +78,11 @@ CRYSTAL_METADATA = {
         "width": 60.0, "height": 80.0, "depth": 40.0,
         "type": "3D small", "margin": 3, "bevel": 3, "article_id": "",
     },
+    # batch_3
+    "volcanic-activity-80mm-50mm-50mm-1414737points": {
+        "width": 80.0, "height": 50.0, "depth": 50.0,
+        "type": "3D large", "margin": 3, "bevel": 3, "article_id": "A0009",
+    },
 }
 
 

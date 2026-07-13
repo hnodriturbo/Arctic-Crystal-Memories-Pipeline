@@ -45,6 +45,7 @@ STAGE_OUTPUT_DIRS: dict[str, str] = {
     "upscaled":   "upscaled",
     "nobg":       "bg_removed",
     "depth":      "depth_maps",
+    "landmarks":  "landmarks",
     "pointcloud": "point_clouds",
     "mesh":       "meshes",
     "export":     "exports",
