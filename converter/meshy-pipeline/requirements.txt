@@ -1,0 +1,8 @@
+# ==========================================
+# File: converter/meshy-pipeline/requirements.txt
+# Purpose:
+#  - Define the isolated CPU-only Python environment for Meshy diagnostics.
+#  - Keep Meshy support tooling separate from image and converter packages.
+# ==========================================
+
+requests==2.34.2

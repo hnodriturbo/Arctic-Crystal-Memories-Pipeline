@@ -1,0 +1,41 @@
+# requirements.txt — converter/image-pipeline
+#
+# CPU-only baseline. Everything here installs from wheels on both Windows and
+# the VPS (Ubuntu, no CUDA), so `pip install -r requirements.txt` is the whole
+# setup on either machine:
+#
+#   Windows:  py -3.11 -m venv .venv
+#             .\.venv\Scripts\Activate.ps1
+#             pip install -r requirements.txt
+#
+#   VPS:      uv venv --python 3.11 .venv
+#             source .venv/bin/activate
+#             pip install -r requirements.txt
+#
+# rembg downloads its model on first run to ~/.u2net/ (birefnet-portrait is
+# ~900 MB, u2netp ~4.5 MB). Nothing else needs a model.
+#
+# For Real-ESRGAN upscaling and GFPGAN face restoration, install
+# requirements-gpu.txt on top. Without it `--engine auto` resolves to lanczos
+# and pillow, which is the correct behaviour on a machine with no GPU.
+
+# ── Background removal ────────────────────────────────────────────────────────
+# The [cpu] extra selects onnxruntime over onnxruntime-gpu.
+rembg[cpu]==2.0.77
+onnxruntime==1.28.0
+
+# ── Imaging ───────────────────────────────────────────────────────────────────
+pillow==12.3.0
+PyMatting==1.1.15
+scikit-image==0.26.0
+
+# ── Numerics ──────────────────────────────────────────────────────────────────
+# Python 3.11 is the production baseline. NumPy 2.5 and SciPy 1.18 require
+# Python 3.12, so these are the newest wheel releases that preserve 3.11.
+numpy==2.4.6
+scipy==1.17.1
+
+# ── Model download and caching ────────────────────────────────────────────────
+pooch==1.9.0
+requests==2.34.2
+tqdm==4.70.0

@@ -1,0 +1,40 @@
+// ═══════════════════════════════════════════════════════════════
+// ACM Pipeline schema
+// ═══════════════════════════════════════════════════════════════
+// Path: prisma/schema.prisma
+// Purpose: Who is allowed to drive the pipeline.
+//
+// Deliberately small. Generation jobs still record themselves as
+// meshy-pipeline/output/<job-id>/job.json, which keeps a job's manifest next
+// to the files it produced and survives a database being rebuilt. Move them
+// in here when there is a reason to query across jobs, not before.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// In Prisma 7 the database URL lives in prisma.config.mjs, not here.
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+}
+
+// One operator. Mirrors acm_bookkeeping's users table field for field, so the
+// same person signs in with the same email and password in both places.
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  name               String?
+  passwordHash       String
+  role               UserRole @default(OWNER)
+  isActive           Boolean  @default(true)
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("users")
+}

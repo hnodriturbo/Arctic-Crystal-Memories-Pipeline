@@ -1,0 +1,7 @@
+# Generated artefacts. The folder structure is tracked, its contents are not -
+# a single Meshy job can pull down several hundred megabytes of GLB and OBJ.
+input/*
+work/*
+output/*
+!.gitkeep
+!*/.gitkeep

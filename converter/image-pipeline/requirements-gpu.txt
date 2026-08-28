@@ -1,0 +1,18 @@
+# requirements-gpu.txt — optional, CUDA machines only
+#
+# Install PyTorch with CUDA FIRST, then this file, then requirements.txt:
+#
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+#   pip install -r requirements-gpu.txt
+#
+# This unlocks `--engine realesrgan` in upscale.py and `--engine gfpgan` in
+# enhance.py. Without it those flags fall back to lanczos and pillow with a
+# printed notice rather than failing, which is what the VPS relies on.
+#
+# Do NOT install this on the VPS. There is no CUDA there and a CPU-only torch
+# build is a 2 GB download that buys a Real-ESRGAN pass slow enough to time out.
+
+basicsr
+realesrgan
+gfpgan
+opencv-python

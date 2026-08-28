@@ -110,8 +110,9 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Virtual-environment libraries already live below ignored .venv/ or venv/
+# directories. Do not ignore a generic lib/ name here: the Next.js app keeps
+# required runtime source in converter/web-converter/src/lib/.
 parts/
 sdist/
 var/
@@ -332,6 +333,7 @@ site/
 *.sqlite
 *.sqlite3
 *.sql
+!**/prisma/migrations/**/migration.sql
 *.dump
 *.bak
 *.backup
@@ -452,6 +454,19 @@ pipeline-converter/models/
 **/3d_files/
 videos/
 **/videos/
+
+
+# ========================================
+# Local-to-VPS Release Artifacts
+# ========================================
+
+# Deployment archives are temporary, secret-free transport packages. Runtime
+# releases/shared/current live only on the VPS and must never become source.
+deployment/artifacts/
+**/output/playwright/
+**/.deploy/
+**/releases/
+**/shared/
 
 
 # ========================================

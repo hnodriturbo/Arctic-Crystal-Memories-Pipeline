@@ -1,0 +1,8 @@
+# Working folders and downloaded weights. The structure is tracked, the
+# contents are not - GFPGAN and Real-ESRGAN weights alone run to ~400 MB.
+.venv/
+input/*
+output/*
+models/*
+!.gitkeep
+!*/.gitkeep
