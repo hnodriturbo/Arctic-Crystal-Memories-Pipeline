@@ -26,6 +26,7 @@ const ENDPOINTS = {
   "multi-image-to-3d": "v1/multi-image-to-3d",
   "text-to-3d": "v2/text-to-3d",
   remesh: "v1/remesh",
+  retexture: "v1/retexture",
 };
 
 /** The key is optional at build time, so every route checks before calling. */
@@ -49,20 +50,45 @@ function describeError(status, body) {
   return detail || `Meshy returned ${status}.`;
 }
 
+/** Retry read-only Meshy calls through brief network or 5xx interruptions. */
+async function fetchMeshyWithRetry(url, init) {
+  const method = String(init.method || "GET").toUpperCase();
+  const attempts = method === "GET" ? 3 : 1;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, init);
+      if (response.status < 500 || attempt === attempts) return response;
+    } catch (error) {
+      if (attempt === attempts || error.name === "AbortError" || init.signal?.aborted) throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 400 * 2 ** (attempt - 1)));
+  }
+
+  throw new Error("Meshy request failed after retrying.");
+}
+
 /** One authenticated request. Throws with a readable message on any non-2xx. */
 async function meshyFetch(route, init = {}) {
   if (!meshyConfigured()) {
     throw new Error("MESHY_API_KEY is not set. Add it to .env.local and restart the dev server.");
   }
 
-  const response = await fetch(`${API_URL}/${route}`, {
+  const request = {
     ...init,
     headers: {
       Authorization: `Bearer ${process.env.MESHY_API_KEY}`,
       ...(init.body ? { "Content-Type": "application/json" } : {}),
       ...init.headers,
     },
-  });
+  };
+
+  let response;
+  try {
+    response = await fetchMeshyWithRetry(`${API_URL}/${route}`, request);
+  } catch (error) {
+    throw new Error(`Could not reach Meshy: ${error.message}`, { cause: error });
+  }
 
   const text = await response.text();
   let body = null;

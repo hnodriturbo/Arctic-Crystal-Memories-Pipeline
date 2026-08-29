@@ -294,26 +294,45 @@ export async function runMeshyJob({ mode, photos = [], values = {}, signal, emit
     // refine task that takes the preview's id.
     if (mode === "text_to_3d" && values.should_texture) {
       emit({ type: "step", line: "Texturing (refine pass)" });
-      const refineId = await createTask("text-to-3d", {
-        mode: "refine",
-        preview_task_id: taskId,
-        ai_model: values.ai_model,
-        texture_resolution: values.texture_resolution,
-        enable_pbr: Boolean(values.enable_pbr),
-        ...(values.texture_prompt ? { texture_prompt: values.texture_prompt.slice(0, 600) } : {}),
-        target_formats: values.target_formats,
-      });
-      task = await waitForTask("text-to-3d", refineId, {
-        signal,
-        onUpdate: (update) =>
-          emit({
-            type: "progress",
-            percent: Number(update.progress ?? 0),
-            status: update.status,
-            line: `refine ${update.status} ${update.progress ?? 0}%`,
-          }),
-      });
-      consumed += Number(task?.consumed_credits || 0);
+      const geometryTask = task;
+      try {
+        const refineId = await createTask("text-to-3d", {
+          mode: "refine",
+          preview_task_id: taskId,
+          ai_model: values.ai_model,
+          texture_resolution: values.texture_resolution,
+          enable_pbr: Boolean(values.enable_pbr),
+          ...(values.texture_prompt
+            ? { texture_prompt: values.texture_prompt.slice(0, 600) }
+            : {}),
+          target_formats: values.target_formats,
+        });
+        job.textureTaskId = refineId;
+        await saveJob(job);
+        task = await waitForTask("text-to-3d", refineId, {
+          signal,
+          onUpdate: (update) =>
+            emit({
+              type: "progress",
+              percent: Number(update.progress ?? 0),
+              status: update.status,
+              line: `refine ${update.status} ${update.progress ?? 0}%`,
+            }),
+        });
+        consumed += Number(task?.consumed_credits || 0);
+        job.textureStatus = "succeeded";
+        job.textureWarning = null;
+      } catch (error) {
+        // Geometry already cost credits and succeeded. A transient refine
+        // failure must not throw that valuable mesh away or block review.
+        // Keep the preview output and let the dedicated Retexture action retry
+        // the texture without regenerating any geometry.
+        task = geometryTask;
+        job.textureStatus = "failed";
+        job.textureWarning = `Geometry succeeded, but the texture pass failed: ${error.message}. Use Retexture from review.`;
+        await saveJob(job);
+        emit({ type: "stderr", line: job.textureWarning });
+      }
     }
 
     // ── Optional resize to the crystal blank ────────────────────────────────
@@ -347,6 +366,12 @@ export async function runMeshyJob({ mode, photos = [], values = {}, signal, emit
       });
       consumed += Number(task?.consumed_credits || 0);
     }
+
+    // Retexture is a separate post-processing action in the review screen.
+    // Preserve the final geometry-producing task id so it can reuse this exact
+    // mesh even when refine or remesh followed the initial generation task.
+    job.outputMeshyTaskId = task.id || taskId;
+    await saveJob(job);
 
     // ── Bring the files home ────────────────────────────────────────────────
     const directory = jobDir(job.id);
