@@ -13,7 +13,7 @@
  * converter to look at an earlier result must not abandon it.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import ConverterClient from "@/components/ConverterClient";
 import EnvironmentsClient from "@/components/EnvironmentsClient";
@@ -25,11 +25,17 @@ import PhotoLibrary from "@/components/PhotoLibrary";
 import PipelineSidebar from "@/components/PipelineSidebar";
 import ReviewClient from "@/components/ReviewClient";
 import ThemeToggle from "@/components/ThemeToggle";
-import { NAV_ITEMS, meshyModeFor } from "@/lib/navigation";
+import {
+  NAV_ITEMS,
+  NAVIGATION_QUERY_PARAM,
+  meshyModeFor,
+  navIdForSlug,
+  navSlugFor,
+} from "@/lib/navigation";
 
-export default function AppShell({ converter, meshy, image, environments }) {
+export default function AppShell({ converter, meshy, image, environments, initialView }) {
   const { t } = useLanguage();
-  const [active, setActive] = useState("library");
+  const [active, setActive] = useState(initialView);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [imageState, setImageState] = useState(image);
@@ -48,11 +54,44 @@ export default function AppShell({ converter, meshy, image, environments }) {
   const current = NAV_ITEMS[active];
 
   /**
+   * Keep browser Back/Forward in sync and replace missing or legacy values
+   * with the canonical bookmarkable slug without adding a history entry.
+   */
+  useEffect(() => {
+    const syncFromUrl = () => {
+      const url = new URL(window.location.href);
+      const nextActive = navIdForSlug(url.searchParams.get(NAVIGATION_QUERY_PARAM));
+      const canonicalSlug = navSlugFor(nextActive);
+
+      if (url.searchParams.get(NAVIGATION_QUERY_PARAM) !== canonicalSlug) {
+        url.searchParams.set(NAVIGATION_QUERY_PARAM, canonicalSlug);
+        window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      }
+
+      setActive(nextActive);
+      setSidebarOpen(false);
+    };
+
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
+
+  /**
    * Move every pipeline navigation to the top of the shared document.
    * The panels deliberately share one page scroll position because long-running
    * jobs remain mounted, so changing the visible panel must reset it explicitly.
    */
   const selectView = useCallback((nextActive) => {
+    if (!NAV_ITEMS[nextActive]) return;
+
+    const url = new URL(window.location.href);
+    const nextSlug = navSlugFor(nextActive);
+    if (url.searchParams.get(NAVIGATION_QUERY_PARAM) !== nextSlug) {
+      url.searchParams.set(NAVIGATION_QUERY_PARAM, nextSlug);
+      window.history.pushState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+
     setActive(nextActive);
     setSidebarOpen(false);
 

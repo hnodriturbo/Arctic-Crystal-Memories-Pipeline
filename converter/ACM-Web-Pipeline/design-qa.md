@@ -1,5 +1,5 @@
 <!--
-File: converter/web-converter/design-qa.md
+File: converter/ACM-Web-Pipeline/design-qa.md
 Purpose:
  - Record visual QA evidence for production-facing pipeline interface changes.
 -->

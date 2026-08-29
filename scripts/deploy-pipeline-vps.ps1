@@ -150,7 +150,7 @@ link_shared_directory converter/meshy-pipeline/output "`$shared/workspaces/meshy
 link_shared_directory converter/pipeline-converter/.venv "`$shared/venvs/pipeline-converter"
 link_shared_directory converter/pipeline-converter/input "`$shared/workspaces/pipeline-converter/input"
 link_shared_directory converter/pipeline-converter/output "`$shared/workspaces/pipeline-converter/output"
-ln -s "`$shared/.env.production" "`$new_release/converter/web-converter/.env.production"
+ln -s "`$shared/.env.production" "`$new_release/converter/ACM-Web-Pipeline/.env.production"
 
 sync_environment() {
   local name="`$1"
@@ -191,7 +191,7 @@ U2NET_HOME="`$shared/models/rembg" \
 "`$shared/venvs/meshy-pipeline/bin/python" "`$new_release/converter/meshy-pipeline/code/healthcheck.py"
 "`$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
 
-cd "`$new_release/converter/web-converter"
+cd "`$new_release/converter/ACM-Web-Pipeline"
 npm ci --no-audit --no-fund
 npm run db:generate
 node --input-type=module -e 'import argon2 from "argon2"; const hash = await argon2.hash("runtime-probe"); if (!await argon2.verify(hash, "runtime-probe")) process.exit(1)'

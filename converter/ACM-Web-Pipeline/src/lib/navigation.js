@@ -125,6 +125,45 @@ export const NAV_ITEMS = Object.fromEntries(
   SECTIONS.flatMap((section) => section.items.map((item) => [item.id, { ...item, section }])),
 );
 
+/**
+ * URL state stays separate from internal component ids. The public slugs are
+ * readable, stable and safe to bookmark, while internal ids can keep the
+ * punctuation used by Meshy mode selection.
+ */
+export const DEFAULT_NAV_ID = "library";
+export const NAVIGATION_QUERY_PARAM = "view";
+
+const NAV_SLUGS = {
+  library: "inputs-library",
+  image: "prepare-images",
+  "meshy:image_to_3d": "meshy-image-to-3d",
+  "meshy:multi_image_to_3d": "meshy-multi-image-to-3d",
+  "meshy:text_to_3d": "meshy-text-to-3d",
+  "meshy:text_to_image": "meshy-text-to-image",
+  "meshy:image_to_image": "meshy-image-to-image",
+  review: "meshy-review",
+  converter: "convert-export",
+  environments: "python-environments",
+};
+
+const NAV_IDS_BY_SLUG = Object.fromEntries(
+  Object.entries(NAV_SLUGS).map(([navId, slug]) => [slug, navId]),
+);
+
+/** Return the canonical public URL slug for an internal navigation id. */
+export function navSlugFor(navId) {
+  return NAV_SLUGS[navId] || NAV_SLUGS[DEFAULT_NAV_ID];
+}
+
+/**
+ * Resolve a public slug safely. Existing internal ids remain accepted as
+ * temporary backwards-compatible links, but the shell canonicalizes them.
+ */
+export function navIdForSlug(slug) {
+  if (typeof slug !== "string") return DEFAULT_NAV_ID;
+  return NAV_IDS_BY_SLUG[slug] || (NAV_ITEMS[slug] ? slug : DEFAULT_NAV_ID);
+}
+
 /** The Meshy mode behind a nav id, or null for the local views. */
 export function meshyModeFor(navId) {
   return navId.startsWith("meshy:") ? navId.slice("meshy:".length) : null;

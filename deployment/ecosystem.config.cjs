@@ -6,7 +6,7 @@
  */
 
 const deploymentRoot = "/home/hreidar/apps/acm-pipeline";
-const applicationRoot = `${deploymentRoot}/current/converter/web-converter`;
+const applicationRoot = `${deploymentRoot}/current/converter/ACM-Web-Pipeline`;
 
 module.exports = {
   apps: [

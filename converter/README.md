@@ -15,7 +15,7 @@ converter/
 ├── image-pipeline/       Python CLI - clean a photograph
 ├── meshy-pipeline/       Workspace - photograph to 3D model, via the Meshy API
 ├── pipeline-converter/   Python CLI - 3D model to printable point cloud
-└── web-converter/        Next.js 16 UI that drives all three
+└── ACM-Web-Pipeline/     Next.js 16 UI that drives all three
 ```
 
 ```txt
@@ -51,7 +51,7 @@ dot spacing and no crystal fit, which is why `mesh_to_pointcloud.py` exists.
 ## Quick start
 
 ```powershell
-cd web-converter
+cd ACM-Web-Pipeline
 npm run dev        # http://localhost:3000
 ```
 
@@ -63,7 +63,7 @@ cd pipeline-converter
     --file "input\your-model.obj" --template 60x80x40 --points 750000 --upright y
 ```
 
-Each pipeline has its own venv and its own README. `web-converter/.env.example`
+Each pipeline has its own venv and its own README. `ACM-Web-Pipeline/.env.example`
 lists every setting; `DEPLOY-VPS.md` covers the server.
 
 ## 2.5D or full 3D

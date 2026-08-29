@@ -13,7 +13,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$sourceEnvironment = Join-Path $projectRoot "converter\web-converter\.env.production"
+$sourceEnvironment = Join-Path $projectRoot "converter\ACM-Web-Pipeline\.env.production"
 $transferId = [guid]::NewGuid().ToString("N")
 $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
 $localCredentials = Join-Path $temporaryRoot "acm-pipeline-r2-$transferId.env"
