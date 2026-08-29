@@ -1,7 +1,7 @@
 <#
 File: scripts/deploy-pipeline-vps.ps1
 Purpose:
- - Deploy the reviewed local ACM Pipeline source directly to the VPS.
+ - Deploy the reviewed ACM Pipeline master commit directly to the VPS.
  - Keep secrets, workspaces, models and three Python 3.11 environments shared.
  - Activate an immutable release atomically and retain current plus two rollbacks.
 #>
@@ -9,13 +9,15 @@ Purpose:
 [CmdletBinding()]
 param(
   [string]$SshHost = "acm-vps",
-  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline",
-  [string[]]$AdditionalArchiveExcludes = @()
+  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline"
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$releaseId = "{0}-local-{1}" -f ([DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")), ([guid]::NewGuid().ToString("N").Substring(0, 8))
+$gitBranch = (& git -C $projectRoot branch --show-current).Trim()
+$gitCommit = (& git -C $projectRoot rev-parse --short=8 HEAD).Trim()
+$gitStatus = @(& git -C $projectRoot status --porcelain)
+$releaseId = "{0}-master-{1}" -f ([DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")), $gitCommit
 $archivePath = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-$releaseId.tar.gz"
 $remoteUpload = "$RemoteRoot/shared/deploy/$releaseId.tar.gz"
 
@@ -28,26 +30,49 @@ function Invoke-CheckedCommand {
 function Invoke-RemoteScript {
   param([string]$HostName, [string]$Script)
   $temporaryScript = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).sh"
-  [System.IO.File]::WriteAllText($temporaryScript, $Script, [System.Text.UTF8Encoding]::new($false))
+  $temporaryOutput = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).out"
+  $temporaryError = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).err"
+  # Bash receives the script over stdin. Normalize Windows CRLF first so
+  # options such as `pipefail` do not acquire a hidden carriage return.
+  $normalizedScript = $Script.Replace("`r`n", "`n").Replace("`r", "`n")
+  [System.IO.File]::WriteAllText($temporaryScript, $normalizedScript, [System.Text.UTF8Encoding]::new($false))
   try {
     $process = Start-Process -FilePath (Get-Command ssh).Source `
       -ArgumentList @($HostName, "bash -s") `
       -RedirectStandardInput $temporaryScript `
+      -RedirectStandardOutput $temporaryOutput `
+      -RedirectStandardError $temporaryError `
       -WindowStyle Hidden `
       -Wait `
       -PassThru
-    if ($process.ExitCode -ne 0) { throw "Remote release failed with exit code $($process.ExitCode)." }
+
+    $standardOutput = if (Test-Path -LiteralPath $temporaryOutput) {
+      Get-Content -Raw -LiteralPath $temporaryOutput
+    } else { "" }
+    $standardError = if (Test-Path -LiteralPath $temporaryError) {
+      Get-Content -Raw -LiteralPath $temporaryError
+    } else { "" }
+    if ($standardOutput) { Write-Host $standardOutput.TrimEnd() }
+    if ($process.ExitCode -ne 0) {
+      $detail = if ($standardError) { $standardError.Trim() } else { "No remote error output was captured." }
+      throw "Remote release failed with exit code $($process.ExitCode): $detail"
+    }
   } finally {
-    $resolvedTemporary = [System.IO.Path]::GetFullPath($temporaryScript)
     $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
-    if ($resolvedTemporary.StartsWith($temporaryRoot) -and (Split-Path $resolvedTemporary -Leaf) -like "acm-pipeline-release-*.sh") {
-      Remove-Item -LiteralPath $resolvedTemporary -Force
+    foreach ($temporaryFile in @($temporaryScript, $temporaryOutput, $temporaryError)) {
+      $resolvedTemporary = [System.IO.Path]::GetFullPath($temporaryFile)
+      $leaf = Split-Path $resolvedTemporary -Leaf
+      if ($resolvedTemporary.StartsWith($temporaryRoot) -and $leaf -like "acm-pipeline-release-*.*" -and (Test-Path -LiteralPath $resolvedTemporary)) {
+        Remove-Item -LiteralPath $resolvedTemporary -Force
+      }
     }
   }
 }
 
 if ($SshHost -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid SSH host alias." }
 if ($RemoteRoot -ne "/home/hreidar/apps/acm-pipeline") { throw "RemoteRoot must be the isolated ACM Pipeline root." }
+if ($gitBranch -ne "master") { throw "Production deploys must run from master, not '$gitBranch'." }
+if ($gitStatus.Count -gt 0) { throw "Commit or restore local source changes before deploying master." }
 
 foreach ($entry in @("converter", "deployment")) {
   if (-not (Test-Path -LiteralPath (Join-Path $projectRoot $entry))) {
@@ -55,41 +80,9 @@ foreach ($entry in @("converter", "deployment")) {
   }
 }
 
-$archiveExcludes = @(
-  "--exclude=converter/web-converter/.env",
-  "--exclude=converter/web-converter/.env.development",
-  "--exclude=converter/web-converter/.env.local",
-  "--exclude=converter/web-converter/.env.production",
-  "--exclude=**/.venv",
-  "--exclude=**/node_modules",
-  "--exclude=**/.next",
-  "--exclude=**/__pycache__",
-  "--exclude=**/*.pyc",
-  "--exclude=deployment/artifacts",
-  "--exclude=converter/image-pipeline/input/*",
-  "--exclude=converter/image-pipeline/output/*",
-  "--exclude=converter/image-pipeline/models/*",
-  "--exclude=converter/meshy-pipeline/input/*",
-  "--exclude=converter/meshy-pipeline/work/*",
-  "--exclude=converter/meshy-pipeline/output/*",
-  "--exclude=converter/pipeline-converter/input/*",
-  "--exclude=converter/pipeline-converter/output/*"
-)
-
-# A concurrent local feature may be unfinished while an unrelated reviewed
-# change is deployed. Extra exclusions are explicit, relative paths only; they
-# never alter or move the local work that is being skipped.
-foreach ($relativePath in $AdditionalArchiveExcludes) {
-  $normalized = ([string]$relativePath).Replace("\", "/").Trim("/")
-  if (-not $normalized -or $normalized.StartsWith(".") -or $normalized.Contains("..") -or $normalized -match '[:*?]') {
-    throw "Unsafe additional archive exclusion: $relativePath"
-  }
-  $archiveExcludes += "--exclude=$normalized"
-}
-
 try {
-  Write-Host "Creating secret-free local release $releaseId."
-  Invoke-CheckedCommand "tar" (@("-czf", $archivePath, "-C", $projectRoot) + $archiveExcludes + @("converter", "deployment"))
+  Write-Host "Creating release $releaseId from committed master source."
+  Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$archivePath", "HEAD", "converter", "deployment")
 
   $archiveListing = & tar -tzf $archivePath
   if ($LASTEXITCODE -ne 0) { throw "Could not inspect the deployment archive." }
@@ -257,7 +250,7 @@ printf 'PIPELINE_HEALTHCHECK_OK\n'
 } finally {
   $resolvedArchive = [System.IO.Path]::GetFullPath($archivePath)
   $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
-  if ($resolvedArchive.StartsWith($temporaryRoot) -and (Split-Path $resolvedArchive -Leaf) -like "acm-pipeline-*-local-*.tar.gz" -and (Test-Path -LiteralPath $resolvedArchive)) {
+  if ($resolvedArchive.StartsWith($temporaryRoot) -and (Split-Path $resolvedArchive -Leaf) -like "acm-pipeline-*-master-*.tar.gz" -and (Test-Path -LiteralPath $resolvedArchive)) {
     Remove-Item -LiteralPath $resolvedArchive -Force
   }
 }
