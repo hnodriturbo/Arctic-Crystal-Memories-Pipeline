@@ -179,7 +179,7 @@ deleting the only copy of something is not a cleanup.
 
 ## Where the preview lives
 
-`web-converter/src/components/CrystalPreview.jsx` renders the GLB inside a real
+`ACM-Web-Pipeline/src/components/CrystalPreview.jsx` renders the GLB inside a real
 blank with three.js — `MeshPhysicalMaterial`, `transmission: 1`, `ior: 1.5168`,
 `dispersion`. It reads GLB, point-cloud DXF and plain photographs, and it is
 the prototype for the customer-facing viewer on acm.is. See
