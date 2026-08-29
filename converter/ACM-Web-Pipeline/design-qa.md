@@ -1,5 +1,5 @@
 <!--
-File: converter/web-converter/design-qa.md
+File: converter/ACM-Web-Pipeline/design-qa.md
 Purpose:
  - Record visual QA evidence for production-facing pipeline interface changes.
 -->
@@ -18,7 +18,7 @@ Purpose:
 
 ## Crystal workflow — 2026-08-29
 
-- Scope: `Leið A → 2.5D → Leið B` in the local web-converter.
+- Scope: `Leið A → 2.5D → Leið B` in the local ACM-Web-Pipeline.
 - Model A desktop uses two columns and keeps the composer within the shared content width; tablet and mobile collapse to one column without horizontal overflow.
 - Rectangle Mini Presidential uses the approved bevel scale and authoritative `10×10×4 mm` border.
 - All 27 local 2D Cockpit templates and six crystal families are available.

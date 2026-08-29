@@ -4,7 +4,7 @@ Purpose:
  - How the converter UI is wired and where to change things.
 -->
 
-# web-converter
+# ACM-Web-Pipeline
 
 Next.js 16 operator front end for the image, Meshy, 2.5D and point-cloud
 pipelines. It uploads files, streams Python output live, keeps each long-running
@@ -13,6 +13,14 @@ panel mounted, and carries results between stages without another upload.
 ```powershell
 npm run dev     # http://localhost:3100
 ```
+
+## Bookmarkable navigation
+
+The selected workspace is canonical URL state, for example
+`?view=meshy-review` or `?view=convert-export`. Refresh preserves the active
+workspace, browser Back/Forward moves between selections, and unknown values
+fall back safely to `?view=inputs-library`. Internal component ids are mapped
+to stable public slugs in `src/lib/navigation.js`.
 
 ## Configuration
 

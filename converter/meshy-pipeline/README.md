@@ -8,7 +8,7 @@ Purpose:
 
 The workspace for the middle stage — photographs in, 3D models out, via
 [Meshy](https://www.meshy.ai). The production API client lives in
-`../web-converter/src/lib/meshy/`; this folder is its persistent workspace and
+`../ACM-Web-Pipeline/src/lib/meshy/`; this folder is its persistent workspace and
 owns a small, isolated Python 3.11 diagnostics environment.
 
 ```txt
@@ -83,7 +83,7 @@ only makes the downloaded file itself measure correctly in Blender or a slicer.
 ## Webhooks
 
 `https://pipeline.acm.is/webhooks/meshy` receives task-status callbacks, handled
-by `../web-converter/src/app/webhooks/meshy/route.js`. Nothing depends on it —
+by `../ACM-Web-Pipeline/src/app/webhooks/meshy/route.js`. Nothing depends on it —
 the runner polls — but it lets a job whose browser tab was closed still finish
 its manifest correctly.
 

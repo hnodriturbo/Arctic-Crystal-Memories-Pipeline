@@ -12,7 +12,7 @@ The deployable unit is the complete `converter/` tree:
 2. `meshy-pipeline` owns direct Meshy uploads, job work and diagnostics.
 3. `pipeline-converter` turns Meshy or uploaded models into OBJ, DXF and the
    point-cloud formats used by the engraving workflow.
-4. `web-converter` is the authenticated Next.js operator interface joining the
+4. `ACM-Web-Pipeline` is the authenticated Next.js operator interface joining the
    three pipelines together.
 
 ## Python policy
@@ -66,7 +66,7 @@ three releases: current plus two rollback candidates.
 ## Production checks
 
 ```bash
-cd /home/hreidar/apps/acm-pipeline/current/converter/web-converter
+cd /home/hreidar/apps/acm-pipeline/current/converter/ACM-Web-Pipeline
 npm run db:status
 pm2 status acm-pipeline
 curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3003/login

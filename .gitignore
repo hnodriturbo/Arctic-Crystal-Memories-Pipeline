@@ -112,7 +112,7 @@ eggs/
 .eggs/
 # Virtual-environment libraries already live below ignored .venv/ or venv/
 # directories. Do not ignore a generic lib/ name here: the Next.js app keeps
-# required runtime source in converter/web-converter/src/lib/.
+# required runtime source in converter/ACM-Web-Pipeline/src/lib/.
 parts/
 sdist/
 var/

@@ -26,8 +26,8 @@ case "$staging" in "$parent"/.acm-pipeline-next-*) ;; *) echo "Unsafe staging pa
 case "$legacy" in "$parent"/.acm-pipeline-legacy-*) ;; *) echo "Unsafe legacy path." >&2; exit 1 ;; esac
 
 test -f "$archive"
-test -d "$root/converter/web-converter"
-test -f "$root/converter/web-converter/.env.production"
+test -d "$root/converter/ACM-Web-Pipeline"
+test -f "$root/converter/ACM-Web-Pipeline/.env.production"
 test ! -e "$root/current"
 test ! -e "$staging"
 test ! -e "$legacy"
@@ -61,7 +61,7 @@ mkdir -p \
   "$shared/workspaces/pipeline-converter/output"
 
 tar -xzf "$archive" -C "$release"
-cp -p "$root/converter/web-converter/.env.production" "$shared/.env.production"
+cp -p "$root/converter/ACM-Web-Pipeline/.env.production" "$shared/.env.production"
 chmod 600 "$shared/.env.production"
 
 copy_workspace() {
@@ -157,7 +157,7 @@ link_shared converter/meshy-pipeline/output ../../../../shared/workspaces/meshy-
 link_shared converter/pipeline-converter/.venv ../../../../shared/venvs/pipeline-converter
 link_shared converter/pipeline-converter/input ../../../../shared/workspaces/pipeline-converter/input
 link_shared converter/pipeline-converter/output ../../../../shared/workspaces/pipeline-converter/output
-ln -s ../../../../shared/.env.production "$release/converter/web-converter/.env.production"
+ln -s ../../../../shared/.env.production "$release/converter/ACM-Web-Pipeline/.env.production"
 ln -s "releases/$release_id" "$staging/current"
 
 U2NET_HOME="$shared/models/rembg" \
@@ -166,7 +166,7 @@ U2NET_HOME="$shared/models/rembg" \
 "$shared/venvs/meshy-pipeline/bin/python" "$release/converter/meshy-pipeline/code/healthcheck.py"
 "$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
 
-cd "$release/converter/web-converter"
+cd "$release/converter/ACM-Web-Pipeline"
 npm ci --no-audit --no-fund
 npm run db:generate
 node --input-type=module -e \

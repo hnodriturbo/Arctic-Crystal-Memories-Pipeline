@@ -149,11 +149,11 @@ Marigold and writes a 16-bit depth PNG. `depth_to_mesh.py` turns that into a
 relief mesh, exported as **both** GLB (browser) and OBJ (sampler) from one
 geometry. Python 3.11, own venv, own model cache.
 
-**`web-converter/src/components/CrystalPreview.jsx`** — three.js viewer that
+**`ACM-Web-Pipeline/src/components/CrystalPreview.jsx`** — three.js viewer that
 renders a GLB, a point-cloud DXF, or a plain photograph inside a real K9 blank,
 with `MeshPhysicalMaterial` transmission, `ior: 1.5168` and dispersion.
 
-**`web-converter`** — new sidebar step 3 with two tabs: *Build a relief* and
+**`ACM-Web-Pipeline`** — new sidebar step 3 with two tabs: *Build a relief* and
 *Crystal viewer*. Sources come from direct upload, the image pipeline handoff,
 or the durable R2 photo library. Finished reliefs hand their OBJ straight to the
 converter with the blank already selected.
@@ -258,10 +258,10 @@ this part is the contract.
 ```txt
 converter/
 ├── image-pipeline/       Python 3.11 · photo clean-up (rembg, GFPGAN, Real-ESRGAN)
-├── meshy-pipeline/       workspace · full 3D via the Meshy API (Node client lives in web-converter)
+├── meshy-pipeline/       workspace · full 3D via the Meshy API (Node client lives in ACM-Web-Pipeline)
 ├── 2.5D-pipeline/        Python 3.11 · photo → depth → relief mesh          ← newest
 ├── pipeline-converter/   Python 3.11 · mesh → POINT-cloud DXF for the SSLE engraver
-└── web-converter/        Next.js 16 · drives all four
+└── ACM-Web-Pipeline/     Next.js 16 · drives all four
 ```
 
 Each Python pipeline has **its own venv and its own `requirements.txt`**. They
@@ -297,10 +297,10 @@ torch for transformers.
 | Depth estimation | `2.5D-pipeline/code/depth_map.py` — the only file with a model in it |
 | Relief geometry | `2.5D-pipeline/code/depth_to_mesh.py` |
 | Blank dimensions, fit, dot spacing | `pipeline-converter/code/utils/printer_dxf.py` |
-| Form fields + argv | `web-converter/src/lib/relief/catalog.js` — a new flag is added here and nowhere else |
-| Job orchestration, R2, pruning | `web-converter/src/lib/relief/{chain,library,state}.js` |
-| Glass rendering | `web-converter/src/components/CrystalPreview.jsx` |
-| Pipeline roots and venvs | `web-converter/src/lib/paths.js` |
+| Form fields + argv | `ACM-Web-Pipeline/src/lib/relief/catalog.js` — a new flag is added here and nowhere else |
+| Job orchestration, R2, pruning | `ACM-Web-Pipeline/src/lib/relief/{chain,library,state}.js` |
+| Glass rendering | `ACM-Web-Pipeline/src/components/CrystalPreview.jsx` |
+| Pipeline roots and venvs | `ACM-Web-Pipeline/src/lib/paths.js` |
 
 ## Commands
 
@@ -310,7 +310,7 @@ python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python code/download_models.py --model large
 .venv/bin/python code/healthcheck.py          # JSON; non-zero exit means unusable
 
-# web-converter
+# ACM-Web-Pipeline
 npm run dev
 npx eslint src/...          # required before finishing
 npm run build               # required before finishing
