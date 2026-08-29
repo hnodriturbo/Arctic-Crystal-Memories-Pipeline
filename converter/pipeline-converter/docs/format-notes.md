@@ -102,6 +102,20 @@ CockpitScene.xml     plain UTF-8 XML, fully readable
 element naming the crystal blank and its borders. `SolidEntity` references its
 mesh by `Geometry="<name>.ci"` and its texture by `Texture="<name>.jpg"`.
 
+### Direct sample verification (2026-08-29)
+
+All nine locally owned scenes under `ACM-Company/3d_files` were checked
+read-only. Each contains exactly one `.ci` mesh and one `SolidEntity` named
+`Conversion`. Header counts range from 209,879–441,721 vertices and
+418,134–881,089 triangles. Entity position, Euler rotation and per-axis scale
+are stored in XML separately from geometry.
+
+The scene's `PointCloudBuilderSettings` is also separate from `Conversion`.
+Observed examples use XY/Z distances of `0.07/0.07` or `0.08/0.1` and toning
+`1.8`. This is evidence that the imported conversion is a fitted textured mesh
+and that point-cloud creation happens later; it is not evidence about the
+private model or algorithm that generated the mesh.
+
 ### The `.ci` geometry container
 
 24-byte header, then two blocks:

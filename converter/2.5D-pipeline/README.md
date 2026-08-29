@@ -18,6 +18,11 @@ photograph          relief mesh       point cloud the engraver reads
                     the alternative to meshy-pipeline, not a step after it
 ```
 
+The **2.5D pipeline's acceptance boundary is the approved relief mesh**
+(`relief.glb` / equivalent `relief.obj`). The point-cloud stage is a downstream
+handoff to `pipeline-converter`; successful sampling does not prove that face
+likeness, depth ordering or silhouette geometry is correct.
+
 ## Why this exists alongside Meshy
 
 Meshy solves a **full 3D subject** — a bust with a back and sides that exist. It
@@ -80,13 +85,13 @@ python code/depth_map.py \
     --input input/portrait-cutout.png --output output/depth.png \
     --engine depth-anything --model large --resolution 1024 --mask-from-alpha
 
-# 2. mesh — GLB for the browser, OBJ for the sampler, same geometry
+# 2. canonical mesh — equivalent GLB and OBJ, then inspect and approve
 python code/depth_to_mesh.py \
     --depth output/depth.png --photo input/portrait-cutout.png \
     --output output/relief.glb --obj output/relief.obj \
     --template 60x80x40 --relief-depth 16 --grid 512
 
-# 3. dots — the existing converter, unchanged
+# 3. downstream only after mesh approval — the existing converter
 python ../pipeline-converter/code/mesh_to_pointcloud.py \
     --file output/relief.obj --texture input/portrait-cutout.png \
     --template 60x80x40 --upright y --toning 1.8 --layers 8 --stagger 2
@@ -96,10 +101,10 @@ Or drive all of it from the web UI: **2.5D pipeline → Build a relief**.
 
 ## The rule that matters most
 
-`depth_to_mesh.py` writes the GLB and the OBJ from **one mesh**. The GLB is
-what the customer rotates; the OBJ is what becomes laser dots. If those ever
-come from different geometry the preview stops being a promise about the
-product, which is the only reason the preview exists.
+`depth_to_mesh.py` writes the GLB and the OBJ from **one mesh**. The GLB is the
+staging/approval artifact and the OBJ is the standard interchange copy consumed
+later by the sampler. If those ever diverge there is no trustworthy approval,
+so the geometry is built once and both writers receive the same arrays.
 
 ## Choosing an engine
 

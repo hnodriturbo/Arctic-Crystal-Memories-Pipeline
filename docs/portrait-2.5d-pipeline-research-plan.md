@@ -1,8 +1,8 @@
 <!--
 File: docs/portrait-2.5d-pipeline-research-plan.md
 Purpose:
- - Define the research and implementation path for a production-quality,
-   print-ready adaptive 2.5D pipeline between Model A and Model B.
+ - Define the research and implementation path for a production-quality
+   adaptive 2.5D mesh pipeline between Model A and Model B.
  - Give the owner and future agents one evidence-backed plan for model access,
    licensing, evaluation, geometry, cost and staged delivery.
 -->
@@ -27,18 +27,35 @@ Model A: crop and compose the source photograph
 adaptive 2.5D conversion
     ↓
 canonical relief geometry
-    ├── GLB → Model B / three.js customer preview
-    └── OBJ → point-cloud converter → DXF → engraving
+    ├── GLB → Model B / three.js staging and approval
+    └── OBJ → interoperable canonical mesh export
+
+approved canonical relief (downstream handoff, outside this pipeline's gate)
+    └── pipeline-converter → point cloud / DXF / manufacturing
 ```
 
 The pipeline must retain the visible likeness of real people, handle useful
 non-human photographs, fit actual Cockpit3D blank metadata and create a
-manufacturable front relief. GLB and OBJ must always come from the same
-canonical surface.
+dimensionally valid front relief. GLB and OBJ must always come from the same
+canonical surface. The final product of this project is that approved surface,
+not a depth image, point cloud, DXF file or engraved crystal.
 
 This is not a generic full-3D generator. A single photograph does not contain
 the hidden back of a person. The target is a faithful, high-quality 2.5D front
 surface, not an invented 360-degree human.
+
+### 1.1 Independent-development and interoperability boundary
+
+The goal is to reproduce the **capability and quality level** of a strong
+Cockpit3D conversion through ACM's own research, models, data and code. It is
+not to obtain, copy, decode or recreate Cockpit3D's private model, weights,
+source code or trade-secret conversion algorithm.
+
+Locally owned `.cockpit` scenes may be inspected read-only to understand the
+artifact contract needed for interoperability: archive structure, mesh type,
+units, transforms, blank metadata and the separation between conversion and
+point-cloud generation. Those observations may define ACM inputs and outputs;
+they must not be used to reproduce proprietary implementation details.
 
 ## 2. Honest meaning of “works for any image”
 
@@ -68,14 +85,18 @@ These rules are not experiment variables:
 4. `bright = near` is the canonical 16-bit depth convention.
 5. X = width, Y = height and Z = depth; units are millimetres after fitting.
 6. Per-axis Cockpit3D `SIZE`, `BORDER` and `BEVEL` are authoritative.
-7. One canonical mesh creates both GLB and engraving OBJ.
-8. Point-cloud density is 250,000–1,000,000 points according to physical blank
-   size and detail bandwidth, not one fixed count.
-9. Model B preview dot size defaults to and remains `0.08`.
+7. One canonical 2.5D surface creates equivalent GLB and OBJ artifacts.
+8. The accepted GLB/OBJ must be loadable, fit-able and visually reviewable in
+   Model B or a Cockpit-style staging application before downstream conversion.
+9. Point-cloud density and preview-dot settings are downstream
+   `pipeline-converter` concerns; they cannot make a failed relief pass.
 10. Every artifact records model id, weight revision, licence id, parameters,
     timing and hashes so a result can be reproduced.
-11. A good-looking depth PNG is not acceptance evidence; the engraved crystal
-    is the final quality gate.
+11. A good-looking depth PNG is not acceptance evidence. The final quality
+    gate is an approved, reproducible canonical 2.5D mesh (GLB/OBJ) whose
+    likeness, silhouette, depth ordering, normals, topology, scale and
+    crystal-safe fit pass automated checks and Model B/Cockpit-style visual
+    review. Point-cloud generation and engraving happen only after this gate.
 
 ## 4. Current baseline and known defects
 
@@ -91,7 +112,8 @@ These rules are not experiment variables:
 - The same geometry exports GLB and OBJ.
 - DXF parsing is gated to `ENTITIES`, removing the false HEADER points from
   `$EXTMIN` and `$EXTMAX`.
-- The tested converter produced 101,248 centred engraving points.
+- The downstream converter produced 101,248 centred points in a prior test;
+  this verifies handoff capability but is not 2.5D acceptance evidence.
 - Real Cockpit3D borders and bevels are available. Rectangular blanks are
   correctly generated as bevelled boxes because they have no OBJ.
 - BiRefNet portrait alpha is already available upstream.
@@ -138,10 +160,14 @@ inward silhouette roll-off + relief dynamic-range compression
 fit Cockpit3D safe volume + mesh validation
     ↓
 canonical mesh
-    ├── GLB preview
-    ├── OBJ sampler input
-    ├── 250k–1M point cloud / DXF
+    ├── GLB staging/approval artifact
+    ├── equivalent OBJ interchange artifact
     └── diagnostics + manifest + quality decision
+
+accepted mesh only
+    ↓
+downstream pipeline-converter (separate concern)
+    └── point cloud / DXF / manufacturing profiles
 ```
 
 ## 6. Canonical job and artifact contract
@@ -169,8 +195,8 @@ jobs/<job-id>/
   geometry/silhouette-distance.exr
   output/relief.glb
   output/relief.obj
-  output/engraving.dxf
   output/diagnostics/
+  handoff/canonical-relief.json
   job.json
 ```
 
@@ -190,14 +216,42 @@ Minimum `job.json` content:
   "subjects": [],
   "models": [],
   "reliefProfile": {},
-  "pointProfile": {"targetCount": 500000, "dotSize": 0.08},
   "quality": {"state": "manual-review", "reasons": []},
+  "approval": {"state": "pending", "reviewer": null, "artifactSha256": null},
   "artifacts": []
 }
 ```
 
 Each `models[]` record stores repository, exact weight revision/hash, code
 revision, environment version, licence classification and GPU/CPU time.
+
+### 6.1 Verified Cockpit interoperability evidence
+
+Read-only inspection on 2026-08-29 covered all nine locally owned `.cockpit`
+scenes under `ACM-Company/3d_files` (five are also mirrored in the ignored
+pipeline input folder). Verified observations:
+
+- every file is a ZIP scene container with readable `CockpitScene.xml`;
+- every inspected scene contains exactly one `SolidEntity` named `Conversion`;
+- that entity references exactly one texture and one `.ci` triangle mesh;
+- the nine conversion meshes contain 209,879–441,721 vertices and
+  418,134–881,089 triangles;
+- scene XML stores position, Euler rotation and per-axis scale separately from
+  the geometry;
+- template name, dimensions, per-axis borders and bevel are scene metadata;
+- `PointCloudBuilderSettings` is a separate block with XY/Z distance, trim,
+  stabilizer, toning and optimisation settings.
+
+This confirms the working artifact boundary: the network conversion arrives as
+a textured, fitted triangle mesh; point-cloud generation is a later Cockpit3D
+operation. It does **not** prove how their conversion model works.
+
+The `.ci` header exposes mesh counts, but its geometry payload is transformed.
+ACM will not author `.cockpit` or `.ci`, decode the private transform, inspect
+executable internals or copy proprietary assets. Interoperability work targets
+standard GLB/OBJ plus an ACM manifest containing units, axes, transforms and
+blank-fit data. See `converter/pipeline-converter/docs/format-notes.md` for the
+bounded container observations.
 
 ## 7. Stage 0 — intake, quality and provenance
 
@@ -224,8 +278,8 @@ Measure before expensive inference:
 - subject count and overlap graph;
 - conflict between Model A crop and blank safe area.
 
-Initial thresholds must be conservative and calibrated on engravings. Store raw
-measurements separately from acceptance thresholds.
+Initial thresholds must be conservative and calibrated on approved canonical
+reliefs. Store raw measurements separately from acceptance thresholds.
 
 ### 7.3 Privacy and safety
 
@@ -450,13 +504,13 @@ Requirements:
 - use wider/softer hair taper and narrower solid-clothing taper;
 - cap edge slope and derivative changes;
 - retain person/person and person/object contact discontinuities;
-- never add a vertical skirt to engraving OBJ;
+- never add a vertical skirt to the canonical relief OBJ;
 - add backing only to a separate 3D-print export.
 
 This directly fixes the supplied “cardboard cut-out” side wall and must precede
 model purchases.
 
-## 15. Stage 8 — physical blank, relief and point calibration
+## 15. Stage 8 — canonical relief fitting and approval
 
 ### 15.1 Real blank fitting
 
@@ -472,20 +526,34 @@ Start portrait benchmarks at 8–16 mm total relief. Use a monotonic piecewise
 curve: preserve ordering, allocate extra face/contact range, compress large
 scene gaps, preserve minimum visible differences, limit slope/feature width.
 
-### 15.3 Point-cloud profile
+### 15.3 Canonical mesh quality gate
 
-| Setting | Meaning | Behaviour |
-|---|---|---|
-| target points | total samples | 250k–1M by usable area and detail class |
-| point distance | XY separation | physical blank/laser calibration; override allowed |
-| layer distance | Z separation | physical mm constrained by laser/optics |
-| layers | depth layers | benchmark current 8, then calibrate |
-| stagger | row/layer offset | preserve option; benchmark `2` |
-| toning | density/intensity transfer | preserve and calibrate by material/photo route |
-| dot size | Model B preview | default always `0.08` |
+Export GLB and OBJ from one canonical surface and verify that both preserve:
 
-One million points cannot recover missing geometry. Count must follow physical
-feature bandwidth, not input pixel count alone.
+- the same vertex-space relief, units, axis convention and blank-safe bounds;
+- stable silhouette and inward taper from front and oblique views;
+- correct person/person and person/object depth order;
+- face, hands, hair and clothing detail without invented anatomy;
+- valid indices, finite coordinates, normals and usable topology;
+- reproducible hashes, model revisions and fitting parameters.
+
+The operator then loads the GLB in Model B or a Cockpit-style staging view,
+fits/rotates/scales it as allowed by the artifact contract, and records an
+explicit approval against that exact artifact hash. This approval is the final
+quality gate for the 2.5D pipeline.
+
+### 15.4 Downstream handoff to `pipeline-converter` — out of gate
+
+Only an approved canonical mesh may enter the existing point-cloud converter.
+The downstream profile may retain target count (250k–1M), XY point distance, Z
+layer distance, layers, stagger, toning and Model B dot size `0.08`. Those
+settings control sampling and manufacturing; they cannot repair or approve
+incorrect 2.5D geometry. One million points cannot recover a missing nose,
+wrong limb ordering or a cardboard silhouette.
+
+Point-cloud/DXF/laser testing remains valuable as integration and manufacturing
+calibration, but it is not a blocker for declaring the canonical relief model
+correct.
 
 ## 16. Model acquisition and isolated environments
 
@@ -654,7 +722,107 @@ the current Python 3.11 venv.
 - Request free trial/POC and written quote.
 - Confirm server-side still processing, mesh derivation/export, privacy and
   intended volume. AR tracking alone is not a relief geometry contract.
-- Benchmark landmark fit and physical engraving, not marketing renders.
+- Benchmark landmark fit and canonical relief geometry, not marketing renders.
+
+### 16.5 Meshy full-3D comparison branch
+
+Meshy solves a different problem from ACM's canonical front relief, but it is a
+useful challenger for people, furniture and arbitrary objects and a useful
+source of difficult topology fixtures.
+
+Read-only R2 inventory on 2026-08-29 found four stored Meshy jobs: two
+image-to-3D and two text-to-3D. Their manifests requested triangle topology,
+`target_polycount: 300000`, `should_remesh: false` and pre-remeshed preservation.
+Header/accessor inspection of three GLBs found one mesh/primitive each, but
+about 1.49–1.57 million position vertices and 3.00–3.14 million triangles.
+Meshy's API contract explains why: for a standard model, `target_polycount`
+takes effect only when `should_remesh` is true; otherwise the high-detail source
+mesh is preserved. Therefore the UI/manifest must label inactive settings and
+actual exported geometry must always be measured.
+
+Full index-edge checks gave mixed topology results. The image-to-3D seated
+couple GLB had zero boundary edges, zero non-manifold edges and zero
+index-degenerate triangles, so it is topologically watertight. The two
+text-to-3D GLBs had 112/126 boundary edges and 2/4 non-manifold edges
+respectively. This proves that Meshy output can be watertight but is not
+guaranteed to be so for every ordinary generation.
+
+Watertightness is neither implied by `.glb`, `.obj` or `.stl` nor proven by the
+model rendering correctly. For each selected R2 fixture, the benchmark must
+download a private working copy and record:
+
+- connected components and loose/floating parts;
+- boundary edges, non-manifold edges and inconsistent winding;
+- degenerate/duplicate faces and vertices;
+- self-intersections, holes, negative volume and inverted components;
+- triangle/vertex count, dimensions, units, transforms and origin;
+- texture/UV/material dependencies;
+- safe fit, sampling time and point-cloud result in `pipeline-converter`.
+
+Meshy's current official workflow has separate **Analyze Printability** and
+**Repair Printability** operations, which confirms that ordinary generated
+output is not automatically guaranteed watertight. Auto Split produces sealed
+parts for printing, but a sealed printable model is still not automatically an
+acceptable laser/crystal relief: full rear/hidden surfaces, invented geometry,
+floating components and excessive triangle density may all be wrong for the
+ACM artifact contract.
+
+Decision rule: preserve Meshy as an optional full-3D route and benchmark source.
+Do not merge its geometry into the 2.5D production route unless it wins the
+same locked likeness, topology, scale, fit and operator-approval tests.
+
+### 16.6 Blender validation and later finishing module
+
+Blender is the planned standard inspection environment after a canonical mesh
+is generated. A future manually installed Blender MCP may expose bounded scene
+inspection and edit tools to Codex; no connector is assumed until its callable
+tools and permissions are verified.
+
+The learning and validation curriculum covers:
+
+1. GLB/glTF, OBJ/MTL, STL, FBX, USD/USDZ, 3MF, DXF, PLY and native `.blend`;
+2. object versus mesh data, collections, modifiers and dependency packing;
+3. metres versus millimetres, axes, origin, transforms and apply-transform;
+4. vertices/edges/faces, topology, components, winding and face orientation;
+5. normals, smoothing, custom normals, UVs, textures and PBR materials;
+6. manifold/watertight checks, holes, self-intersections and degenerate faces;
+7. remesh, decimation, limited dissolve and detail-preservation trade-offs;
+8. orthographic front/side/oblique diagnostics for 2.5D relief;
+9. crystal-safe bounding boxes, back plane, inward edge taper and GLB/OBJ export;
+10. deterministic scripts, reports and reversible before/after artifacts.
+
+Every generated 2.5D model may eventually receive a Blender validation report.
+Optional fine-detail repair is a later, explicit branch: preserve the original,
+save the repaired artifact separately, record operations and hashes, and require
+re-approval. Repeated manual fixes become labelled evidence for improving ACM's
+automatic model; Blender must not silently conceal systematic pipeline defects.
+
+Sketchfab is a publishing/hosting/viewer/marketplace platform, not a geometry
+generation or manufacturing validator. It may provide references and embedded
+viewing, but a good Sketchfab render is not watertightness, scale or relief
+acceptance evidence.
+
+#### Core 3D vocabulary for the training track
+
+| Term | Meaning in a mesh | Difference from a point cloud |
+|---|---|---|
+| vertex / vertices | indexed corner with XYZ and often normal, UV, colour or other attributes | a cloud point is normally independent and has no face connectivity |
+| edge | connection between two vertex indices | point clouds do not define edges |
+| triangle / face | surface element referencing three vertex indices | three nearby cloud points are not automatically a surface |
+| mesh | connected vertices, edges and faces forming a surface | a point cloud is a set of samples without surface topology |
+| topology | connectivity, components, holes and manifold structure | spatial appearance alone does not define connectivity |
+
+A GLB `POSITION` accessor count is the number of stored mesh vertices, not the
+number of laser dots and not always the number of unique XYZ locations. Exporters
+may duplicate a location at UV, normal or material seams. The downstream
+converter samples new independent points over triangle area; it does not simply
+turn every source vertex into one laser point.
+
+For a closed, connected triangle surface, Euler-style connectivity commonly
+makes triangle count approach roughly twice vertex count as density increases.
+That is why the observed Meshy ratio of about 1.5M vertices to 3M triangles is
+plausible for a very dense closed shell, but the exact ratio alone does not
+prove watertightness.
 
 ## 17. Licence gate
 
@@ -683,8 +851,8 @@ operational risk/cost.
 1. Commercial on-prem model licence: DECA/ECON/SMPL-X/MICA-type rights.
 2. Specialised SDK/API: Banuba or Grounding DINO Pro when it wins.
 3. GPU compute: RunPod, Modal, Hugging Face Endpoints or similar.
-4. Consented data/expert labelling and physical engraving evaluation. This may
-   create more durable value than another generic subscription.
+4. Consented data, expert geometry labelling and canonical-mesh review. This
+   may create more durable value than another generic subscription.
 
 ### 18.2 Cost model
 
@@ -717,7 +885,8 @@ Before annual/perpetual licence purchase:
 
 - fix deterministic edge/mesh defects;
 - compare open and paid candidate on the same locked benchmark;
-- complete at least 10 blind physical A/B engravings;
+- complete at least 10 blind canonical-mesh/GLB A/B reviews against the current
+  paid reference output using identical staging views;
 - confirm customer-artifact, hosting and privacy rights in writing;
 - include manual review in per-image economics;
 - understand fallback/export rights if vendor service ends.
@@ -740,9 +909,11 @@ Build a consented versioned 50–100 image set:
 - intentionally bad images for gate tests.
 
 For a smaller truth subset obtain consented multi-view/phone-depth/scans,
-corrected masks/ordering, approved relief and physical crystal. Freeze
-development, validation, blind-test and production-shadow splits. Do not tune
-repeatedly on one attractive example.
+corrected masks/ordering, the paid reference conversion and an operator-approved
+canonical relief. Freeze development, validation, blind-test and
+production-shadow splits. Optional physical crystal tests calibrate the later
+manufacturing pipeline; they are not 2.5D truth. Do not tune repeatedly on one
+attractive example.
 
 ## 20. Metrics and acceptance
 
@@ -761,15 +932,20 @@ repeatedly on one attractive example.
 - holes, non-manifold edges, degenerates/components;
 - GLB/OBJ geometry equivalence.
 
-### 20.2 Manufacturing
+### 20.2 Canonical artifact and staging
 
-- point count and nearest-neighbour distribution;
-- layer separation and out-of-volume points;
-- local slope and minimum feature width;
+- canonical-mesh hash, version and GLB/OBJ equivalence;
+- successful Model B/Blender/Cockpit-style import;
+- correct units, axes, transforms, origin and blank-safe bounds;
+- local slope, minimum feature width and inward silhouette taper;
 - silhouette bright seams;
 - border/bevel clearance;
-- file/converter/laser time;
-- blind likeness under identical glass/laser/lighting.
+- file/load/render time;
+- blind likeness under identical camera, lighting and relief material.
+
+Point count, layer separation, nearest-neighbour distribution, DXF validity and
+laser time are downstream `pipeline-converter` metrics. Track them in an
+integration report, not in this pipeline's acceptance score.
 
 ### 20.3 Operations
 
@@ -780,10 +956,12 @@ repeatedly on one attractive example.
 - internal cost per accepted image;
 - performance by model revision.
 
-Initial release requires no visible vertical edge wall, no unsafe-volume points,
-reproducible manifests, correct review routing and production-approved licences.
-Set numeric quality targets after measuring the frozen baseline; physical blind
-comparison with the current paid reference is the final gate.
+Initial release requires no visible vertical edge wall, no mesh coordinates
+outside the blank-safe volume, reproducible manifests, correct review routing
+and production-approved licences.
+Set numeric quality targets after measuring the frozen baseline. Blind canonical
+mesh/GLB comparison with the current paid reference plus operator approval of
+the exact artifact hash is the final gate.
 
 ## 21. Controlled experiment matrix
 
@@ -797,8 +975,11 @@ comparison with the current paid reference is the final gate.
 8. Per-person range allocation off/on.
 9. Semantic taper widths in physical mm.
 10. Relief curves at fixed 8/12/16 mm.
-11. 250k/500k/750k/1M sampling by blank.
-12. Physical A/B against paid reference.
+11. GLB/OBJ parity and Model B/Blender staging validation.
+12. Blind canonical-relief A/B against the paid reference.
+
+Downstream, non-gating integration experiments may separately compare
+250k/500k/750k/1M sampling profiles by blank.
 
 Cache model outputs so geometry experiments do not rerun expensive inference.
 
@@ -808,7 +989,7 @@ Cache model outputs so geometry experiments do not rerun expensive inference.
 
 **Work:** signed-distance roll-off; decouple mesh threshold; side/slope
 diagnostics; manifest/model registry; one-person/two-person/person+sofa
-fixtures; shared point/layer/stagger/toning profile with 0.08 preview dot.
+fixtures; canonical GLB/OBJ parity and fixed staging-camera diagnostics.
 
 **Exit:** supplied edge reaches back plane without wall; GLB/OBJ parity passes;
 baseline reproducible; no purchase required.
@@ -832,9 +1013,9 @@ adapters blocked from production; conventions aligned.
 ### Phase 3 — normal integration and frequency mapping
 
 **Work:** depth-prior BiNI prototype; normal comparison; multi-band relief;
-instance discontinuities/noise suppression; 8/12/16 mm physical tests.
+instance discontinuities/noise suppression; 8/12/16 mm canonical-relief tests.
 
-**Exit:** measured and physical detail improvement without edge/noise penalty;
+**Exit:** measured and blind visual detail improvement without edge/noise penalty;
 solver licence/implementation decision recorded.
 
 ### Phase 4 — face branch
@@ -854,21 +1035,31 @@ manual repair tools.
 **Exit:** target seated/full-body/group pass-review rates; no invented hidden
 anatomy; commercial decision complete.
 
-### Phase 6 — laser/point calibration
+### Phase 6 — canonical artifact validation and approval
 
-**Work:** map blank/detail to 250k–1M; calibrate distances, layers, stagger,
-toning; laser/glass profiles; measure density/seams/feature survival.
+**Work:** GLB/OBJ equivalence; units/axes/transforms; safe blank fit; fixed
+Model B/Blender front/side/oblique views; topology report; exact-hash approval;
+optional reversible Blender finishing branch.
 
-**Exit:** profiles visible in manifest/UI; no unsafe points; 0.08 preview keeps
-correct physical density ordering.
+**Exit:** canonical mesh passes automated geometry checks, blind paid-reference
+comparison and explicit operator approval. This is the 2.5D final quality gate.
 
 ### Phase 7 — shadow production and hosted integration
 
-**Work:** paid reference and ACM side-by-side; shadow mode; cost/manual metrics;
-queue/privacy/retention/retries/observability; Model A → 2.5D → Model B UI.
+**Work:** paid reference and ACM canonical meshes side-by-side; shadow mode;
+cost/manual metrics; queue/privacy/retention/retries/observability;
+Model A → 2.5D → Model B UI.
 
 **Exit:** sustained representative quality/cost; paid fallback remains; explicit
 approval before any VPS deployment.
+
+### Downstream integration — does not block the 2.5D gate
+
+After Phase 6 approval, hand the exact canonical artifact to
+`pipeline-converter`. Map blank/detail to 250k–1M points and calibrate point
+distance, layer distance, layers, stagger, toning and dot size `0.08`. Validate
+DXF and manufacturing independently. Defects found there may trigger a 2.5D
+review, but successful point generation cannot approve a poor relief.
 
 ### Phase 8 — train/distil ACM models
 
@@ -888,7 +1079,7 @@ consent/provenance.
 ## 23. Recommended first 30 working days
 
 **Days 1–5:** freeze benchmark; edge-domain fix; diagnostics; manifest/registry;
-two physical edge samples.
+two canonical edge fixtures with fixed side-view renders.
 
 **Days 6–10:** detector/SAM/BiRefNet graph; person+sofa split; quality states.
 
@@ -896,10 +1087,11 @@ two physical edge samples.
 choose coarse-depth baseline per route.
 
 **Days 18–23:** Marigold/Metric3D normals; prior-guided integration; frequency
-mapping; 8/12/16 mm comparison.
+mapping; 8/12/16 mm canonical-mesh comparison.
 
-**Days 24–30:** 3DDFA baseline; ten controlled physical A/Bs; evidence pack for
-commercial trials; choose next work from measured failure categories.
+**Days 24–30:** 3DDFA baseline; ten controlled canonical-relief/GLB A/Bs;
+evidence pack for commercial trials; choose next work from measured failure
+categories.
 
 ## 24. Agent working rules
 
@@ -913,7 +1105,7 @@ Future agents must:
 6. never call research-only weights commercially safe;
 7. preserve hashed baselines;
 8. make small reversible commits after tests;
-9. compare physical geometry, not marketing images;
+9. compare canonical geometry and fixed diagnostic renders, not marketing images;
 10. review/reject insufficient evidence rather than hallucinating;
 11. update this plan with measured results and failed experiments;
 12. never push GitHub without the user's explicit instruction.
@@ -921,8 +1113,9 @@ Future agents must:
 ## 25. Open decisions
 
 - Available local GPU/VRAM/driver/CUDA?
-- Real laser minimum XY/Z spacing by glass/blank?
 - Relief range matching paid Cockpit3D reference?
+- Exact standard-mesh import contract that the Cockpit-style staging step needs?
+- Which Blender checks can be deterministic/read-only before MCP editing is enabled?
 - GPL BiNI compliance/licence versus independent solver?
 - Can FLAME 2023 Open + permissive fitting match DECA/MICA?
 - Will Banuba licence still-image mesh export/server processing?
@@ -998,10 +1191,20 @@ Future agents must:
 - [Modal pricing](https://modal.com/pricing)
 - [Replicate pricing](https://replicate.com/pricing)
 
+### 3D tooling and comparison services
+
+- [Meshy printing workflow](https://help.meshy.ai/en/articles/16231806-how-can-i-create-my-own-3d-printing-files)
+- [Meshy printability analysis and repair](https://help.meshy.ai/en/articles/15813389-how-to-check-and-fix-your-model-s-printability)
+- [Meshy Image-to-3D API and topology settings](https://docs.meshy.ai/en/api/image-to-3d)
+- [Meshy Remesh API](https://docs.meshy.ai/en/api/remesh)
+- [Meshy Repair Printability API](https://docs.meshy.ai/en/api/repair-printability)
+- [Sketchfab platform overview](https://sketchfab.com/about)
+- [Sketchfab developer APIs](https://sketchfab.com/developers)
+
 ## 27. Immediate recommendation
 
 Implement **Phase 0** next: signed-distance silhouette domain and side-view
 regressions. In parallel freeze the benchmark and model registry. Then add
 Depth Pro and MoGe-2 before a long-term licence purchase. Paid trials and GPU
-compute are welcome during benchmarking; annual licences wait for physical A/B
-evidence.
+compute are welcome during benchmarking; annual licences wait for blind
+canonical-relief/GLB A/B evidence.
