@@ -30,20 +30,38 @@ function Invoke-CheckedCommand {
 function Invoke-RemoteScript {
   param([string]$HostName, [string]$Script)
   $temporaryScript = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).sh"
+  $temporaryOutput = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).out"
+  $temporaryError = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).err"
   [System.IO.File]::WriteAllText($temporaryScript, $Script, [System.Text.UTF8Encoding]::new($false))
   try {
     $process = Start-Process -FilePath (Get-Command ssh).Source `
       -ArgumentList @($HostName, "bash -s") `
       -RedirectStandardInput $temporaryScript `
+      -RedirectStandardOutput $temporaryOutput `
+      -RedirectStandardError $temporaryError `
       -WindowStyle Hidden `
       -Wait `
       -PassThru
-    if ($process.ExitCode -ne 0) { throw "Remote release failed with exit code $($process.ExitCode)." }
+
+    $standardOutput = if (Test-Path -LiteralPath $temporaryOutput) {
+      Get-Content -Raw -LiteralPath $temporaryOutput
+    } else { "" }
+    $standardError = if (Test-Path -LiteralPath $temporaryError) {
+      Get-Content -Raw -LiteralPath $temporaryError
+    } else { "" }
+    if ($standardOutput) { Write-Host $standardOutput.TrimEnd() }
+    if ($process.ExitCode -ne 0) {
+      $detail = if ($standardError) { $standardError.Trim() } else { "No remote error output was captured." }
+      throw "Remote release failed with exit code $($process.ExitCode): $detail"
+    }
   } finally {
-    $resolvedTemporary = [System.IO.Path]::GetFullPath($temporaryScript)
     $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
-    if ($resolvedTemporary.StartsWith($temporaryRoot) -and (Split-Path $resolvedTemporary -Leaf) -like "acm-pipeline-release-*.sh") {
-      Remove-Item -LiteralPath $resolvedTemporary -Force
+    foreach ($temporaryFile in @($temporaryScript, $temporaryOutput, $temporaryError)) {
+      $resolvedTemporary = [System.IO.Path]::GetFullPath($temporaryFile)
+      $leaf = Split-Path $resolvedTemporary -Leaf
+      if ($resolvedTemporary.StartsWith($temporaryRoot) -and $leaf -like "acm-pipeline-release-*.*" -and (Test-Path -LiteralPath $resolvedTemporary)) {
+        Remove-Item -LiteralPath $resolvedTemporary -Force
+      }
     }
   }
 }
