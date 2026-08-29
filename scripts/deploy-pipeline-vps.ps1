@@ -32,7 +32,10 @@ function Invoke-RemoteScript {
   $temporaryScript = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).sh"
   $temporaryOutput = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).out"
   $temporaryError = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-release-$([guid]::NewGuid().ToString('N')).err"
-  [System.IO.File]::WriteAllText($temporaryScript, $Script, [System.Text.UTF8Encoding]::new($false))
+  # Bash receives the script over stdin. Normalize Windows CRLF first so
+  # options such as `pipefail` do not acquire a hidden carriage return.
+  $normalizedScript = $Script.Replace("`r`n", "`n").Replace("`r", "`n")
+  [System.IO.File]::WriteAllText($temporaryScript, $normalizedScript, [System.Text.UTF8Encoding]::new($false))
   try {
     $process = Start-Process -FilePath (Get-Command ssh).Source `
       -ArgumentList @($HostName, "bash -s") `
