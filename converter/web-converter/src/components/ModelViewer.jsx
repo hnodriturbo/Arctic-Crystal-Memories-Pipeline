@@ -15,7 +15,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function ModelViewer({ src, poster, alt = "Generated 3D model", className = "" }) {
+export default function ModelViewer({
+  src,
+  poster,
+  alt = "Generated 3D model",
+  className = "",
+  aspectClassName = "aspect-square",
+}) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(null);
   const hostRef = useRef(null);
@@ -41,8 +47,7 @@ export default function ModelViewer({ src, poster, alt = "Generated 3D model", c
     return () => host.removeEventListener("error", onError);
   }, [ready, src]);
 
-  const frame =
-    "relative aspect-square w-full overflow-hidden rounded-lg border border-surface-border bg-console-background";
+  const frame = `relative ${aspectClassName} w-full overflow-hidden rounded-lg border border-surface-border bg-console-background`;
 
   if (failed) {
     return (

@@ -244,12 +244,16 @@ export default function JobResults({
                     ))}
                   </div>
                 ) : (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {/* Orbit the model rather than guessing from a thumbnail */}
+                  <div className="space-y-4">
+                    {/* Keep the orbit preview above the full-width artifact list. */}
                     {preview ? (
-                      <ModelViewer src={fileUrl(preview.path)} alt={`Model from ${job.id}`} />
+                      <ModelViewer
+                        src={fileUrl(preview.path)}
+                        alt={`Model from ${job.id}`}
+                        aspectClassName="aspect-video"
+                      />
                     ) : (
-                      <div className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-surface-border p-6">
+                      <div className="flex aspect-video items-center justify-center rounded-lg border border-dashed border-surface-border p-6">
                         <p className="text-center text-xs text-muted">
                           {t("No GLB in this job, so there is nothing to turn. Add glb to the download formats to get one.")}
                         </p>
@@ -271,14 +275,16 @@ export default function JobResults({
                         </p>
                       )}
 
-                      <ul className="max-h-72 divide-y divide-surface-border overflow-y-auto">
+                      <ul className="divide-y divide-surface-border">
                         {(job.files || []).map((file) => (
                           <li
                             key={file.path}
-                            className="flex items-center justify-between gap-3 py-2"
+                            className="grid gap-2 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                           >
-                            <span className="truncate font-mono text-xs">{file.name}</span>
-                            <span className="flex shrink-0 items-center gap-2">
+                            <span className="min-w-0 break-all font-mono text-xs leading-relaxed">
+                              {file.name}
+                            </span>
+                            <span className="flex items-center gap-2 sm:justify-self-end">
                               <span className="font-mono text-[10px] text-muted">
                                 {formatBytes(file.bytes)}
                               </span>
