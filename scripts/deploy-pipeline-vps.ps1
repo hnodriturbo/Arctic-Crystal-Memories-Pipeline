@@ -206,7 +206,11 @@ mv -Tf "`$next_link" "`$current_link"
 switched=1
 
 reload_service() {
-  pm2 startOrReload "`$ecosystem" --only acm-pipeline --update-env >/dev/null
+  # PM2 retains the original absolute script and cwd for a same-named process.
+  # Recreate this one process so an immutable release may rename its app folder.
+  # Rollback calls this function again after restoring the old link and config.
+  pm2 delete acm-pipeline >/dev/null 2>&1 || true
+  pm2 start "`$ecosystem" --only acm-pipeline --update-env >/dev/null
   pm2 save >/dev/null
 }
 

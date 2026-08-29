@@ -51,9 +51,12 @@ From PowerShell in the repository root:
 The script creates a secret-free archive, rejects `.env`, `node_modules`,
 `.next`, `.venv` and customer workspace content, then transfers it over SSH.
 The VPS builds an inactive release, validates all three interpreters and the
-database schema, atomically switches `current`, restarts PM2 and checks the
-login route. A failed health check restores the previous release. Successful
-deployments retain the active release and at most two rollbacks.
+database schema, atomically switches `current`, recreates only the
+`acm-pipeline` PM2 process and checks the login route. Recreating that process
+is intentional because PM2 otherwise retains an obsolete absolute script/cwd
+after an application-folder rename. A failed health check restores the
+previous release. Successful deployments retain the active release and at
+most two rollbacks.
 
 ## Services and limits
 
