@@ -73,10 +73,12 @@ A typical portrait run is therefore 25 credits: 20 for meshy-7 untextured, plus
 ## Sizing
 
 `scale_to_crystal` runs an extra Meshy remesh (+5 credits) that resizes the
-export to the blank's usable height in real millimetres. It is optional and off
-by default, because `mesh_to_pointcloud.py` refits the model to the blank
-regardless — the resize only makes the downloaded file itself measure correctly
-in Blender or a slicer.
+export to the blank's usable height in real millimetres. The editable margin is
+1 mm per side by default and accepts values down to 0.1 mm; that same value is
+stored on the job and handed to the converter. Meshy's API resizes by height,
+while `mesh_to_pointcloud.py` is the authoritative three-axis fit across width,
+height and depth. The Meshy resize is optional and off by default because it
+only makes the downloaded file itself measure correctly in Blender or a slicer.
 
 ## Webhooks
 

@@ -97,6 +97,7 @@ release_id='$releaseId'
 archive='$remoteUpload'
 releases="`$root/releases"
 shared="`$root/shared"
+export UV_CACHE_DIR="`$shared/uv-cache"
 new_release="`$releases/`$release_id"
 current_link="`$root/current"
 previous_release=`$(readlink -f "`$current_link")
@@ -165,6 +166,12 @@ sync_environment image-pipeline "`$new_release/converter/image-pipeline/requirem
 sync_environment meshy-pipeline "`$new_release/converter/meshy-pipeline/requirements.txt"
 sync_environment pipeline-converter "`$new_release/converter/pipeline-converter/requirements.txt"
 
+# All image weights live outside releases and venvs. The downloader is
+# idempotent and verifies expected file sizes before making a download visible.
+U2NET_HOME="`$shared/models/rembg" \
+  "`$shared/venvs/image-pipeline/bin/python" \
+  "`$new_release/converter/image-pipeline/code/download_models.py"
+
 verify_python() {
   local python="`$1"
   "`$python" -c 'import platform,sys; assert sys.version_info[:2] == (3,11), platform.python_version()'
@@ -172,7 +179,10 @@ verify_python() {
 verify_python "`$shared/venvs/image-pipeline/bin/python"
 verify_python "`$shared/venvs/meshy-pipeline/bin/python"
 verify_python "`$shared/venvs/pipeline-converter/bin/python"
-"`$shared/venvs/image-pipeline/bin/python" -c 'import numpy, onnxruntime, PIL, rembg; assert "gpu" not in onnxruntime.get_device().lower()'
+ldconfig -p | grep 'libGL.so.1' >/dev/null
+U2NET_HOME="`$shared/models/rembg" \
+  "`$shared/venvs/image-pipeline/bin/python" \
+  "`$new_release/converter/image-pipeline/code/healthcheck.py"
 "`$shared/venvs/meshy-pipeline/bin/python" "`$new_release/converter/meshy-pipeline/code/healthcheck.py"
 "`$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
 

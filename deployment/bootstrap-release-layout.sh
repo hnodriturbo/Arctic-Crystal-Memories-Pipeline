@@ -17,6 +17,7 @@ staging="$parent/.acm-pipeline-next-$release_id"
 legacy="$parent/.acm-pipeline-legacy-$release_id"
 release="$staging/releases/$release_id"
 shared="$staging/shared"
+export UV_CACHE_DIR="$shared/uv-cache"
 uv_version=0.12.6
 switched=0
 
@@ -30,6 +31,10 @@ test -f "$root/converter/web-converter/.env.production"
 test ! -e "$root/current"
 test ! -e "$staging"
 test ! -e "$legacy"
+ldconfig -p | grep 'libGL.so.1' >/dev/null || {
+  echo "Ubuntu package libgl1 is required for the CPU image environment." >&2
+  exit 1
+}
 
 cleanup() {
   rm -f -- "$archive"
@@ -128,6 +133,10 @@ create_environment image-pipeline "$release/converter/image-pipeline/requirement
 create_environment meshy-pipeline "$release/converter/meshy-pipeline/requirements.txt"
 create_environment pipeline-converter "$release/converter/pipeline-converter/requirements.txt"
 
+U2NET_HOME="$shared/models/rembg" \
+  "$shared/venvs/image-pipeline/bin/python" \
+  "$release/converter/image-pipeline/code/download_models.py"
+
 link_shared() {
   local relative=$1
   local target=$2
@@ -151,7 +160,9 @@ link_shared converter/pipeline-converter/output ../../../../shared/workspaces/pi
 ln -s ../../../../shared/.env.production "$release/converter/web-converter/.env.production"
 ln -s "releases/$release_id" "$staging/current"
 
-"$shared/venvs/image-pipeline/bin/python" -c 'import numpy, onnxruntime, PIL, rembg; assert onnxruntime.get_device() == "CPU"'
+U2NET_HOME="$shared/models/rembg" \
+  "$shared/venvs/image-pipeline/bin/python" \
+  "$release/converter/image-pipeline/code/healthcheck.py"
 "$shared/venvs/meshy-pipeline/bin/python" "$release/converter/meshy-pipeline/code/healthcheck.py"
 "$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
 

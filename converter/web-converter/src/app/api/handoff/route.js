@@ -122,5 +122,6 @@ export async function POST(request) {
     },
     template: job?.crystalTemplate || null,
     customSize: job?.customSize || null,
+    margin: job?.crystalMargin || job?.values?.crystal_margin || null,
   });
 }

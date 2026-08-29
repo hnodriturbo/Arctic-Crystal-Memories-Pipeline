@@ -77,15 +77,15 @@ const SIZE_FIELDS = [
   {
     name: "border",
     emoji: "🖼️",
-    label: "Custom border (mm)",
+    label: "Crystal margin (mm)",
     group: "size",
     type: "number",
     flag: "--border",
-    default: 0,
-    min: 0,
+    default: 1,
+    min: 0.1,
     step: 0.1,
     help:
-      "Unengraved margin on every side. 0 keeps the blank preset; 0.1 mm is allowed for a precisely calibrated laser.",
+      "Unengraved margin on every side. The standard is 1 mm; enter any value down to 0.1 mm.",
   },
 ];
 

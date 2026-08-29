@@ -1,18 +1,15 @@
-# requirements-gpu.txt — optional, CUDA machines only
+# requirements-gpu.txt — documentation guard for CUDA workstations
 #
-# Install PyTorch with CUDA FIRST, then this file, then requirements.txt:
+# The complete supported stack, including CPU Torch, GFPGAN and Real-ESRGAN,
+# now lives in requirements.txt. The Ubuntu production VPS uses that CPU stack.
 #
-#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
-#   pip install -r requirements-gpu.txt
+# A CUDA workstation may replace the two +cpu wheels with the paired CUDA 12.1
+# builds after installing requirements.txt:
 #
-# This unlocks `--engine realesrgan` in upscale.py and `--engine gfpgan` in
-# enhance.py. Without it those flags fall back to lanczos and pillow with a
-# printed notice rather than failing, which is what the VPS relies on.
+#   pip install --force-reinstall \
+#     torch==2.1.2+cu121 torchvision==0.16.2+cu121 \
+#     --index-url https://download.pytorch.org/whl/cu121
 #
-# Do NOT install this on the VPS. There is no CUDA there and a CPU-only torch
-# build is a 2 GB download that buys a Real-ESRGAN pass slow enough to time out.
-
-basicsr
-realesrgan
-gfpgan
-opencv-python
+# Keep these versions paired: basicsr 1.4.2 imports torchvision's pre-0.17
+# functional_tensor module. This file intentionally has no installable entries,
+# preventing an accidental CUDA installation on the CPU-only VPS.

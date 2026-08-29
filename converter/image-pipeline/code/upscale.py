@@ -6,13 +6,12 @@ Aspect ratio and alpha are always preserved, and an image already at or above
 the target is copied through untouched rather than being re-encoded.
 
 Engines:
-  auto        Real-ESRGAN when torch is installed, Lanczos otherwise.
-  realesrgan  AI upscale. Needs torch; slow but usable on CPU, seconds on CUDA.
+  auto        Real-ESRGAN on CUDA, Lanczos on CPU. Routine VPS jobs stay fast.
+  realesrgan  AI upscale. Runs explicitly; slow on CPU, seconds on CUDA.
   lanczos     Classic resample. Instant, invents nothing, never fails.
 
-The VPS has no torch, so `auto` quietly resolves to lanczos there. That is the
-honest outcome: a real upscale needs a GPU, and pretending otherwise would
-just make the job time out.
+The VPS has CPU-only Torch, so both engines are available. `auto` still resolves
+to Lanczos there; select `realesrgan` when the slower AI pass is worth it.
 
   python code/upscale.py --input photo.jpg --output big.png --target 2048
 """
@@ -72,6 +71,11 @@ def upscale_realesrgan(source: Image.Image, target_long_edge: int, device: str) 
         model=architecture,
         half=(device == "cuda"),
         device=device,
+        # CPU tiling trades some speed for predictable RAM on the 6 GB VPS.
+        # CUDA keeps the faster full-frame path on a future GPU workstation.
+        tile=256 if device == "cpu" else 0,
+        tile_pad=16,
+        pre_pad=0,
     )
 
     alpha = source.getchannel("A") if source.mode == "RGBA" else None
@@ -117,7 +121,7 @@ def main() -> None:
         device = torch_device()
 
         if engine == "auto":
-            engine = "realesrgan" if device else "lanczos"
+            engine = "realesrgan" if device == "cuda" else "lanczos"
             report(f"Engine auto-selected: {engine}" + (f" ({device})" if device else " (no torch)"))
         elif engine == "realesrgan" and not device:
             report("torch is not installed here - falling back to lanczos.")

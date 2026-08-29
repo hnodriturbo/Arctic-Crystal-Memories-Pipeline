@@ -158,7 +158,7 @@ export default function EnvironmentsClient({ initial }) {
                 {probe.cuda ? (
                   <p className="mt-2 text-xs text-muted">
                     🎮 CUDA:{" "}
-                    {probe.cuda.available ? probe.cuda.device : "torch is present but sees no GPU"}
+                    {probe.cuda.available ? probe.cuda.device : "CPU-only Torch; no CUDA device"}
                   </p>
                 ) : (
                   <p className="mt-2 text-xs text-muted">

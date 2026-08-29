@@ -74,7 +74,12 @@ export default function MeshyClient({
   const groups = useMemo(() => meshyGroupsFor(mode), [mode]);
   const fields = useMemo(() => meshyFieldsFor(mode, values), [mode, values]);
   const credits = useMemo(() => estimateCredits(mode, values), [mode, values]);
-  const space = usableSpace(values.crystal_template);
+  const space = usableSpace(values.crystal_template, {
+    width: values.custom_width,
+    height: values.custom_height,
+    depth: values.custom_depth,
+    margin: values.crystal_margin,
+  });
 
   // No effect resets the form on a mode change: the shell keys this component
   // by mode, so switching modes remounts it and the initialisers above do the
@@ -512,11 +517,12 @@ export default function MeshyClient({
           onChange={updateValues}
           inputs={[]}
         />
-        {space ? (
+        {space && space.width !== null && space.height !== null && space.depth !== null ? (
           <p className="text-xs text-muted">
-            {values.crystal_template} leaves {space.width} &times; {space.height} &times;{" "}
-            {space.depth} mm of engravable space. Depth is almost always what limits a full 3D
-            subject.
+            {values.crystal_template || (locale === "is" ? "Sérsniðin stærð" : "Custom size")} ·{" "}
+            {space.margin} mm {locale === "is" ? "margin á hverri hlið skilur eftir" : "margin on every side leaves"}{" "}
+            {space.width} &times; {space.height} &times; {space.depth} mm{" "}
+            {locale === "is" ? "nýtanlegt fyrir gröfun." : "of engravable space."}
           </p>
         ) : null}
       </section>

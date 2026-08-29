@@ -49,7 +49,8 @@ def torch_device() -> str | None:
     CUDA when it is really there, CPU when torch is installed without it, None
     when torch is absent entirely.
 
-    The VPS is the last case, and every script has to stay useful there.
+    The VPS is the CPU case. Explicit AI-engine selections may use CPU Torch,
+    while each script keeps a lightweight automatic path for routine jobs.
     """
     try:
         import torch

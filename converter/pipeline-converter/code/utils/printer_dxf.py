@@ -18,6 +18,8 @@ import numpy as np
 # point rather than a universal hardware limit; smaller gaps need a real glass
 # test on the target laser.
 DEFAULT_POINT_DISTANCE = 0.08
+DEFAULT_CRYSTAL_MARGIN = 1.0
+MIN_CRYSTAL_MARGIN = 0.1
 
 # Crystal blanks. Keys are WIDTHxHEIGHTxDEPTH in millimetres.
 #
@@ -28,53 +30,52 @@ DEFAULT_POINT_DISTANCE = 0.08
 # listing. Getting that backwards stands a landscape blank on its end, which
 # is exactly the failure this file's orientation options exist to prevent.
 #
-# The first five entries predate the catalogue import and keep their original
-# borders so nothing already in production shifts. Everything added since uses
-# a 5 mm border, which is the common case; override it per job with --border.
+# Every blank starts with a 1 mm unengraved margin on each side. The web tools
+# and direct CLI can override it per job down to 0.1 mm with --border.
 CRYSTAL_TEMPLATES = {
-    # ── Original set, unchanged ──────────────────────────────────────────────
-    "60x80x30": {"width": 60.0, "height": 80.0, "depth": 30.0, "border": 5.0},
-    "60x80x40": {"width": 60.0, "height": 80.0, "depth": 40.0, "border": 5.0},
-    "80x50x50": {"width": 80.0, "height": 50.0, "depth": 50.0, "border": 3.0},
-    "120x80x40": {"width": 120.0, "height": 80.0, "depth": 40.0, "border": 3.0},
-    "90x60x60": {"width": 90.0, "height": 60.0, "depth": 60.0, "border": 5.0},
+    # ── Original size set ────────────────────────────────────────────────────
+    "60x80x30": {"width": 60.0, "height": 80.0, "depth": 30.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "60x80x40": {"width": 60.0, "height": 80.0, "depth": 40.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "80x50x50": {"width": 80.0, "height": 50.0, "depth": 50.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "120x80x40": {"width": 120.0, "height": 80.0, "depth": 40.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "90x60x60": {"width": 90.0, "height": 60.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
 
     # ── Rectangle, portrait (taller than wide) ───────────────────────────────
-    "40x60x40": {"width": 40.0, "height": 60.0, "depth": 40.0, "border": 5.0},
-    "50x80x50": {"width": 50.0, "height": 80.0, "depth": 50.0, "border": 5.0},
-    "60x90x60": {"width": 60.0, "height": 90.0, "depth": 60.0, "border": 5.0},
-    "80x120x60": {"width": 80.0, "height": 120.0, "depth": 60.0, "border": 5.0},
-    "100x150x80": {"width": 100.0, "height": 150.0, "depth": 80.0, "border": 5.0},
-    "120x180x80": {"width": 120.0, "height": 180.0, "depth": 80.0, "border": 5.0},
+    "40x60x40": {"width": 40.0, "height": 60.0, "depth": 40.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "50x80x50": {"width": 50.0, "height": 80.0, "depth": 50.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "60x90x60": {"width": 60.0, "height": 90.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "80x120x60": {"width": 80.0, "height": 120.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "100x150x80": {"width": 100.0, "height": 150.0, "depth": 80.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "120x180x80": {"width": 120.0, "height": 180.0, "depth": 80.0, "border": DEFAULT_CRYSTAL_MARGIN},
 
     # ── Rectangle, landscape (wider than tall) ───────────────────────────────
-    "60x40x40": {"width": 60.0, "height": 40.0, "depth": 40.0, "border": 5.0},
-    "120x80x60": {"width": 120.0, "height": 80.0, "depth": 60.0, "border": 5.0},
-    "150x100x80": {"width": 150.0, "height": 100.0, "depth": 80.0, "border": 5.0},
-    "180x120x80": {"width": 180.0, "height": 120.0, "depth": 80.0, "border": 5.0},
+    "60x40x40": {"width": 60.0, "height": 40.0, "depth": 40.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "120x80x60": {"width": 120.0, "height": 80.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "150x100x80": {"width": 150.0, "height": 100.0, "depth": 80.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "180x120x80": {"width": 180.0, "height": 120.0, "depth": 80.0, "border": DEFAULT_CRYSTAL_MARGIN},
 
     # ── Prestige ─────────────────────────────────────────────────────────────
-    "100x130x50": {"width": 100.0, "height": 130.0, "depth": 50.0, "border": 5.0},
-    "140x170x60": {"width": 140.0, "height": 170.0, "depth": 60.0, "border": 5.0},
-    "160x200x60": {"width": 160.0, "height": 200.0, "depth": 60.0, "border": 5.0},
+    "100x130x50": {"width": 100.0, "height": 130.0, "depth": 50.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "140x170x60": {"width": 140.0, "height": 170.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "160x200x60": {"width": 160.0, "height": 200.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
 
     # ── Notched. Treated as its plain bounding box; the notch is at the base
     #    and outside the engravable area anyway. ──────────────────────────────
-    "100x150x30": {"width": 100.0, "height": 150.0, "depth": 30.0, "border": 5.0},
-    "130x180x30": {"width": 130.0, "height": 180.0, "depth": 30.0, "border": 5.0},
-    "150x100x30": {"width": 150.0, "height": 100.0, "depth": 30.0, "border": 5.0},
-    "180x130x30": {"width": 180.0, "height": 130.0, "depth": 30.0, "border": 5.0},
+    "100x150x30": {"width": 100.0, "height": 150.0, "depth": 30.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "130x180x30": {"width": 130.0, "height": 180.0, "depth": 30.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "150x100x30": {"width": 150.0, "height": 100.0, "depth": 30.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "180x130x30": {"width": 180.0, "height": 130.0, "depth": 30.0, "border": DEFAULT_CRYSTAL_MARGIN},
 
     # ── Cubes ────────────────────────────────────────────────────────────────
-    "40x40x40": {"width": 40.0, "height": 40.0, "depth": 40.0, "border": 5.0},
-    "50x50x50": {"width": 50.0, "height": 50.0, "depth": 50.0, "border": 5.0},
-    "60x60x60": {"width": 60.0, "height": 60.0, "depth": 60.0, "border": 5.0},
-    "80x80x80": {"width": 80.0, "height": 80.0, "depth": 80.0, "border": 5.0},
-    "100x100x100": {"width": 100.0, "height": 100.0, "depth": 100.0, "border": 5.0},
+    "40x40x40": {"width": 40.0, "height": 40.0, "depth": 40.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "50x50x50": {"width": 50.0, "height": 50.0, "depth": 50.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "60x60x60": {"width": 60.0, "height": 60.0, "depth": 60.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "80x80x80": {"width": 80.0, "height": 80.0, "depth": 80.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "100x100x100": {"width": 100.0, "height": 100.0, "depth": 100.0, "border": DEFAULT_CRYSTAL_MARGIN},
 
     # ── Keychains ────────────────────────────────────────────────────────────
-    "20x30x15": {"width": 20.0, "height": 30.0, "depth": 15.0, "border": 2.0},
-    "35x35x12": {"width": 35.0, "height": 35.0, "depth": 12.0, "border": 2.0},
+    "20x30x15": {"width": 20.0, "height": 30.0, "depth": 15.0, "border": DEFAULT_CRYSTAL_MARGIN},
+    "35x35x12": {"width": 35.0, "height": 35.0, "depth": 12.0, "border": DEFAULT_CRYSTAL_MARGIN},
 }
 
 # Circle and heart blanks are deliberately absent. This fitter scales a model
@@ -319,6 +320,14 @@ def resolve_template(name, width=None, height=None, depth=None, border=None):
     template = dict(CRYSTAL_TEMPLATES.get(name, CRYSTAL_TEMPLATES["60x80x40"]))
     for key, value in (("width", width), ("height", height),
                        ("depth", depth), ("border", border)):
-        if value:
+        if value is not None:
             template[key] = float(value)
+
+    if template["border"] < MIN_CRYSTAL_MARGIN:
+        raise ValueError(f"Crystal margin must be at least {MIN_CRYSTAL_MARGIN:g} mm.")
+    for axis in ("width", "height", "depth"):
+        if template[axis] - 2 * template["border"] <= 0:
+            raise ValueError(
+                f"Crystal margin {template['border']:g} mm leaves no usable {axis}."
+            )
     return template

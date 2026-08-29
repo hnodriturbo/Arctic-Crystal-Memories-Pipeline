@@ -3,9 +3,9 @@ enhance.py — clean a photograph up before it becomes geometry.
 Path: converter/image-pipeline/code/enhance.py
 
 Engines:
-  auto        GFPGAN when torch is installed, pillow otherwise.
+  auto        GFPGAN on CUDA, Pillow on CPU. Routine VPS jobs stay fast.
   gfpgan      Face restoration. Rebuilds eyes, mouth and skin on an old or
-              soft portrait. Needs torch.
+              soft portrait. Runs on CPU when explicitly selected.
   pillow      Brightness, contrast, sharpness and saturation. No GPU, no
               model download, and it never invents a face that was not there.
 
@@ -19,6 +19,8 @@ photograph here shows up as crisper folds in the mesh.
 """
 
 from __future__ import annotations
+
+from contextlib import chdir
 
 from PIL import Image, ImageEnhance
 
@@ -71,13 +73,17 @@ def enhance_gfpgan(source: Image.Image, args, device: str) -> Image.Image:
     alpha = source.getchannel("A") if source.mode == "RGBA" else None
     rgb = np.array(source.convert("RGB"))[:, :, ::-1]  # PIL RGB to the BGR the model expects
 
-    restorer = GFPGANer(
-        model_path=str(weights),
-        upscale=1,
-        arch="clean",
-        channel_multiplier=2,
-        device=device,
-    )
+    # GFPGAN 1.3 resolves its detector/parser cache below a relative
+    # gfpgan/weights path. Anchor that legacy path in the shared model root so
+    # deployments never download support weights into a release or cwd.
+    with chdir(PIPELINE_ROOT / "models"):
+        restorer = GFPGANer(
+            model_path=str(weights),
+            upscale=1,
+            arch="clean",
+            channel_multiplier=2,
+            device=device,
+        )
     report(f"GFPGAN on {device}")
     _, _, restored = restorer.enhance(rgb, has_aligned=False, paste_back=True, weight=args.fidelity)
 
@@ -117,7 +123,7 @@ def main() -> None:
         device = torch_device()
 
         if engine == "auto":
-            engine = "gfpgan" if device else "pillow"
+            engine = "gfpgan" if device == "cuda" else "pillow"
             report(f"Engine auto-selected: {engine}" + (f" ({device})" if device else " (no torch)"))
         elif engine == "gfpgan" and not device:
             report("torch is not installed here - falling back to pillow.")

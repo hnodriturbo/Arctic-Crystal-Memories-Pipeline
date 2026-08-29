@@ -10,11 +10,22 @@
  * OptionFields component renders this pipeline without knowing about it.
  */
 
-import { blankOptions, usableSpace } from "@/lib/crystal-blanks";
+import {
+  blankOptions,
+  DEFAULT_CRYSTAL_MARGIN_MM,
+  MIN_CRYSTAL_MARGIN_MM,
+  usableSpace,
+} from "@/lib/crystal-blanks";
 import { IMAGE_FIELDS } from "@/lib/image/catalog";
 
 // Re-exported so the Meshy panel has one import for its whole catalogue.
-export { CRYSTAL_BLANKS, CRYSTAL_BLANK_NAMES, usableSpace } from "@/lib/crystal-blanks";
+export {
+  CRYSTAL_BLANKS,
+  CRYSTAL_BLANK_NAMES,
+  DEFAULT_CRYSTAL_MARGIN_MM,
+  MIN_CRYSTAL_MARGIN_MM,
+  usableSpace,
+} from "@/lib/crystal-blanks";
 
 export const PHOTO_TYPES = [".jpg", ".jpeg", ".png"];
 
@@ -272,6 +283,17 @@ const CRYSTAL_FIELDS = [
     help: "Recorded on the job and pre-selected when you hand the model to the converter.",
   },
   {
+    name: "crystal_margin",
+    emoji: "🖼️",
+    label: "Crystal margin (mm)",
+    group: "crystal",
+    type: "number",
+    default: DEFAULT_CRYSTAL_MARGIN_MM,
+    min: MIN_CRYSTAL_MARGIN_MM,
+    step: 0.1,
+    help: "Unengraved margin on every side. The standard is 1 mm; enter any value down to 0.1 mm.",
+  },
+  {
     name: "custom_height",
     emoji: "↕️",
     label: "Custom height (mm)",
@@ -281,7 +303,7 @@ const CRYSTAL_FIELDS = [
     min: 0,
     max: 400,
     step: 5,
-    help: "Overrides only the target height used for optional Meshy resizing and carried into the converter. Set 0 to use the selected blank.",
+    help: "Physical crystal height. Meshy subtracts the top and bottom margin before resizing; 0 uses the selected blank.",
   },
   {
     name: "custom_width",
@@ -293,7 +315,7 @@ const CRYSTAL_FIELDS = [
     min: 0,
     max: 400,
     step: 5,
-    help: "Overrides only the width carried into the converter. Set 0 to use the selected crystal blank's usable width.",
+    help: "Physical crystal width carried into the converter. Set 0 to use the selected blank.",
   },
   {
     name: "custom_depth",
@@ -305,7 +327,7 @@ const CRYSTAL_FIELDS = [
     min: 0,
     max: 400,
     step: 5,
-    help: "Carried over to the converter. Depth is what usually limits a full 3D subject.",
+    help: "Physical crystal depth carried into the converter. Depth usually limits a full 3D subject.",
   },
   {
     name: "scale_to_crystal",
@@ -314,7 +336,7 @@ const CRYSTAL_FIELDS = [
     group: "crystal",
     type: "boolean",
     default: false,
-    help: "+5 credits for a Meshy remesh that resizes the export to real millimetres. Off is fine - the converter refits it anyway - but it makes the downloaded file measure correctly in Blender or a slicer.",
+    help: "+5 credits. Meshy resizes by usable height only; the converter later enforces the same margin across width, height and depth.",
   },
 ];
 

@@ -52,7 +52,7 @@ export const IMAGE_FIELDS = [
     type: "select",
     options: ["auto", "gfpgan", "pillow"],
     default: "auto",
-    help: "auto picks GFPGAN where torch is installed, pillow adjustments otherwise.",
+    help: "auto uses GFPGAN on CUDA and Pillow on CPU. Choose GFPGAN explicitly for slower CPU AI restoration.",
   },
   {
     name: "fidelity",
@@ -130,7 +130,7 @@ export const IMAGE_FIELDS = [
     type: "select",
     options: ["auto", "realesrgan", "lanczos"],
     default: "auto",
-    help: "Real-ESRGAN needs torch. On a machine without it, auto resolves to lanczos.",
+    help: "auto uses Real-ESRGAN on CUDA and Lanczos on CPU. Choose Real-ESRGAN explicitly for slower CPU AI upscaling.",
   },
   {
     name: "upscale_target",

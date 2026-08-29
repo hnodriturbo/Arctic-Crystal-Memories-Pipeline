@@ -18,6 +18,24 @@ import { buildStageArgs, selectedStages } from "@/lib/image/catalog";
 import { IMAGE_CODE_DIR, IMAGE_PYTHON_EXE, IMAGE_ROOT } from "@/lib/paths";
 import { interpreterReady, runPython } from "@/lib/python";
 
+// Torch/ONNX jobs can each hold more than 1 GB of RAM. One process-wide queue
+// protects the 6 GB VPS when two browser tabs request image work together.
+let imageQueue = Promise.resolve();
+
+async function withImageSlot(task) {
+  const previous = imageQueue;
+  let release;
+  imageQueue = new Promise((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  try {
+    return await task();
+  } finally {
+    release();
+  }
+}
+
 /** Whether this machine can clean photos at all. */
 export function imagePipelineReady() {
   return interpreterReady(IMAGE_PYTHON_EXE);
@@ -43,28 +61,30 @@ export async function runImageChain({ source, destinationDir, values, emit, sign
     );
   }
 
-  await mkdir(destinationDir, { recursive: true });
+  return withImageSlot(async () => {
+    await mkdir(destinationDir, { recursive: true });
 
-  const stem = path.basename(source, path.extname(source));
-  const produced = [];
-  let current = source;
+    const stem = path.basename(source, path.extname(source));
+    const produced = [];
+    let current = source;
 
-  for (const [index, stage] of stages.entries()) {
-    if (signal?.aborted) throw new Error("Cancelled.");
+    for (const [index, stage] of stages.entries()) {
+      if (signal?.aborted) throw new Error("Cancelled.");
 
-    // Numbered so the folder reads in running order even when a stage is skipped.
-    const output = path.join(destinationDir, `${stem}-${index + 1}-${stage.id}.png`);
-    report({ type: "step", line: `${stage.label} (${stage.script})` });
+      // Numbered so the folder reads in running order even when a stage is skipped.
+      const output = path.join(destinationDir, `${stem}-${index + 1}-${stage.id}.png`);
+      report({ type: "step", line: `${stage.label} (${stage.script})` });
 
-    await runPython(
-      IMAGE_PYTHON_EXE,
-      [path.join(IMAGE_CODE_DIR, stage.script), ...buildStageArgs(stage.id, values, current, output)],
-      { cwd: IMAGE_ROOT, onLine: report, signal },
-    );
+      await runPython(
+        IMAGE_PYTHON_EXE,
+        [path.join(IMAGE_CODE_DIR, stage.script), ...buildStageArgs(stage.id, values, current, output)],
+        { cwd: IMAGE_ROOT, onLine: report, signal },
+      );
 
-    produced.push(output);
-    current = output;
-  }
+      produced.push(output);
+      current = output;
+    }
 
-  return { finalPath: current, produced };
+    return { finalPath: current, produced };
+  });
 }

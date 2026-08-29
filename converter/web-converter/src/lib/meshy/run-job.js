@@ -16,8 +16,10 @@ import path from "node:path";
 import { createTask, downloadTo, getBalance, meshyConfigured, waitForTask } from "@/lib/meshy/client";
 import {
   buildMeshyPayload,
+  DEFAULT_CRYSTAL_MARGIN_MM,
   estimateCredits,
   MESHY_MODES,
+  MIN_CRYSTAL_MARGIN_MM,
   usableSpace,
 } from "@/lib/meshy/catalog";
 import { createJob, indexJobFiles, jobDir, listJobs, newJobId, saveJob } from "@/lib/meshy/jobs";
@@ -140,6 +142,37 @@ export async function runMeshyJob({ mode, photos = [], values = {}, signal, emit
     throw new Error(`${definition.label} needs a prompt.`);
   }
 
+  const crystalMargin =
+    definition.produces === "model"
+      ? Number(values.crystal_margin ?? DEFAULT_CRYSTAL_MARGIN_MM)
+      : null;
+  if (
+    definition.produces === "model" &&
+    (!Number.isFinite(crystalMargin) || crystalMargin < MIN_CRYSTAL_MARGIN_MM)
+  ) {
+    throw new Error(`Crystal margin must be at least ${MIN_CRYSTAL_MARGIN_MM} mm.`);
+  }
+
+  const crystalSpace =
+    definition.produces === "model"
+      ? usableSpace(values.crystal_template, {
+          width: values.custom_width,
+          height: values.custom_height,
+          depth: values.custom_depth,
+          margin: crystalMargin,
+        })
+      : null;
+  const invalidDimension = crystalSpace
+    ? Object.entries(crystalSpace.physical).find(
+        ([axis, dimension]) => dimension !== null && crystalSpace[axis] <= 0,
+      )
+    : null;
+  if (invalidDimension) {
+    throw new Error(
+      `Crystal margin ${crystalMargin} mm leaves no usable ${invalidDimension[0]} in that blank.`,
+    );
+  }
+
   const label =
     values.subject ||
     (sources[0] ? path.basename(sources[0], path.extname(sources[0])) : values.prompt) ||
@@ -154,6 +187,7 @@ export async function runMeshyJob({ mode, photos = [], values = {}, signal, emit
     status: "running",
     error: null,
     crystalTemplate: values.crystal_template || null,
+    crystalMargin,
     // Typed-in millimetres, if any. Carried to the converter alongside the
     // blank so a one-off size does not have to be entered twice.
     customSize:
@@ -289,13 +323,10 @@ export async function runMeshyJob({ mode, photos = [], values = {}, signal, emit
     // measure correctly in Blender or a slicer.
     // A typed-in height wins over the blank, so an odd size can be produced
     // without adding a blank to the catalogue for it.
-    const space = usableSpace(values.crystal_template);
-    const targetHeight = Number(values.custom_height) || space?.height || 0;
+    const targetHeight = crystalSpace?.height || 0;
 
     if (values.scale_to_crystal && targetHeight > 0) {
-      const label = Number(values.custom_height)
-        ? `${targetHeight} mm (custom)`
-        : `${values.crystal_template} (${targetHeight} mm of usable height)`;
+      const label = `${values.crystal_template || "custom blank"} (${targetHeight} mm usable height, ${crystalMargin} mm margin per side)`;
       emit({ type: "step", line: `Resizing to ${label}` });
 
       const remeshId = await createTask("remesh", {

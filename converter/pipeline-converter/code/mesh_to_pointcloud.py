@@ -401,7 +401,10 @@ def build_parser():
     parser.add_argument("--width", type=float, help="Override template width in mm.")
     parser.add_argument("--height", type=float, help="Override template height in mm.")
     parser.add_argument("--depth", type=float, help="Override template depth in mm.")
-    parser.add_argument("--border", type=float, help="Override unengraved margin in mm.")
+    parser.add_argument(
+        "--border", type=float,
+        help="Unengraved margin per side in mm (default 1; minimum 0.1)."
+    )
 
     parser.add_argument(
         "--points", type=int, default=0,

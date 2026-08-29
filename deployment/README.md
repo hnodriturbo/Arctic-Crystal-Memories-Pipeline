@@ -18,12 +18,12 @@ VPS. Git and GitHub are not part of the deployment path.
 └── shared/
     ├── .env.production               production secrets, mode 0600
     ├── ecosystem.config.cjs          stable PM2 configuration
-    ├── models/rembg -> ~/.u2net      one shared model cache
+    ├── models/rembg -> ~/.u2net      all ten shared image weights
     ├── python/                       uv-managed CPython 3.11
     ├── tools/uv                      user-scoped uv binary
     ├── uv-cache/                     shared package/download cache
     ├── venvs/
-    │   ├── image-pipeline/           rembg + CPU onnxruntime
+    │   ├── image-pipeline/           rembg + CPU Torch/ONNX/GFPGAN/Real-ESRGAN
     │   ├── meshy-pipeline/           lightweight API diagnostics
     │   └── pipeline-converter/       numpy/scipy/ezdxf conversion
     └── workspaces/                   uploads, work files and generated output
@@ -32,7 +32,13 @@ VPS. Git and GitHub are not part of the deployment path.
 Ubuntu 24.04's system Python 3.12 is deliberately left untouched. The three
 pipeline environments use uv-managed Python 3.11 and are shared between
 releases because their requirements change much less often than the web app.
-No CUDA, Torch or `onnxruntime-gpu` package belongs on this VPS.
+No CUDA or `onnxruntime-gpu` package belongs on this VPS. Torch is installed
+only from PyTorch's explicit `+cpu` wheels. Install Ubuntu's small OpenCV
+runtime prerequisite once before the first image-AI deployment:
+
+```bash
+sudo apt-get install --no-install-recommends libgl1
+```
 
 ## Deploy from the local source of truth
 

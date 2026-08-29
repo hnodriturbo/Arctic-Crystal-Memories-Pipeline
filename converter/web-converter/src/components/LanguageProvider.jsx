@@ -134,9 +134,12 @@ const IS = {
   "Custom height (mm)": "Sérsniðin hæð (mm)",
   "Custom depth (mm)": "Sérsniðin dýpt (mm)",
   "Custom border (mm)": "Sérsniðin spássía (mm)",
+  "Crystal margin (mm)": "Bil frá kristalbrún (mm)",
   "0 keeps the blank above.": "0 notar valda kristalstærð.",
   "Unengraved margin on every side. 0 keeps the blank preset; 0.1 mm is allowed for a precisely calibrated laser.":
     "Ógrafið bil á öllum hliðum. 0 notar sjálfgefna spássíu kristalsins; 0,1 mm er leyft fyrir nákvæmlega kvarðaðan laser.",
+  "Unengraved margin on every side. The standard is 1 mm; enter any value down to 0.1 mm.":
+    "Ógrafið bil frá hverri kristalbrún. Staðalgildið er 1 mm; hægt er að skrifa inn hvaða gildi sem er niður í 0,1 mm.",
   "Dot density": "Punktaþéttleiki",
   "How many laser dots, and how close together.": "Fjöldi laserpunkta og bil þeirra á milli.",
   "Sampling target (0 = spacing)": "Sampling-markmið (0 = spacing)",
@@ -256,10 +259,18 @@ const IS = {
     "Allt að 600 stafir um liti og efni. Þetta stýrir aðeins texture-vinnslu og breytir ekki formi modelsins.",
   "Recorded on the job and pre-selected when you hand the model to the converter.":
     "Vistað með verkinu og forvalið þegar modelið er sent í skráabreytinn.",
+  "Physical crystal height. Meshy subtracts the top and bottom margin before resizing; 0 uses the selected blank.":
+    "Raunhæð kristalsins. Meshy dregur margin efst og neðst frá áður en modelið er skalað; 0 notar valda kristalstærð.",
+  "Physical crystal width carried into the converter. Set 0 to use the selected blank.":
+    "Raunbreidd kristalsins sem flyst yfir í skráabreytinn. 0 notar valda kristalstærð.",
+  "Physical crystal depth carried into the converter. Depth usually limits a full 3D subject.":
+    "Raundýpt kristalsins sem flyst yfir í skráabreytinn. Dýptin takmarkar yfirleitt stærð fulls þrívídds myndefnis.",
   "Carried over to the converter. Depth is what usually limits a full 3D subject.":
     "Flyst yfir í skráabreytinn. Dýptin takmarkar yfirleitt stærð fulls þrívídds myndefnis.",
   "+5 credits for a Meshy remesh that resizes the export to real millimetres. Off is fine - the converter refits it anyway - but it makes the downloaded file measure correctly in Blender or a slicer.":
     "+5 credits fyrir Meshy-remesh sem skalar útflutning í raunmillimetra. Slökkt er í lagi því skráabreytirinn aðlagar modelið; virkt gefur rétta stærð í Blender eða slicer.",
+  "+5 credits. Meshy resizes by usable height only; the converter later enforces the same margin across width, height and depth.":
+    "+5 credits. Meshy skalar aðeins eftir nýtanlegri hæð; skráabreytirinn tryggir síðan sama margin á breidd, hæð og dýpt.",
   "Requests a transparent preview image when Meshy supports it. This affects only the thumbnail, never the model geometry.":
     "Biður um gegnsæja preview-mynd þegar Meshy styður það. Hefur aðeins áhrif á thumbnail, aldrei form modelsins.",
   "Requests front, right, back and left review renders. They are the quickest way to spot missing or collapsed geometry before conversion.":
@@ -302,6 +313,10 @@ const IS = {
     "Valkostur við layer spacing. 0 lætur millimetrabilið hér fyrir neðan ákvarða fjölda dýptarplana.",
   "Cockpit3D layer-spacing equivalent. 0.08 mm is the reference baseline and overrides the fixed plane count.":
     "Samsvarar layer spacing í Cockpit3D. 0,08 mm er viðmið og tekur fram yfir fastan fjölda plana.",
+  "auto uses GFPGAN on CUDA and Pillow on CPU. Choose GFPGAN explicitly for slower CPU AI restoration.":
+    "auto notar GFPGAN með CUDA en Pillow á CPU. Veldu GFPGAN sérstaklega fyrir hægari AI-andlitsviðgerð á CPU.",
+  "auto uses Real-ESRGAN on CUDA and Lanczos on CPU. Choose Real-ESRGAN explicitly for slower CPU AI upscaling.":
+    "auto notar Real-ESRGAN með CUDA en Lanczos á CPU. Veldu Real-ESRGAN sérstaklega fyrir hægari AI-stækkun á CPU.",
   Uploaded: "Upphlaðið",
   "Waiting in the image pipeline's input folder.": "Bíður í input-möppu myndavinnslunnar.",
   Cleaned: "Unnið",

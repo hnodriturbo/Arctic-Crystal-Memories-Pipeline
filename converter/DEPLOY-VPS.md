@@ -23,14 +23,15 @@ Ubuntu's system Python 3.12 is never replaced or modified.
 
 | Environment | Packages and purpose |
 | --- | --- |
-| `image-pipeline` | `rembg[cpu]`, `onnxruntime`, Pillow, NumPy and SciPy |
+| `image-pipeline` | CPU-only Torch, GFPGAN, Real-ESRGAN, `rembg[cpu]`, ONNX Runtime, Pillow, NumPy 1.26 and SciPy |
 | `meshy-pipeline` | `requests` and a small API/workspace health check |
 | `pipeline-converter` | NumPy, SciPy, ezdxf, rich and tqdm |
 
-Never install `requirements-gpu.txt`, CUDA, Torch or `onnxruntime-gpu` on this
-VPS. `upscale.py` and `enhance.py` intentionally fall back to Lanczos and
-Pillow. The rembg ONNX model cache is shared instead of copied into each
-release.
+Never install CUDA or `onnxruntime-gpu` on this VPS. Torch is the explicit
+`+cpu` build; automatic jobs stay on Lanczos/Pillow while direct Real-ESRGAN
+and GFPGAN selections use CPU. Ubuntu's `libgl1` package is required by
+OpenCV. All ten model/support weights are preloaded into one shared cache
+instead of copied into releases or venvs.
 
 ## Environment paths
 

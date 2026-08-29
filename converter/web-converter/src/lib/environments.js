@@ -7,10 +7,10 @@
  *          assuming.
  *
  * The machines this runs on differ in ways that change what the UI should
- * offer: the workstation has CUDA and can do Real-ESRGAN and GFPGAN, the VPS
- * has neither and falls back to lanczos and pillow. Guessing from the
- * hostname would be wrong the first time either box changed, so this asks the
- * interpreter directly and reports what it says.
+ * offer: a workstation may use CUDA while the VPS has CPU-only Torch. Both can
+ * run Real-ESRGAN and GFPGAN explicitly, while automatic processing stays on
+ * the lightweight engine when CUDA is absent. The probe reports real packages
+ * and devices instead of guessing from the hostname.
  */
 
 import { execFile } from "node:child_process";
@@ -57,7 +57,7 @@ report = {
     "cuda": None,
 }
 
-for name in ("numpy", "scipy", "PIL", "ezdxf", "rembg", "onnxruntime", "torch", "cv2", "requests"):
+for name in ("numpy", "scipy", "PIL", "ezdxf", "rembg", "onnxruntime", "torch", "torchvision", "gfpgan", "realesrgan", "cv2", "requests"):
     report["packages"][name] = version(name)
 
 try:
@@ -102,17 +102,31 @@ async function folderStats(directory) {
   }
 }
 
-/** rembg caches its models here, and they are large enough to be worth showing. */
+/** All shared ONNX/Torch weights, including nested GFPGAN support models. */
 async function cachedModels() {
   const directory = process.env.U2NET_HOME || path.join(homedir(), ".u2net");
   try {
-    const entries = await readdir(/* turbopackIgnore: true */ directory);
     const models = [];
-    for (const name of entries) {
-      if (!name.endsWith(".onnx")) continue;
-      const info = await stat(path.join(directory, name));
-      models.push({ name: name.replace(/\.onnx$/, ""), bytes: info.size });
+
+    async function walk(current) {
+      const entries = await readdir(/* turbopackIgnore: true */ current, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.name.startsWith(".")) continue;
+        const fullPath = path.join(current, entry.name);
+        if (entry.isDirectory()) {
+          await walk(fullPath);
+          continue;
+        }
+        if (![".onnx", ".pth"].includes(path.extname(entry.name).toLowerCase())) continue;
+        const info = await stat(fullPath);
+        models.push({
+          name: path.relative(directory, fullPath).split(path.sep).join("/"),
+          bytes: info.size,
+        });
+      }
     }
+
+    await walk(directory);
     return { directory, models: models.sort((a, b) => b.bytes - a.bytes) };
   } catch {
     return { directory, models: [] };
@@ -161,18 +175,22 @@ export async function readEnvironments() {
           {
             emoji: "🔍",
             label: "AI upscale",
-            ready: Boolean(imagePython.cuda?.available),
+            ready: Boolean(imagePython.packages?.realesrgan && imagePython.packages?.torch),
             detail: imagePython.cuda?.available
               ? `Real-ESRGAN on ${imagePython.cuda.device}`
-              : "No CUDA — 'auto' resolves to lanczos, which resamples but invents no detail",
+              : imagePython.packages?.realesrgan
+                ? "Real-ESRGAN is available for explicit CPU runs; 'auto' stays on Lanczos"
+                : "Real-ESRGAN is not installed; Lanczos remains available",
           },
           {
             emoji: "✨",
             label: "Face restoration",
-            ready: Boolean(imagePython.cuda?.available),
+            ready: Boolean(imagePython.packages?.gfpgan && imagePython.packages?.torch),
             detail: imagePython.cuda?.available
               ? "GFPGAN on the GPU"
-              : "No CUDA — 'auto' resolves to pillow tone and sharpness adjustment",
+              : imagePython.packages?.gfpgan
+                ? "GFPGAN is available for explicit CPU runs; 'auto' stays on Pillow"
+                : "GFPGAN is not installed; Pillow adjustments remain available",
           },
         ],
       },

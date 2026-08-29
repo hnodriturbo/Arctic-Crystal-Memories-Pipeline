@@ -51,6 +51,7 @@ export default function ConverterClient({
   const [values, setValues] = useState(() => ({
     ...defaultValues("mesh_to_pointcloud"),
     ...(handoff?.template ? { template: handoff.template } : {}),
+    ...(handoff?.margin ? { border: handoff.margin } : {}),
     // A one-off size typed into the Meshy step fills the custom fields here,
     // where 0 means "leave the blank alone".
     ...(handoff?.customSize
@@ -240,10 +241,11 @@ export default function ConverterClient({
       const data = await readResponseJson(response);
       if (!response.ok) throw new Error(data.error || "Could not open that Meshy model");
       setSourceFile(data.file);
-      if (data.template || data.customSize) {
+      if (data.template || data.customSize || data.margin) {
         setValues((current) => ({
           ...current,
           ...(data.template ? { template: data.template } : {}),
+          ...(data.margin ? { border: data.margin } : {}),
           ...(data.customSize
             ? {
                 width: data.customSize.width || 0,

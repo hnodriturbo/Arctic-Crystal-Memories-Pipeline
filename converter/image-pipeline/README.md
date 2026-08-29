@@ -18,8 +18,8 @@ Three scripts, run in that order when more than one is asked for:
 
 | Script          | What it does                              | Needs a GPU?           |
 |-----------------|-------------------------------------------|------------------------|
-| `enhance.py`    | Face restoration, or tone and sharpness   | GFPGAN yes, pillow no  |
-| `upscale.py`    | Enlarge to a target long edge             | Real-ESRGAN yes, lanczos no |
+| `enhance.py`    | Face restoration, or tone and sharpness   | GFPGAN: GPU or explicit CPU; Pillow: CPU |
+| `upscale.py`    | Enlarge to a target long edge             | Real-ESRGAN: GPU or explicit CPU; Lanczos: CPU |
 | `remove_bg.py`  | Cut the subject out onto transparency     | No                     |
 
 ## Why the order is fixed
@@ -28,10 +28,10 @@ Restore at native resolution, upscale the restored image, then cut out last.
 Cutting first would upscale a matte whose edge decisions are already baked in,
 and the silhouette is the single thing Meshy is most sensitive to.
 
-## CPU first, GPU optional
+## Complete CPU environment, GPU optional
 
-The VPS has no CUDA, so the baseline install is CPU-only and every script says
-what it fell back to rather than failing:
+The VPS has no CUDA, but the complete CPU environment includes rembg,
+Real-ESRGAN and GFPGAN:
 
 ```bash
 python3 -m venv .venv
@@ -39,21 +39,20 @@ source .venv/bin/activate           # Windows: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-That gives background removal at full quality — rembg runs on onnxruntime and
-a portrait takes a few seconds — plus lanczos upscaling and pillow tone
-adjustment.
+Run `python code/download_models.py` once after installation. All six rembg
+weights, GFPGAN and Real-ESRGAN then live in the shared model cache.
 
-On the workstation, add the GPU extras for Real-ESRGAN and GFPGAN:
+On a CUDA 12.1 workstation, replace only the paired CPU Torch wheels:
 
 ```powershell
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
-pip install -r requirements-gpu.txt
+pip install --force-reinstall torch==2.1.2+cu121 torchvision==0.16.2+cu121 `
+  --index-url https://download.pytorch.org/whl/cu121
 ```
 
-`--engine auto` then resolves to the AI engines. Without torch it resolves to
-lanczos and pillow and says so in the output. **Do not install the GPU extras
-on the VPS** — a CPU torch build is a 2 GB download and a Real-ESRGAN pass slow
-enough to time out.
+`auto` uses AI on CUDA and keeps the lightweight Pillow/Lanczos path on CPU.
+Choose `gfpgan` or `realesrgan` explicitly to run the slower CPU AI pass. The
+web runner serializes image chains so two large Torch jobs cannot exhaust the
+6 GB VPS together.
 
 ## Calling the scripts
 
@@ -80,7 +79,8 @@ python code/enhance.py --input input/photo.jpg --output output/better.png \
 - `isnet-general-use` — solid general fallback with a much smaller download.
 - `u2net_human_seg`, `u2net` — older, softer, kept for comparison.
 
-Models download to `~/.u2net/` on first use, not into this folder.
+Production preloads models into the shared `~/.u2net/` cache. They are not
+duplicated inside releases or virtual environments.
 
 `remove_bg.py` prints what fraction of the frame the subject covers. Above 95%
 means it found no subject at all and kept everything — usually the wrong model
@@ -91,7 +91,7 @@ for the picture rather than a broken image.
 ```txt
 input/     photographs to work on
 output/    every stage's result, numbered in running order
-models/    Real-ESRGAN and GFPGAN weights, downloaded on demand
+models/    shared rembg, Real-ESRGAN and GFPGAN weights
 ```
 
 All three are git-ignored; only the structure is tracked.
