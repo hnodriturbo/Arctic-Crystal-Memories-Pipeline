@@ -58,6 +58,12 @@ export const authConfig = {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       if (PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
+      if (
+        process.env.NODE_ENV === "development" &&
+        process.env.PIPELINE_DEV_AUTH_BYPASS === "true"
+      ) {
+        return true;
+      }
       return Boolean(auth?.user);
     },
   },

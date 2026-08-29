@@ -16,6 +16,8 @@
 import { useCallback, useRef, useState } from "react";
 
 import ConverterClient from "@/components/ConverterClient";
+import CrystalComposerClient from "@/components/CrystalComposerClient";
+import CrystalViewerClient from "@/components/CrystalViewerClient";
 import EnvironmentsClient from "@/components/EnvironmentsClient";
 import ImageClient from "@/components/ImageClient";
 import LanguageToggle from "@/components/LanguageToggle";
@@ -23,22 +25,26 @@ import { useLanguage } from "@/components/LanguageProvider";
 import MeshyClient from "@/components/MeshyClient";
 import PhotoLibrary from "@/components/PhotoLibrary";
 import PipelineSidebar from "@/components/PipelineSidebar";
+import ReliefClient from "@/components/ReliefClient";
 import ReviewClient from "@/components/ReviewClient";
 import ThemeToggle from "@/components/ThemeToggle";
 import { NAV_ITEMS, meshyModeFor } from "@/lib/navigation";
 
-export default function AppShell({ converter, meshy, image, environments }) {
+export default function AppShell({ converter, meshy, image, relief, environments, composerBlanks }) {
   const { t } = useLanguage();
   const [active, setActive] = useState("library");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [imageState, setImageState] = useState(image);
   const [meshyState, setMeshyState] = useState(meshy);
+  const [reliefState, setReliefState] = useState(relief);
 
   // The handoff carries the file plus whatever context came with it. Its
   // timestamp is what re-keys the converter, so handing the same file over
   // twice still lands.
   const [converterHandoff, setConverterHandoff] = useState(null);
+  const [reliefHandoff, setReliefHandoff] = useState(null);
+  const [viewerHandoff, setViewerHandoff] = useState(null);
 
   // The Meshy panel publishes its own refresh here, so a file dropped into
   // its input folder can be picked up without remounting a running job.
@@ -64,12 +70,14 @@ export default function AppShell({ converter, meshy, image, environments }) {
   /** Re-read both workspaces after anything moves a file between them. */
   const refreshLibrary = useCallback(async () => {
     try {
-      const [imageResponse, meshyResponse] = await Promise.all([
+      const [imageResponse, meshyResponse, reliefResponse] = await Promise.all([
         fetch("/api/image/state", { cache: "no-store" }),
         fetch("/api/meshy/state", { cache: "no-store" }),
+        fetch("/api/relief/state", { cache: "no-store" }),
       ]);
       setImageState(await imageResponse.json());
       setMeshyState(await meshyResponse.json());
+      setReliefState(await reliefResponse.json());
     } catch {
       // A listing failure is not worth an error banner in the shell.
     }
@@ -84,6 +92,25 @@ export default function AppShell({ converter, meshy, image, environments }) {
   const receiveIntoMeshy = () => {
     meshyRefresh.current?.();
     selectView("meshy:image_to_3d");
+  };
+
+  /** Keep the prepared PNG on local disk and open it as the active 2.5D input. */
+  const receiveIntoRelief = (payload) => {
+    setReliefHandoff({ ...payload, at: Date.now() });
+    selectView("relief");
+  };
+
+  /** Open the finished relief GLB in Leið B without another file picker. */
+  const receiveIntoViewer = (job) => {
+    const previewName = job.files?.preview || "relief.glb";
+    setViewerHandoff({
+      url: `/api/file?root=relief-output&path=${encodeURIComponent(`${job.jobId}/${previewName}`)}`,
+      name: `${job.jobId}-${previewName}`,
+      kind: "glb",
+      template: job.template,
+      at: Date.now(),
+    });
+    selectView("viewer");
   };
 
   return (
@@ -160,6 +187,27 @@ export default function AppShell({ converter, meshy, image, environments }) {
               onSendToConverter={receiveIntoConverter}
             />
           ) : null}
+
+          {/* Leið A stays independent from the long-running 2.5D panel. */}
+          {active === "composer" ? (
+            <CrystalComposerClient blankOptions={composerBlanks} onContinue={receiveIntoRelief} />
+          ) : null}
+
+          {/*
+           * 2.5D pipeline - kept mounted, because a Marigold run with a large
+           * ensemble takes minutes and switching tabs must not abandon it.
+           */}
+          <div className={active === "relief" ? "" : "hidden"}>
+            <ReliefClient
+              initialState={reliefState}
+              handoff={reliefHandoff}
+              onSendToConverter={receiveIntoConverter}
+              onOpenViewer={receiveIntoViewer}
+            />
+          </div>
+
+          {/* Standalone crystal viewer - stateless, so it mounts on demand */}
+          {active === "viewer" ? <CrystalViewerClient handoff={viewerHandoff} /> : null}
 
           {/*
            * Converter pipeline. Re-keyed on each handoff so the incoming model is already

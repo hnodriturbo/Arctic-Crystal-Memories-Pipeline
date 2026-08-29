@@ -23,9 +23,17 @@ export default function LoginForm({ initialError = null }) {
   const [busy, setBusy] = useState(false);
 
   /*
-   * Posted straight to Auth.js's credentials endpoint with redirect off, so a
-   * wrong password re-renders this form with a message instead of bouncing
-   * through /api/auth/error and losing what was typed.
+   * Posted straight to Auth.js's credentials endpoint, and the redirect it
+   * answers with is deliberately never followed.
+   *
+   * `redirect: "manual"` matters more than it looks. Auth.js replies to a form
+   * POST with a 302, and following it hands control of where we land to the
+   * browser - which on localhost has usually also been serving ACM-Web-Main,
+   * a next-intl app that rewrites bare paths to /en/... . That cached rewrite
+   * turned a successful sign-in into `GET /en/login 404`, a route this app
+   * does not have, which looked exactly like a rejected password. The
+   * Set-Cookie still lands, because the browser stores it whether or not the
+   * redirect is followed - so the session is asked directly instead.
    */
   async function submit(event) {
     event.preventDefault();
@@ -38,20 +46,26 @@ export default function LoginForm({ initialError = null }) {
       const csrfResponse = await fetch("/api/auth/csrf");
       const { csrfToken } = await csrfResponse.json();
 
-      const response = await fetch("/api/auth/callback/credentials", {
+      await fetch("/api/auth/callback/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           csrfToken,
           email: form.get("email"),
           password: form.get("password"),
-          redirect: "false",
+          // Same-origin and explicit, so nothing has to guess a destination.
+          callbackUrl: new URL("/", window.location.origin).toString(),
         }),
+        redirect: "manual",
       });
 
-      // Auth.js answers a failed credentials check by redirecting to its error
-      // page; a success lands anywhere else.
-      if (!response.ok || response.url.includes("error")) {
+      // The session cookie is the only trustworthy signal here: an opaque
+      // redirect exposes neither a status nor a Location to read.
+      const session = await fetch("/api/auth/session", { cache: "no-store" }).then(
+        (response) => response.json(),
+      );
+
+      if (!session?.user) {
         setError("Wrong email or password.");
         return;
       }

@@ -9,7 +9,8 @@ Purpose:
 [CmdletBinding()]
 param(
   [string]$SshHost = "acm-vps",
-  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline"
+  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline",
+  [string[]]$AdditionalArchiveExcludes = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -74,6 +75,17 @@ $archiveExcludes = @(
   "--exclude=converter/pipeline-converter/input/*",
   "--exclude=converter/pipeline-converter/output/*"
 )
+
+# A concurrent local feature may be unfinished while an unrelated reviewed
+# change is deployed. Extra exclusions are explicit, relative paths only; they
+# never alter or move the local work that is being skipped.
+foreach ($relativePath in $AdditionalArchiveExcludes) {
+  $normalized = ([string]$relativePath).Replace("\", "/").Trim("/")
+  if (-not $normalized -or $normalized.StartsWith(".") -or $normalized.Contains("..") -or $normalized -match '[:*?]') {
+    throw "Unsafe additional archive exclusion: $relativePath"
+  }
+  $archiveExcludes += "--exclude=$normalized"
+}
 
 try {
   Write-Host "Creating secret-free local release $releaseId."

@@ -16,6 +16,7 @@ import { useState } from "react";
 
 import ModelViewer from "@/components/ModelViewer";
 import { useLanguage } from "@/components/LanguageProvider";
+import RetextureControls from "@/components/RetextureControls";
 import { MESHY_MODES } from "@/lib/meshy/catalog";
 import { readResponseJson } from "@/lib/response-json";
 
@@ -34,6 +35,11 @@ const fileUrl = (path, download = false) =>
 
 /** The GLB a job produced, if it asked for one - the only format the viewer reads. */
 function previewModel(job) {
+  const latestRetexture = job?.retextures?.at(-1)?.previewPath;
+  if (latestRetexture) {
+    const texturedPreview = job?.files?.find((file) => file.path === latestRetexture);
+    if (texturedPreview) return texturedPreview;
+  }
   return job?.files?.find((file) => file.extension === ".glb" && !file.name.includes("pre-remesh"));
 }
 
@@ -160,6 +166,11 @@ export default function JobResults({
                     {job.error}
                   </p>
                 ) : null}
+                {job.textureWarning ? (
+                  <p className="rounded-md border border-warning-border bg-warning-soft px-3 py-2 text-xs text-warning-text">
+                    {job.textureWarning}
+                  </p>
+                ) : null}
 
                 {job.retentionStatus === "pending" || job.retentionStatus === "failed-review" ? (
                   <div className="rounded-lg border border-warning-border bg-warning-soft p-4">
@@ -173,7 +184,7 @@ export default function JobResults({
                         <button
                           type="button"
                           onClick={() => decideProject(job, "archive")}
-                          disabled={Boolean(busyDecision)}
+                          disabled={Boolean(busyDecision) || job.retextureStatus === "running"}
                           className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:bg-accent-hover disabled:opacity-50"
                         >
                           {busyDecision === `archive:${job.id}`
@@ -184,7 +195,7 @@ export default function JobResults({
                       <button
                         type="button"
                         onClick={() => decideProject(job, "discard")}
-                        disabled={Boolean(busyDecision)}
+                        disabled={Boolean(busyDecision) || job.retextureStatus === "running"}
                         className="rounded-lg border border-danger-border px-4 py-2 text-sm text-danger-text transition hover:bg-danger-soft disabled:opacity-50"
                       >
                         {busyDecision === `discard:${job.id}`
@@ -193,6 +204,14 @@ export default function JobResults({
                       </button>
                     </div>
                   </div>
+                ) : null}
+
+                {job.status === "succeeded" && job.retentionStatus === "pending" ? (
+                  <RetextureControls
+                    job={job}
+                    onJobUpdated={(updatedJob) => onProjectChange?.("retexture", updatedJob)}
+                    onNotice={onNotice}
+                  />
                 ) : null}
 
                 {/* A 2D job shows its pictures and offers them to the 3D step */}

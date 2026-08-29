@@ -25,6 +25,9 @@ export async function archiveMeshyProject(jobId) {
   if (job.retentionStatus !== "pending") {
     throw new Error("This project is not waiting for an archive decision.");
   }
+  if (job.retextureStatus === "running") {
+    throw new Error("Wait for the active Retexture task before archiving this project.");
+  }
 
   const directory = jobDir(jobId);
   const files = await indexJobFiles(jobId);

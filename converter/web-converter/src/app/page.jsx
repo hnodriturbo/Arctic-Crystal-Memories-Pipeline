@@ -12,20 +12,31 @@ import { readEnvironments } from "@/lib/environments";
 import { readImageState } from "@/lib/image/state";
 import { listConverterFiles } from "@/lib/list-files";
 import { readMeshyState } from "@/lib/meshy/state";
+import { readReliefState } from "@/lib/relief/state";
+import { loadComposerBlanks } from "@/lib/relief/load-composer-blanks";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
   // In parallel: a Meshy balance lookup is a network round trip, and there is
   // no reason the two disk walks should wait behind it.
-  const [converter, meshy, image, environments] = await Promise.all([
+  const [converter, meshy, image, relief, environments, composerBlanks] = await Promise.all([
     listConverterFiles(),
     readMeshyState(),
     readImageState(),
+    readReliefState(),
     readEnvironments(),
+    loadComposerBlanks(),
   ]);
 
   return (
-    <AppShell converter={converter} meshy={meshy} image={image} environments={environments} />
+    <AppShell
+      converter={converter}
+      meshy={meshy}
+      image={image}
+      relief={relief}
+      environments={environments}
+      composerBlanks={composerBlanks}
+    />
   );
 }

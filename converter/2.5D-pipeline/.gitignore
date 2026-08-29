@@ -1,0 +1,16 @@
+# Working folders and downloaded weights. The structure is tracked, the
+# contents are not - Depth Anything V2 Large alone is ~1.3 GB, and a single
+# relief run writes a depth PNG, an OBJ and a GLB.
+.venv/
+input/*
+output/*
+models/*
+!.gitkeep
+!*/.gitkeep
+__pycache__/
+
+# Blank geometry imported from a local Cockpit 3D installation. Deliberately
+# NOT committed: it regenerates in seconds via code/import_blanks.py on any
+# machine that has the software, so their asset files never travel further
+# than the machines already licensed to have them.
+blanks/

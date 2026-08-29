@@ -6,16 +6,16 @@ Purpose:
 
 # Crystal Converter
 
-Three pipelines that chain in one direction, plus the web UI that drives all of
-them. Self-contained: nothing here depends on the main website, and the whole
-`converter/` folder is what gets deployed to `pipeline.acm.is`.
+Four pipelines that can chain in one direction, plus the web UI that drives
+them. Self-contained: nothing here depends on the main website.
 
 ```txt
 converter/
 ├── image-pipeline/       Python CLI - clean a photograph
 ├── meshy-pipeline/       Workspace - photograph to 3D model, via the Meshy API
+├── 2.5D-pipeline/        Local depth map, relief GLB/OBJ and Cockpit blank data
 ├── pipeline-converter/   Python CLI - 3D model to printable point cloud
-└── web-converter/        Next.js 16 UI that drives all three
+└── web-converter/        Next.js 16 UI that drives all four
 ```
 
 ```txt
@@ -35,6 +35,10 @@ Each stage is usable on its own, and each hands its result to the next with one
 button in the UI. Start anywhere: an existing model can go straight into the
 converter, and a photograph that is already clean can go straight to Meshy.
 
+For the crystal-photo path, the web UI exposes the intended sequence directly:
+`Leið A → 2.5D AutoConvertTo3D → Leið B`. The ACM-Web-Main versions remain
+separate prototypes for a future customer express-checkout flow.
+
 ## The two formats that matter
 
 **Cockpit3D / SSLE point DXF** — what the engraver reads. `POINT` entities only,
@@ -52,7 +56,7 @@ dot spacing and no crystal fit, which is why `mesh_to_pointcloud.py` exists.
 
 ```powershell
 cd web-converter
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:3100
 ```
 
 Everything is driven from there. For a one-off from the command line:

@@ -3,12 +3,14 @@
  * Navigation
  * ═══════════════════════════════════════════════════════════════
  * Path: src/lib/navigation.js
- * Purpose: The sidebar's contents - one clear menu for each of the three
+ * Purpose: The sidebar's contents - one clear menu for each of the four
  *          pipelines, followed by a small system-status section.
  *
  * Numbered, but not a wizard. Every pipeline reads from its own folder, so
  * any of them is a valid starting point. The order still communicates the
- * normal handoff: image -> Meshy -> converter.
+ * normal handoff: image -> Meshy or 2.5D -> converter. Steps 2 and 3 are
+ * alternatives, not a sequence: Meshy solves a full 3D subject, the 2.5D
+ * pipeline builds a relief, and a job goes through one of them, not both.
  *
  * Locked entries stay listed on purpose. A greyed row with a reason answers
  * "can this do X?" far better than an absence does, and unlocking one is a
@@ -90,8 +92,40 @@ export const SECTIONS = [
     ],
   },
   {
-    id: "pipeline-converter",
+    id: "2.5D-pipeline",
     step: 3,
+    label: "2.5D pipeline",
+    hint: "Leið A → 2.5D → Leið B",
+    items: [
+      {
+        id: "composer",
+        emoji: "🖼️",
+        label: "Leið A · Prepare photo",
+        blurb:
+          "Crop and compose the customer photograph inside a local Cockpit3D blank, then send the finished PNG straight into 2.5D.",
+        icon: "photo",
+      },
+      {
+        id: "relief",
+        emoji: "🏔️",
+        label: "2.5D · AutoConvertTo3D",
+        blurb:
+          "Turn a photograph into a depth map and a relief mesh, and see it inside real glass before it goes anywhere.",
+        icon: "cube",
+      },
+      {
+        id: "viewer",
+        emoji: "🔮",
+        label: "Leið B · GLB viewer",
+        blurb:
+          "Drop in a GLB, a point-cloud DXF or a plain photograph and look at it inside a blank. The prototype for the acm.is viewer.",
+        icon: "eye",
+      },
+    ],
+  },
+  {
+    id: "pipeline-converter",
+    step: 4,
     label: "Pipeline converter",
     hint: "3D/CAD in · DXF, OBJ and point clouds out",
     items: [

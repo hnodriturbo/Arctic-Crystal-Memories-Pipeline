@@ -1,0 +1,60 @@
+# requirements.txt — converter/2.5D-pipeline
+#
+# A fourth, deliberately separate environment. It is NOT merged into
+# image-pipeline's venv: that one is pinned to torch 2.1.2 + numpy 1.26.4
+# because basicsr/gfpgan need that exact ABI, and Depth Anything V2 wants a
+# modern transformers on a modern torch. Keeping them apart is what lets each
+# stay on the pairing it actually needs.
+#
+# PYTHON 3.11, exactly - same as the other three pipelines. The CPU torch
+# wheels below are published per minor version, and the VPS provisioning builds
+# every venv on 3.11; healthcheck.py fails the environment on anything else.
+#
+#   Windows:  py -3.11 -m venv .venv
+#             .\.venv\Scripts\Activate.ps1
+#             pip install -r requirements.txt
+#
+#   VPS:      uv venv --python 3.11 .venv
+#             source .venv/bin/activate
+#             pip install -r requirements.txt
+#
+# Then once, to pull the weights into models/:
+#             python code/download_models.py --model large
+#
+# NOTE ON PINS. The lines below are floors, not frozen pins, because the
+# torch/transformers pairing has to be resolved against whatever the target
+# machine's Python and platform wheels allow. After the first successful
+# install on each platform, run `pip freeze > requirements.lock.txt` in this
+# folder and treat that as the reproducible record. The other three pipelines
+# are exact-pinned because their ABI constraints are already known-hostile;
+# this one is not, and pinning a wheel that does not exist for the VPS's
+# Python is a worse failure than a resolver picking a newer patch.
+
+# A flat, official wheel source for CPU torch. Not an extra index, so it
+# cannot shadow ordinary PyPI packages.
+--find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+
+# ── Depth estimation ─────────────────────────────────────────────────────────
+# Depth Anything V2 ships as a transformers model; no custom repo checkout.
+torch>=2.4
+torchvision>=0.19
+transformers>=4.45
+accelerate>=0.34
+safetensors>=0.4.5
+
+# Optional second engine. Marigold is diffusion-based - slower per image and a
+# larger download, but it resolves fine facial relief that Depth Anything can
+# flatten. Comment this out on a machine that will only ever run the default.
+diffusers>=0.31
+
+# ── Imaging and mesh ─────────────────────────────────────────────────────────
+pillow>=11.0
+numpy>=1.26
+# trimesh writes the GLB the browser preview loads. The [easy] extra pulls the
+# gltf/ply exporters; the base package alone cannot write a binary GLB.
+trimesh[easy]>=4.5
+
+# ── Console output ───────────────────────────────────────────────────────────
+# Same console library as the other pipelines, so the web runner's line reader
+# sees identical formatting from all four.
+rich>=13.9

@@ -6,12 +6,12 @@ Purpose:
 
 # web-converter
 
-Next.js 16 front end for `../pipeline-converter`. It uploads a file, runs one of
-the Python scripts, streams the console output live, and offers the results for
-download. Local tool — no auth, not meant to face the internet.
+Next.js 16 operator front end for the image, Meshy, 2.5D and point-cloud
+pipelines. It uploads files, streams Python output live, keeps each long-running
+panel mounted, and carries results between stages without another upload.
 
 ```powershell
-npm run dev     # http://localhost:3000
+npm run dev     # http://localhost:3100
 ```
 
 ## Configuration
@@ -26,6 +26,30 @@ CONVERTER_PYTHON=              # optional, defaults to CONVERTER_ROOT\.venv\Scri
 Without `CONVERTER_ROOT` it falls back to `../pipeline-converter`, which is
 correct for the normal checkout.
 
+## Crystal workflow
+
+The 2.5D sidebar section is one continuous local workflow:
+
+```txt
+Leið A · fixed 2D crop
+    ↓ composed PNG + Cockpit blank metadata
+2.5D · depth.png → relief.glb + relief.obj → printer DXF
+    ↓ finished relief GLB
+Leið B · rotatable Three.js viewer
+```
+
+- Leið A reads every locally imported Cockpit3D 2D blank and uses projected
+  OBJ masks where the product is not a bevelled box.
+- Printer output uses the existing `pipeline-converter/code/mesh_to_pointcloud.py`.
+  Automatic jobs target 250,000–1,000,000 points from source image area.
+- Preview dot diameter is fixed at `0.08 mm`. Point spacing, minimum distance,
+  Z distance and layer distance are separate production controls.
+- Remote relief-library writes are disabled by default. Only
+  `RELIEF_REMOTE_LIBRARY_ENABLED=true` opts a deployment into mirroring and
+  pruning; local development does neither.
+- `PIPELINE_DEV_AUTH_BYPASS=true` is accepted only under `next dev` for local
+  visual QA. It has no effect in a production build.
+
 ## Where things live
 
 ```txt
@@ -35,7 +59,7 @@ src/app/api/upload        Streams a request body straight to input/uploads/
 src/app/api/convert       Spawns Python, relays stdout as Server-Sent Events
 src/app/api/files         Lists input/ and output/
 src/app/api/download      Streams one file back
-src/components/           ConverterClient, OptionFields, ConsoleLog
+src/components/           Leið A, relief, Leið B, converter and shared controls
 ```
 
 ## Adding an option or a script
