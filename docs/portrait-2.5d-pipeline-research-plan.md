@@ -242,9 +242,32 @@ pipeline input folder). Verified observations:
 - `PointCloudBuilderSettings` is a separate block with XY/Z distance, trim,
   stabilizer, toning and optimisation settings.
 
-This confirms the working artifact boundary: the network conversion arrives as
-a textured, fitted triangle mesh; point-cloud generation is a later Cockpit3D
-operation. It does **not** prove how their conversion model works.
+This confirms the saved-scene artifact boundary: by the time a `.cockpit` scene
+is saved, the conversion exists as a textured, fitted triangle mesh and
+point-cloud generation is a separate later operation. It does **not** establish
+which format the server returned, whether the desktop app converted that result
+to `.ci`, or how their conversion model works.
+
+ACM's independent equivalent should be explicit and standard:
+
+```txt
+one canonical textured triangle surface
+    ├── GLB: mesh + normals + UV/material + embedded texture for approval
+    └── OBJ + MTL + PNG: equivalent geometry/texture for current converter
+```
+
+GLB is technically capable of carrying the complete textured mesh. The current
+`mesh_to_pointcloud.py` limitation is implementation-specific: it reads OBJ and
+DXF, not GLB. Until a tested GLB reader is added, the OBJ/MTL/PNG bundle is the
+downstream interchange artifact. Geometry hashes/metrics and rendered UV checks
+must prove that it represents the same canonical surface as the GLB.
+
+The greyscale/photo texture and geometry solve different parts of quality. The
+mesh supplies silhouette, depth, facial planes and oblique shape. UV-mapped
+luminance can drive point density/toning and supply photographic fine detail.
+A sharp texture cannot repair flat or incorrectly ordered geometry, while a
+good mesh without tonal mapping may still produce a poor photographic point
+cloud. Both must be evaluated separately and together.
 
 The `.ci` header exposes mesh counts, but its geometry payload is transformed.
 ACM will not author `.cockpit` or `.ci`, decode the private transform, inspect

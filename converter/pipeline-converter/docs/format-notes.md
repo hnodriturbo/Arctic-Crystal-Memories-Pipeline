@@ -112,9 +112,10 @@ are stored in XML separately from geometry.
 
 The scene's `PointCloudBuilderSettings` is also separate from `Conversion`.
 Observed examples use XY/Z distances of `0.07/0.07` or `0.08/0.1` and toning
-`1.8`. This is evidence that the imported conversion is a fitted textured mesh
-and that point-cloud creation happens later; it is not evidence about the
-private model or algorithm that generated the mesh.
+`1.8`. This is evidence that the conversion stored in the saved scene is a
+fitted textured mesh and that point-cloud creation happens later. It does not
+show which format came from the network, whether the desktop app converted that
+format to `.ci`, or how the private model generated the mesh.
 
 ### The `.ci` geometry container
 
