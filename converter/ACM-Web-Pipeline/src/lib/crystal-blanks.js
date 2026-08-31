@@ -16,6 +16,8 @@
  * keys have the first two numbers swapped relative to the product pages.
  */
 
+import { COCKPIT_2D_BLANKS } from "@/lib/cockpit-2d-blanks";
+
 export const DEFAULT_CRYSTAL_MARGIN_MM = 1;
 export const MIN_CRYSTAL_MARGIN_MM = 0.1;
 
@@ -59,6 +61,10 @@ export const CRYSTAL_BLANKS = {
 
   "20x30x15": { width: 20, height: 30, depth: 15, border: DEFAULT_CRYSTAL_MARGIN_MM, group: "Keychain", name: "Rectangle" },
   "35x35x12": { width: 35, height: 35, depth: 12, border: DEFAULT_CRYSTAL_MARGIN_MM, group: "Keychain", name: "Heart (bounding box)" },
+
+  // Every locally extracted Cockpit3D 2D template. These ids retain shape
+  // identity while the builders resolve them to physical WIDTHxHEIGHTxDEPTH.
+  ...COCKPIT_2D_BLANKS,
 };
 
 /*
@@ -68,6 +74,16 @@ export const CRYSTAL_BLANKS = {
  */
 
 export const CRYSTAL_BLANK_NAMES = Object.keys(CRYSTAL_BLANKS);
+
+/** Resolve a named/shape template to the dimension string expected by Python. */
+export function templateDimensions(templateName) {
+  const blank = CRYSTAL_BLANKS[templateName];
+  if (blank) return `${blank.width}x${blank.height}x${blank.depth}`;
+  const parts = String(templateName || "").split("x").map(Number);
+  return parts.length === 3 && parts.every((value) => value > 0)
+    ? `${parts[0]}x${parts[1]}x${parts[2]}`
+    : "60x80x40";
+}
 
 /** Engravable millimetres after the chosen per-side margin is removed. */
 export function usableSpace(templateName, overrides = {}) {
@@ -134,10 +150,15 @@ export function blankOptions({ includeNone = true, noneLabel = "none" } = {}) {
   for (const [key, blank] of Object.entries(CRYSTAL_BLANKS)) {
     const space = usableSpace(key);
     const name = blank.name ? ` ${blank.name}` : "";
+    const cockpit = key.startsWith("2d-");
+    const displayName = cockpit ? blank.name : `${blank.group}${name}`;
+    const displayNameIs = cockpit
+      ? blank.name
+      : `${groupIs[blank.group] || blank.group}${blank.name ? ` ${nameIs[blank.name] || blank.name}` : ""}`;
     options.push({
       value: key,
-      label: `${blank.group}${name} — ${key} (${space.width}×${space.height}×${space.depth} preset usable)`,
-      labelIs: `${groupIs[blank.group] || blank.group}${blank.name ? ` ${nameIs[blank.name] || blank.name}` : ""} — ${key} (${space.width}×${space.height}×${space.depth} mm sjálfgefið nýtanlegt)`,
+      label: `${displayName} — ${blank.width}×${blank.height}×${blank.depth} mm (${space.width}×${space.height}×${space.depth} usable)`,
+      labelIs: `${displayNameIs} — ${blank.width}×${blank.height}×${blank.depth} mm (${space.width}×${space.height}×${space.depth} mm nýtanlegt)`,
     });
   }
   return options;

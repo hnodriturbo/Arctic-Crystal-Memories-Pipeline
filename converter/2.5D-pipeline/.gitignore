@@ -1,12 +1,15 @@
 # Working folders and downloaded weights. The structure is tracked, the
 # contents are not - Depth Anything V2 Large alone is ~1.3 GB, and a single
-# relief run writes a depth PNG, an OBJ and a GLB.
+# relief run writes a depth PNG, an OBJ and a GLB. Models/* also covers local
+# ICON/ECON source archives, licensed SMPL assets, checkpoints, and staging.
 .venv/
 input/*
+input-testers/*
 output/*
-models/*
+Models/*
 !.gitkeep
 !*/.gitkeep
+!input-testers/.gitkeep
 __pycache__/
 
 # Blank geometry imported from a local Cockpit 3D installation. Deliberately

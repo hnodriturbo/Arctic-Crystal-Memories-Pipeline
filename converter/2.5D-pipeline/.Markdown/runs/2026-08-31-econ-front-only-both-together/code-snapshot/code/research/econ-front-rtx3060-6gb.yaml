@@ -1,0 +1,54 @@
+# ==========================================
+# File: code/research/econ-front-rtx3060-6gb.yaml
+# Purpose:
+#  - Run ECON's d-BiNI front-surface path on the local RTX 3060 Laptop 6 GB.
+#  - Preserve ECON geometry while selecting a Sapiens normal model that fits local VRAM.
+# ==========================================
+
+name: econ-front-rtx3060-6gb
+ckpt_dir: "./data/ckpt/"
+normal_path: "./data/ckpt/normal.ckpt"
+ifnet_path: "./data/ckpt/ifnet.ckpt"
+results_path: "./results"
+
+net:
+  in_nml: (('image',3), ('T_normal_F',3), ('T_normal_B',3))
+  in_geo: (('normal_F',3), ('normal_B',3))
+
+test_mode: True
+batch_size: 1
+
+dataset:
+  prior_type: "SMPL"
+
+vol_res: 256
+mcube_res: 256
+clean_mesh: True
+cloth_overlap_thres: 0.50
+body_overlap_thres: 0.00
+# Reuse successful SMPL-X fitting on retries; delete the cached OBJ/NPY files
+# explicitly when a different fitting configuration should be evaluated.
+force_smpl_optim: False
+
+sapiens:
+  # The published Sapiens TorchScript checkpoints require Torch 2.x.
+  # This isolated official Windows/CEB environment uses Torch 1.12 + CUDA 11.6,
+  # so the first reproducible baseline uses ECON's own normal.ckpt network.
+  use: False
+  seg_model: "fg-bg-1b"
+  normal_model: "0.3b"
+
+bni:
+  k: 4
+  lambda1: 1e-4
+  boundary_consist: 1e-6
+  poisson_depth: 10
+  use_smpl: ["hand"]
+  use_ifnet: False
+  use_poisson: True
+  hand_thres: 8e-2
+  face_thres: 6e-2
+  thickness: 0.02
+  hps_type: "pixie"
+  texture_src: "image"
+  cut_intersection: True

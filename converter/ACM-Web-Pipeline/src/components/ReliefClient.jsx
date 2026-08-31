@@ -8,10 +8,9 @@
  * Purpose: Drive the 2.5D pipeline - photograph to depth map to relief mesh -
  *          and show the result inside the glass it will actually be cut into.
  *
- * The preview is the point of this panel. A relief that looks right as a grey
- * mesh can still read as a flat smear once it is dots inside 40 mm of K9, and
- * the only way to know before sending a job to the engraver is to look at it
- * the way the customer will.
+ * The preview compares the source with the textured 2.5D result handed to ACM
+ * Scene Composer in Blender. A point-cloud view remains available as a later
+ * production check, but it is deliberately not this pipeline's deliverable.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -73,7 +72,14 @@ function blankDimensions(template) {
  * 125x110". A 1 mm tolerance absorbs their rounding.
  */
 function matchBlankModel(blanks, template) {
-  const parts = String(template || "").split("x").map(Number);
+  const known = CRYSTAL_BLANKS[template];
+  if (known?.model) {
+    return `/api/file?root=relief-blanks&path=${encodeURIComponent(known.model)}`;
+  }
+
+  const parts = known
+    ? [known.width, known.height, known.depth]
+    : String(template || "").split("x").map(Number);
   if (parts.length !== 3 || parts.some((value) => !(value > 0))) return null;
 
   const [width, height, depth] = parts;
@@ -88,17 +94,23 @@ function matchBlankModel(blanks, template) {
 }
 
 /** One finished relief: before and after, the viewer controls, and where it goes next. */
-function JobCard({ job, onSendToConverter, locale, blankModel }) {
-  const [mode, setMode] = useState("points");
+function JobCard({ job, locale, blankModel }) {
+  const [mode, setMode] = useState("surface");
   const [showGlass, setShowGlass] = useState(true);
   const [autoRotate, setAutoRotate] = useState(true);
   const [compare, setCompare] = useState("after");
+  const [appearance, setAppearance] = useState("crystal");
 
   const blank = useMemo(() => blankDimensions(job.template), [job.template]);
   const border = Number(job.values?.border) || 1;
 
   const photo = fileUrl(job.jobId, job.files?.photo || "source.png");
-  const relief = fileUrl(job.jobId, job.files?.preview || "relief.glb");
+  const relief = fileUrl(
+    job.jobId,
+    appearance === "crystal"
+      ? job.files?.crystalPreview || job.files?.preview || "relief.glb"
+      : job.files?.preview || "relief.glb",
+  );
 
   /*
    * Before is the flat photograph suspended in the glass - the plain 2D
@@ -126,8 +138,10 @@ function JobCard({ job, onSendToConverter, locale, blankModel }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-mono text-sm text-muted-strong">{job.jobId}</h3>
         <span className="font-mono text-xs text-muted">
-          {job.template} · {job.values?.engine} · {job.values?.grid} grid
-          {job.values?.relief_depth ? ` · ${job.values.relief_depth}mm relief` : ""}
+          {job.template} · {job.values?.engine} · {job.resolvedGrid || job.values?.grid} grid
+          {job.resolvedReliefDepth
+            ? ` · ${job.resolvedReliefDepth}mm ${job.values?.relief_depth_profile || "custom"}`
+            : ""}
         </span>
       </div>
 
@@ -183,6 +197,29 @@ function JobCard({ job, onSendToConverter, locale, blankModel }) {
           </div>
 
           <div className="space-y-1.5">
+            <span className={SECTION_TITLE}>{locale === "is" ? "Áferð" : "Appearance"}</span>
+            <div className="flex gap-1.5">
+              {[
+                ["crystal", locale === "is" ? "Kristall" : "Crystal"],
+                ["rgb", "RGB"],
+              ].map(([option, text]) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setAppearance(option)}
+                  className={`flex-1 rounded-md border px-2 py-1.5 text-xs transition ${
+                    appearance === option
+                      ? "border-accent bg-surface-strong text-foreground"
+                      : "border-surface-border text-muted hover:border-accent"
+                  }`}
+                >
+                  {text}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
             <span className={SECTION_TITLE}>{locale === "is" ? "Sýn" : "Render"}</span>
             <div className="flex gap-1.5">
               {["points", "surface"].map((option) => (
@@ -208,8 +245,8 @@ function JobCard({ job, onSendToConverter, locale, blankModel }) {
             </div>
             <p className="text-[11px] leading-snug text-muted">
               {locale === "is"
-                ? "Punktar sýna það sem leysirinn gerir í raun. Yfirborð sýnir formið."
-                : "Dots are what the laser actually makes. Surface shows the shape."}
+                ? "Yfirborð er 2.5D GLB-skráin fyrir Blender Composer. Punktar eru aðeins síðara framleiðslupróf."
+                : "Surface is the 2.5D GLB for Blender Composer. Dots are only a later production check."}
             </p>
           </div>
 
@@ -233,18 +270,27 @@ function JobCard({ job, onSendToConverter, locale, blankModel }) {
             {locale === "is" ? "Snúa sjálfkrafa" : "Auto-rotate"}
           </label>
 
-          {/* Where this relief goes next */}
-          <button
-            type="button"
-            onClick={() => onSendToConverter(job)}
+          {/* Primary handoff: the finished 2.5D asset goes to Blender Composer. */}
+          <a
+            href={fileUrl(
+              job.jobId,
+              job.files?.crystalPreview || job.files?.preview || "relief.glb",
+              true,
+            )}
             className="w-full rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
           >
-            {locale === "is" ? "Senda í skráabreyti →" : "Send to the converter →"}
-          </button>
+            {locale === "is" ? "Sækja fyrir Blender Composer →" : "Download for Blender Composer →"}
+          </a>
 
           <div className="space-y-1 border-t border-surface-border pt-3">
             {[
-              [job.files?.preview || "relief.glb", locale === "is" ? "Forskoðun" : "Preview"],
+              [job.files?.preview || "relief.glb", locale === "is" ? "RGB GLB" : "RGB GLB"],
+              ...(job.files?.crystalPreview
+                ? [[job.files.crystalPreview, locale === "is" ? "Svarthvítt crystal GLB" : "Monochrome crystal GLB"]]
+                : []),
+              ...(job.files?.crystalTone
+                ? [[job.files.crystalTone, locale === "is" ? "Crystal tónakort" : "Crystal tone map"]]
+                : []),
               [job.files?.mesh || "relief.obj", locale === "is" ? "Möskvi" : "Mesh"],
               ...(job.files?.pointCloud
                 ? [[job.files.pointCloud, locale === "is" ? "Prentpunktar" : "Printer points"]]
@@ -271,7 +317,7 @@ function JobCard({ job, onSendToConverter, locale, blankModel }) {
   );
 }
 
-export default function ReliefClient({ initialState, handoff, onSendToConverter, onOpenViewer }) {
+export default function ReliefClient({ initialState, handoff, onOpenViewer }) {
   const { locale } = useLanguage();
   const [values, setValues] = useState(defaultReliefValues);
   const [selected, setSelected] = useState([]);
@@ -450,27 +496,6 @@ export default function ReliefClient({ initialState, handoff, onSendToConverter,
       if (!response.ok) throw new Error(data.error || "Could not import that photo");
       setSelected((current) => [...current, data.path]);
       await refresh();
-    } catch (error) {
-      setNotice({ tone: "error", text: error.message });
-    }
-  }
-
-  /** Copy the relief's OBJ into the converter and jump there. */
-  async function sendOn(job) {
-    setNotice(null);
-    try {
-      const response = await fetch("/api/handoff", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "relief-output",
-          to: "converter-input",
-          path: `${job.jobId}/${job.files?.mesh || "relief.obj"}`,
-        }),
-      });
-      const data = await readResponseJson(response);
-      if (!response.ok) throw new Error(data.error || "Handoff failed");
-      onSendToConverter?.(data);
     } catch (error) {
       setNotice({ tone: "error", text: error.message });
     }
@@ -664,7 +689,6 @@ export default function ReliefClient({ initialState, handoff, onSendToConverter,
             <JobCard
               key={job.jobId}
               job={job}
-              onSendToConverter={sendOn}
               locale={locale}
               blankModel={matchBlankModel(blanks, job.template)}
             />

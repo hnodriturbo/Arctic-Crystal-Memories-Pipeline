@@ -39,11 +39,24 @@ def cached_models() -> list[str]:
     return sorted(entry.name for entry in hub.iterdir() if entry.name.startswith("models--"))
 
 
+def local_models() -> list[str]:
+    """Fully materialised model folders that pipeline code can load directly."""
+    if not MODELS_DIR.is_dir():
+        return []
+    return sorted(
+        entry.name
+        for entry in MODELS_DIR.iterdir()
+        if entry.is_dir() and entry.name not in {"hub", "xet", ".hf-cache"}
+    )
+
+
 def main() -> int:
     use_local_model_cache()
     pipeline_root = Path(__file__).resolve().parents[1]
 
     torch_version = version_of("torch")
+    transformers_version = version_of("transformers")
+    diffusers_version = version_of("diffusers")
     cuda = False
     if torch_version:
         import torch
@@ -55,28 +68,60 @@ def main() -> int:
     # provisioning script builds every venv on 3.11.
     correct_python = sys.version_info[:2] == (3, 11)
 
-    directories = {name: (pipeline_root / name).is_dir() for name in ("input", "output", "models")}
+    directories = {
+        name: (pipeline_root / folder).is_dir()
+        for name, folder in (("input", "input"), ("output", "output"), ("models", "Models"))
+    }
+    gnm_files = {
+        "source": MODELS_DIR / "research" / "GNM" / "gnm" / "shape" / "gnm_pytorch.py",
+        "head_model": (
+            MODELS_DIR
+            / "research"
+            / "GNM"
+            / "gnm"
+            / "shape"
+            / "data"
+            / "versions"
+            / "v3_0"
+            / "gnm_head.npz"
+        ),
+        "mediapipe_correspondence": (
+            MODELS_DIR / "research" / "mediapipe" / "gnm_head_dense_468.txt"
+        ),
+    }
+    gnm_ready = all(path.is_file() for path in gnm_files.values())
+    moge_ready = (MODELS_DIR / "moge-2-vitl-normal" / "model.pt").is_file()
+    engine_ready = moge_ready or bool(transformers_version) or bool(diffusers_version)
     report = {
         "ok": (
             correct_python
             and bool(torch_version)
-            and bool(version_of("transformers"))
+            and engine_ready
+            and bool(version_of("scipy"))
+            and gnm_ready
             and all(directories.values())
         ),
         "python": platform.python_version(),
         "python_ok": correct_python,
         "torch": torch_version,
-        "transformers": version_of("transformers"),
-        "diffusers": version_of("diffusers"),
+        "transformers": transformers_version,
+        "diffusers": diffusers_version,
         "trimesh": version_of("trimesh"),
+        "scipy": version_of("scipy"),
         "pillow": version_of("PIL"),
         "cuda": cuda,
         "device": "cuda" if cuda else "cpu",
         "engines": {
-            "depth-anything": bool(version_of("transformers")),
-            "marigold": bool(version_of("diffusers")),
+            "moge-2": moge_ready,
+            "depth-anything": bool(transformers_version),
+            "marigold": bool(diffusers_version),
+        },
+        "gnm_head": {
+            "ready": gnm_ready,
+            "files": {name: path.is_file() for name, path in gnm_files.items()},
         },
         "cached_models": cached_models(),
+        "local_models": local_models(),
         "directories": directories,
     }
     print(json.dumps(report, sort_keys=True))

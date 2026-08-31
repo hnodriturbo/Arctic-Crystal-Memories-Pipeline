@@ -12,23 +12,20 @@
  * and a manifest, not numbered files in a shared output directory.
  */
 
-import { copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import {
-  CODE_DIR,
-  PYTHON_EXE,
-  RELIEF_CODE_DIR,
-  RELIEF_OUTPUT_DIR,
-  RELIEF_PYTHON_EXE,
-  RELIEF_ROOT,
-} from "@/lib/paths";
+import { RELIEF_CODE_DIR, RELIEF_OUTPUT_DIR, RELIEF_PYTHON_EXE, RELIEF_ROOT } from "@/lib/paths";
 import { interpreterReady, runPython } from "@/lib/python";
 import {
-  automaticPointBudget,
+  buildAppearanceRefinementArgs,
   buildDepthArgs,
+  buildDetailRefinementArgs,
+  buildFaceRefinementArgs,
+  buildHeadRefinementArgs,
   buildMeshArgs,
-  buildPointCloudArgs,
+  resolvedMeshGrid,
+  resolvedReliefDepth,
 } from "@/lib/relief/catalog";
 import { mirrorReliefJob, pruneLocalJobs, rememberSource } from "@/lib/relief/library";
 
@@ -96,12 +93,6 @@ export async function runReliefChain({ source, values, emit, signal }) {
       `No 2.5D-pipeline venv at ${RELIEF_PYTHON_EXE}. Run: python -m venv .venv && pip install -r requirements.txt`,
     );
   }
-  if (!interpreterReady(PYTHON_EXE)) {
-    throw new Error(
-      `No pipeline-converter venv at ${PYTHON_EXE}. The 2.5D point-cloud stage needs that local environment.`,
-    );
-  }
-
   return withReliefSlot(async () => {
     const jobId = reliefJobId(path.basename(source));
     const jobDir = path.join(RELIEF_OUTPUT_DIR, jobId);
@@ -121,7 +112,17 @@ export async function runReliefChain({ source, values, emit, signal }) {
     }
 
     const depth = path.join(jobDir, "depth.png");
+    const refinedDepth = path.join(jobDir, "refined-depth.png");
+    const headRefinedDepth = path.join(jobDir, "head-refined-depth.png");
+    const finalDepth = path.join(jobDir, "final-depth.png");
+    const crystalTone = path.join(jobDir, "crystal-tone.png");
+    const geometryDir = path.join(jobDir, "geometry");
+    const faceQaDir = path.join(jobDir, "face-refinement");
+    const headQaDir = path.join(jobDir, "head-refinement");
+    const detailQaDir = path.join(jobDir, "detail-refinement");
+    const appearanceQaDir = path.join(jobDir, "appearance-refinement");
     const glb = path.join(jobDir, "relief.glb");
+    const crystalGlb = path.join(jobDir, "relief-crystal.glb");
     const obj = path.join(jobDir, "relief.obj");
 
     // ── Stage one: the only model in the whole pipeline ─────────────────────
@@ -129,51 +130,111 @@ export async function runReliefChain({ source, values, emit, signal }) {
     report({ type: "step", line: "Depth map (depth_map.py)" });
     await runPython(
       RELIEF_PYTHON_EXE,
-      [path.join(RELIEF_CODE_DIR, "depth_map.py"), ...buildDepthArgs(values, photo, depth)],
+      [
+        path.join(RELIEF_CODE_DIR, "depth_map.py"),
+        ...buildDepthArgs(values, photo, depth, geometryDir),
+      ],
       { cwd: RELIEF_ROOT, onLine: report, signal },
     );
 
-    // ── Stage three: production point cloud ────────────────────────────────
+    // ── Stage two: mandatory face detection and local depth refinement ────
     if (signal?.aborted) throw new Error("Cancelled.");
-    const depthMetadata = JSON.parse(await readFile(path.join(jobDir, "depth.json"), "utf8"));
-    const pointBudget = automaticPointBudget(
-      depthMetadata.width,
-      depthMetadata.height,
-      values.maximum_points,
-    );
-    report({
-      type: "step",
-      line:
-        values.point_budget_mode === "auto" || !values.point_budget_mode
-          ? `Point cloud (automatic target ${pointBudget.toLocaleString()})`
-          : "Point cloud (configured target)",
-    });
-    await runPython(
-      PYTHON_EXE,
-      [
-        path.join(CODE_DIR, "mesh_to_pointcloud.py"),
-        ...buildPointCloudArgs(values, {
-          objPath: obj,
-          photoPath: photo,
-          outputDir: jobDir,
-          pointBudget,
-        }),
-      ],
-      { cwd: path.dirname(CODE_DIR), onLine: report, signal },
-    );
-
-    const generatedFiles = await readdir(jobDir);
-    const dxfName = generatedFiles.find((name) => name.toLowerCase().endsWith(".dxf"));
-    const xyzName = generatedFiles.find((name) => name.toLowerCase().endsWith(".xyz"));
-    if (!dxfName) throw new Error("The point-cloud stage completed without writing a DXF.");
-    const pointCount = Number(dxfName.match(/-(\d+)points\.dxf$/i)?.[1] || 0);
-
-    // ── Stage two: ordinary geometry ────────────────────────────────────────
-    if (signal?.aborted) throw new Error("Cancelled.");
-    report({ type: "step", line: "Relief mesh (depth_to_mesh.py)" });
+    report({ type: "step", line: "Face detection and refinement (face_refine.py)" });
     await runPython(
       RELIEF_PYTHON_EXE,
-      [path.join(RELIEF_CODE_DIR, "depth_to_mesh.py"), ...buildMeshArgs(values, depth, photo, glb, obj)],
+      [
+        path.join(RELIEF_CODE_DIR, "face_refine.py"),
+        ...buildFaceRefinementArgs(values, photo, depth, refinedDepth, faceQaDir),
+      ],
+      { cwd: RELIEF_ROOT, onLine: report, signal },
+    );
+    const faceMetadata = JSON.parse(await readFile(path.join(jobDir, "refined-depth.json"), "utf8"));
+
+    // ── Stage three: real low-frequency skull and facial volume ────────────
+    if (signal?.aborted) throw new Error("Cancelled.");
+    report({ type: "step", line: "468-point parametric head shape (gnm_head_refine.py)" });
+    await runPython(
+      RELIEF_PYTHON_EXE,
+      [
+        path.join(RELIEF_CODE_DIR, "gnm_head_refine.py"),
+        ...buildHeadRefinementArgs(
+          values,
+          photo,
+          refinedDepth,
+          path.join(jobDir, "refined-depth.json"),
+          headRefinedDepth,
+          headQaDir,
+        ),
+      ],
+      { cwd: RELIEF_ROOT, onLine: report, signal },
+    );
+    const headMetadata = JSON.parse(
+      await readFile(path.join(jobDir, "head-refined-depth.json"), "utf8"),
+    );
+
+    // ── Stage four: bounded micro-depth from MoGe surface normals ──────────
+    if (values.engine !== "moge-2") {
+      throw new Error("Surface-detail refinement currently requires the MoGe-2 normal output.");
+    }
+    if (signal?.aborted) throw new Error("Cancelled.");
+    report({ type: "step", line: "Surface micro-depth (detail_refine.py)" });
+    await runPython(
+      RELIEF_PYTHON_EXE,
+      [
+        path.join(RELIEF_CODE_DIR, "detail_refine.py"),
+        ...buildDetailRefinementArgs(
+          values,
+          headRefinedDepth,
+          path.join(geometryDir, "normal.png"),
+          path.join(geometryDir, "mask.png"),
+          finalDepth,
+          detailQaDir,
+        ),
+      ],
+      { cwd: RELIEF_ROOT, onLine: report, signal },
+    );
+    const detailMetadata = JSON.parse(await readFile(path.join(jobDir, "final-depth.json"), "utf8"));
+
+    // ── Stage five: tonal identity, explicitly separate from geometry ─────
+    if (signal?.aborted) throw new Error("Cancelled.");
+    report({ type: "step", line: "Crystal appearance detail (appearance_refine.py)" });
+    await runPython(
+      RELIEF_PYTHON_EXE,
+      [
+        path.join(RELIEF_CODE_DIR, "appearance_refine.py"),
+        ...buildAppearanceRefinementArgs(values, photo, crystalTone, appearanceQaDir),
+      ],
+      { cwd: RELIEF_ROOT, onLine: report, signal },
+    );
+    const appearanceMetadata = JSON.parse(
+      await readFile(path.join(jobDir, "crystal-tone.json"), "utf8"),
+    );
+
+    // ── Stage six: two visualisations of one completed relief geometry ─────
+    if (signal?.aborted) throw new Error("Cancelled.");
+    report({ type: "step", line: "RGB relief mesh (depth_to_mesh.py)" });
+    await runPython(
+      RELIEF_PYTHON_EXE,
+      [
+        path.join(RELIEF_CODE_DIR, "depth_to_mesh.py"),
+        ...buildMeshArgs(values, finalDepth, photo, glb, obj),
+      ],
+      { cwd: RELIEF_ROOT, onLine: report, signal },
+    );
+    report({ type: "step", line: "Crystal-tone preview (same relief geometry)" });
+    await runPython(
+      RELIEF_PYTHON_EXE,
+      [
+        path.join(RELIEF_CODE_DIR, "depth_to_mesh.py"),
+        ...buildMeshArgs(
+          { ...values, vertex_color: "texture" },
+          finalDepth,
+          photo,
+          crystalGlb,
+          null,
+          crystalTone,
+        ),
+      ],
       { cwd: RELIEF_ROOT, onLine: report, signal },
     );
 
@@ -188,21 +249,63 @@ export async function runReliefChain({ source, values, emit, signal }) {
       sourceName: path.basename(source),
       sourceKey: remembered.key,
       template: values.template || "60x80x40",
+      resolvedReliefDepth: Number(resolvedReliefDepth(values)),
+      resolvedGrid: resolvedMeshGrid(values),
       values,
       files: {
         photo: path.basename(photo),
         depth: "depth.png",
         depthMeta: "depth.json",
+        refinedDepth: "refined-depth.png",
+        headRefinedDepth: "head-refined-depth.png",
+        headRefinedDepthMeta: "head-refined-depth.json",
+        finalDepth: "final-depth.png",
+        finalDepthMeta: "final-depth.json",
+        normal: "geometry/normal.png",
+        subjectMask: "geometry/mask.png",
+        faceMeta: "refined-depth.json",
+        faceDetectionPreview: "face-refinement/faces-detected.png",
+        faceDifferencePreview: "face-refinement/before-after-difference.png",
+        headPriorPreview: "head-refinement/gnm-head-prior.png",
+        headroomDepthPreview: "head-refinement/depth-centred-headroom.png",
+        headLandmarkFitPreview: "head-refinement/gnm-landmark-fit.png",
+        headDepthComparisonPreview: "head-refinement/depth-before-prior-after.png",
+        detailHeightPreview: "detail-refinement/microdetail-height.png",
+        detailDifferencePreview: "detail-refinement/before-after-microdetail.png",
+        crystalTone: "crystal-tone.png",
+        crystalToneMeta: "crystal-tone.json",
+        appearanceDetailPreview: "appearance-refinement/appearance-microdetail.png",
+        appearanceComparisonPreview: "appearance-refinement/rgb-luma-crystal-tone.png",
         preview: "relief.glb",
+        crystalPreview: "relief-crystal.glb",
         mesh: "relief.obj",
-        pointCloud: dxfName,
-        ...(xyzName ? { pointPreview: xyzName } : {}),
       },
-      pointCloud: {
-        previewDotSizeMm: 0.08,
-        automaticBudget: pointBudget,
-        finalPoints: pointCount || null,
-        axes: "X=width, Y=height, Z=depth",
+      faceRefinement: {
+        required: faceMetadata.face_refinement_required,
+        complete: faceMetadata.face_refinement_complete,
+        faceCount: faceMetadata.face_count,
+        backend: faceMetadata.backend,
+        resolutionLevel: faceMetadata.resolution_level,
+      },
+      headRefinement: {
+        required: headMetadata.head_refinement_required,
+        complete: headMetadata.head_refinement_complete,
+        backend: headMetadata.backend,
+        settings: headMetadata.settings || null,
+        faces: headMetadata.faces || [],
+      },
+      detailRefinement: {
+        complete: detailMetadata.detail_refinement_complete,
+        backend: detailMetadata.backend,
+        settings: detailMetadata.settings,
+        measured: detailMetadata.measured,
+      },
+      appearanceRefinement: {
+        complete: appearanceMetadata.appearance_refinement_complete,
+        backend: appearanceMetadata.backend,
+        semantics: appearanceMetadata.semantics,
+        settings: appearanceMetadata.settings,
+        measured: appearanceMetadata.measured,
       },
     };
     await writeFile(path.join(jobDir, "job.json"), JSON.stringify(manifest, null, 2), "utf-8");

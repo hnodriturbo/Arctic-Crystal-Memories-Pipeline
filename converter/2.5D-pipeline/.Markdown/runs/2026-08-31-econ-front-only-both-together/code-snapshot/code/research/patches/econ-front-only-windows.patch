@@ -1,0 +1,169 @@
+diff --git a/apps/infer.py b/apps/infer.py
+index df9e728..d7bbf06 100644
+--- a/apps/infer.py
++++ b/apps/infer.py
+@@ -66,6 +66,15 @@ if __name__ == "__main__":
+     parser.add_argument("-cfg", "--config", type=str, default="./configs/econ.yaml")
+     parser.add_argument("-multi", action="store_false")
+     parser.add_argument("-novis", action="store_true")
++    parser.add_argument(
++        "--front-only",
++        dest="front_only",
++        action="store_true",
++        help=(
++            "Export the d-BiNI front 2.5D surface and stop before IF-Net/SMPL-X "
++            "side completion and Poisson fusion."
++        ),
++    )
+ 
+     args = parser.parse_args()
+ 
+@@ -133,6 +142,10 @@ if __name__ == "__main__":
+ 
+         losses = init_loss()
+ 
++        # TestDataset may return an absolute Windows path as the sample name.
++        # Keep only the filename stem before composing output paths.
++        data["name"] = osp.splitext(osp.basename(str(data["name"])))[0]
++
+         pbar.set_description(f"{data['name']}")
+ 
+         # final results rendered as image (PNG)
+@@ -504,6 +517,32 @@ if __name__ == "__main__":
+ 
+             BNI_object.extract_surface(False)
+ 
++            # Preserve the source-facing d-BiNI surface before any 360-degree completion.
++            # This is the canonical ECON output for the crystal 2.5D research path.
++            front_path = f"{args.out_dir}/{cfg.name}/obj/{data['name']}_{idx}_F.obj"
++            front_mesh = BNI_object.F_trimesh.copy()
++
++            if cfg.bni.texture_src == "image":
++                front_colors = query_color(
++                    torch.tensor(front_mesh.vertices).float(),
++                    torch.tensor(front_mesh.faces).long(),
++                    in_tensor["image"][idx:idx + 1],
++                    device=device,
++                )
++                front_mesh.visual.vertex_colors = front_colors
++
++            front_mesh.export(front_path)
++
++            if args.front_only:
++                print(
++                    colored(
++                        f"\n Front-only 2.5D surface exported to {Format.start} "
++                        f"{front_path} {Format.end}",
++                        "yellow",
++                    )
++                )
++                continue
++
+             in_tensor["body_verts"].append(torch.tensor(smpl_obj_lst[idx].vertices).float())
+             in_tensor["body_faces"].append(torch.tensor(smpl_obj_lst[idx].faces).long())
+ 
+diff --git a/apps/sapiens.py b/apps/sapiens.py
+index b1b88e2..d372c86 100644
+--- a/apps/sapiens.py
++++ b/apps/sapiens.py
+@@ -1,14 +1,23 @@
++"""
++File: apps/sapiens.py
++Purpose:
++ - Load the Sapiens normal and segmentation checkpoints used by ECON.
++ - Download selected checkpoints lazily into a Windows-safe local directory.
++"""
++
+ import os
+ import torch
+ import torch.nn.functional as F
+ from PIL import Image
+ from torchvision import transforms
+-from huggingface_hub import snapshot_download
++from huggingface_hub import hf_hub_download
+ 
+ 
+ class Config:
+-    ASSETS_DIR = os.path.join(
+-        snapshot_download(repo_id="facebook/sapiens-normal", repo_type="space"), 'assets'
++    REPO_ID = "facebook/sapiens-normal"
++    ASSETS_DIR = os.environ.get(
++        "ECON_SAPIENS_ASSETS_DIR",
++        os.path.abspath(os.path.join("data", "sapiens", "assets")),
+     )
+     CHECKPOINTS_DIR = os.path.join(ASSETS_DIR, "checkpoints")
+     CHECKPOINTS = {
+@@ -29,7 +38,17 @@ class ModelManager:
+     def load_model(checkpoint_name, device):
+         if checkpoint_name is None:
+             return None
++
+         checkpoint_path = os.path.join(Config.CHECKPOINTS_DIR, checkpoint_name)
++        if not os.path.isfile(checkpoint_path):
++            checkpoint_path = hf_hub_download(
++                repo_id=Config.REPO_ID,
++                repo_type="space",
++                filename=f"assets/checkpoints/{checkpoint_name}",
++                local_dir=os.path.dirname(Config.ASSETS_DIR),
++                local_dir_use_symlinks=False,
++            )
++
+         model = torch.jit.load(checkpoint_path)
+         model.eval()
+         model.to(device)
+@@ -63,12 +82,20 @@ class ImageProcessor:
+ 
+         # Run normal estimation
+         normal_map = ModelManager.run_model(normal_model, input_tensor, image.height, image.width)
++        del normal_model
++        if self.device.type == "cuda":
++            torch.cuda.empty_cache()
+ 
+         # Run segmentation
+         if seg_model_name != "no-bg-removal":
+             seg_model = ModelManager.load_model(Config.SEG_CHECKPOINTS[seg_model_name], self.device)
+             seg_output = ModelManager.run_model(seg_model, input_tensor, image.height, image.width)
+             seg_mask = (seg_output.argmax(dim=1) > 0).unsqueeze(0).repeat(1, 3, 1, 1)
++            del seg_model, seg_output
++            if self.device.type == "cuda":
++                torch.cuda.empty_cache()
++        else:
++            seg_mask = torch.ones_like(normal_map, dtype=torch.bool)
+ 
+         # Normalize and visualize normal map
+         normal_map_norm = torch.linalg.norm(normal_map, dim=1, keepdim=True)
+diff --git a/lib/common/BNI.py b/lib/common/BNI.py
+index 1ae381d..2ac664f 100644
+--- a/lib/common/BNI.py
++++ b/lib/common/BNI.py
+@@ -34,6 +34,8 @@ class BNI:
+ 
+         self.F_B_surface = None
+         self.F_B_trimesh = None
++        self.F_trimesh = None
++        self.B_trimesh = None
+         self.F_depth = None
+         self.B_depth = None
+ 
+@@ -75,13 +77,15 @@ class BNI:
+             F_B_verts.float(), F_B_faces.long(), process=False, maintain_order=True
+         )
+ 
+-        # self.F_trimesh = trimesh.Trimesh(
+-        #     F_verts.float(), bni_result["F_faces"].long(), process=False, maintain_order=True
+-        # )
++        # Keep the two source-aligned surfaces available independently. The
++        # official full reconstruction still uses the combined front/back mesh.
++        self.F_trimesh = trimesh.Trimesh(
++            F_verts.float(), bni_result["F_faces"].long(), process=False, maintain_order=True
++        )
+ 
+-        # self.B_trimesh = trimesh.Trimesh(
+-        #     B_verts.float(), bni_result["B_faces"].long(), process=False, maintain_order=True
+-        # )
++        self.B_trimesh = trimesh.Trimesh(
++            B_verts.float(), bni_result["B_faces"].long(), process=False, maintain_order=True
++        )
+ 
+ 
+ if __name__ == "__main__":

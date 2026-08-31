@@ -1,0 +1,35 @@
+# File: CHECKSUMS.sha256
+# Purpose:
+#  - Verify the frozen run inputs, outputs, references, requirements, and code snapshot.
+
+# Frozen code and configuration
+6cd200c0c9fc7052219a629be68539447d23fe20cfcac1effae94c58e449d8ee  code-snapshot/code/research/econ-front-rtx3060-6gb.yaml
+a778522cb9483279d073c3807de72388fb1b2f02493c01772ae88045d82897d4  code-snapshot/code/research/patches/econ-front-only-windows.patch
+4cf39e78472ea50ed466d94bb4a9ff0aee4c4b59fd3a467322fdcd20353bef09  code-snapshot/code/research/render_econ_front_qa.py
+8189c8a8fb8ab8a9c606e7ee03be420a4dbe18120b046c290c7efaf102e6f531  code-snapshot/code/research/run_econ_windows.ps1
+74133042187a0dca0ffbc650e41d53753d8b5658c4877874b49fe0765cbfa6fa  code-snapshot/ECON/apps/infer.py
+d593ceb4907e742fcf54fd409d2b400095ed804d7cf4e64fb6abffb6cd63a745  code-snapshot/ECON/apps/sapiens.py
+f83dcd1f5497021ec12fdc5607b63908614e90994f10ec30d34dec5fb573094b  code-snapshot/ECON/lib/common/BNI.py
+1e1762bf10e9f60f20b1f34f757d169357cca15a904dcf6f85c73b639a6c871d  requirements/requirements-econ-windows-py38.txt
+
+# User-provided visual references
+46240095be6fc1730dc6fba90f06e62960978d5b233636c56b5d5fbe29cde440  references/ac3d-reference-45deg.png
+7e833aa7af5906a712351e04cc0eee1c05946d0a041ff930478bdfc8b29a942a  references/ac3d-streak-detail.png
+3e06f8e6161b2fc8299683c4d2e0189d4d795165a5010434e6aad77a9874463a  references/econ-occlusion-vs-fine-seams.png
+f1ae66402e5106f057b643695f68a558f24a0ec47d7cd8607746f886d8907518  references/ac3d-silhouette-depth-skirt.png
+e5ff9c893e8a7877f0d8de7636203583b61a1351e75ace9c579ec2a76a0199eb  references/ac3d-working-depth-volume.png
+
+# Large ignored run artifacts; paths are relative to this run record
+a39599af402aab74726c9276bac593a44039408050e00ede934e267aa8f0f2f1  ../../../output/research/econ-front-only/both-together-ai-enhanced/input/both_together.png
+e93718370ac6a743fc0bbfe78a2959fd35682184aec009b6163ca357c658dd22  ../../../output/research/econ-front-only/both-together-ai-enhanced/qa/both_together_econ_45deg.png
+d854de171927bb4fbe5c882536bbd679038d20d99a57d6404ebf758635d0b790  ../../../output/research/econ-front-only/both-together-ai-enhanced/qa/both_together_econ_front_qa.blend
+e8ee56db45f74544502447a5942694499fd28456790ad34ca0462516ed6dc6e8  ../../../output/research/econ-front-only/both-together-ai-enhanced/qa/both_together_econ_front.glb
+d44acfbb622c585d3abf9e42ea97a13807b70fdfe6077a1e320a3621b0fe2186  ../../../output/research/econ-front-only/both-together-ai-enhanced/qa/both_together_econ_front.png
+3aa6a25d8287972ff81a1ee323f8dbafac4d56ca445df3cecb30f78fc655bf8c  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/BNI/both_together_0.npy
+130ea385274e3b83e6190f774631cf54e9b3ca920770d2301bc4ab6caf7cd852  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/BNI/both_together_1.npy
+4fd51b64be4091ea8f1b1a8e93eab6a560cf04e31dbaa60693dc84588b9f6183  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/obj/both_together_0_F.obj
+764da306ab946f56e8f49e00269b040fb4ae2cc4a3227cad5eaa7f575cbb7173  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/obj/both_together_1_F.obj
+375e0adb0872c6e35cc062a931dbfbb1bc0a26e2e3dd8c9b6974039fb0933620  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/obj/both_together_smpl_00.npy
+76b78ab4c92bf388ec01909d115d7ff807ac778e8d0b41b66470eb9e93f4fc6c  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/obj/both_together_smpl_00.obj
+0ef467cfbac3831dfa8314f2fa4b3fb31a77a48bdea4dc60ce12038afb0f13ab  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/obj/both_together_smpl_01.npy
+ededc3443dddddf48f90ffcaaaea70455403788d3dd69cec0dadef796ae65883  ../../../output/research/econ-front-only/both-together-ai-enhanced/result/econ-front-rtx3060-6gb/obj/both_together_smpl_01.obj

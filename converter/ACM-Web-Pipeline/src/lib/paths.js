@@ -80,10 +80,12 @@ export const MESHY_PYTHON_EXE = process.env.MESHY_PYTHON || venvPython(MESHY_ROO
 // the VPS install the image side CPU-only without touching the converter.
 export const IMAGE_PYTHON_EXE = process.env.IMAGE_PIPELINE_PYTHON || venvPython(IMAGE_ROOT);
 
-// A fourth interpreter, for the same reason again: the relief venv carries a
-// modern torch plus transformers, while the image one is pinned to torch
-// 2.1.2 / numpy 1.26.4 for basicsr. They cannot share an environment.
-export const RELIEF_PYTHON_EXE = process.env.RELIEF_PIPELINE_PYTHON || venvPython(RELIEF_ROOT);
+// The geometry runtime carries MoGe-2, Depth Pro, YuNet/OpenCV and the ordinary
+// relief dependencies together. Native 2.5D always runs face detection and may
+// run MoGe again on face crops, so the older root .venv is no longer sufficient.
+export const RELIEF_PYTHON_EXE =
+  process.env.RELIEF_PIPELINE_PYTHON ||
+  venvPython(path.join(RELIEF_ROOT, "Models", "runtimes", ".venv-geometry"));
 
 /** Reject any path that escapes its allowed root, so a crafted name cannot read the wider disk. */
 export function resolveInside(root, relativePath) {

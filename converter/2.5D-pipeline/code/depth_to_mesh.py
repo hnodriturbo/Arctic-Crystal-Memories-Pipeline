@@ -25,9 +25,11 @@ handoff is literally:
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -114,10 +116,143 @@ def build_surface(
     return np.concatenate([lower, upper]), keep
 
 
+def smoothstep(values: np.ndarray) -> np.ndarray:
+    """Cubic easing with zero slope at both ends."""
+    clipped = np.clip(values, 0.0, 1.0)
+    return clipped * clipped * (3.0 - 2.0 * clipped)
+
+
+def automatic_fillet_mm(width_mm: float, height_mm: float) -> float:
+    """Scale the bend radius linearly with the physical image footprint.
+
+    A 77.8 x 77.8 mm relief resolves to 0.01 mm. The clamp prevents tiny
+    products from losing their fillet and very large blanks from washing away
+    recognisable anatomy.
+    """
+    equivalent_square_edge = math.sqrt(max(width_mm * height_mm, 1e-6))
+    return float(np.clip(equivalent_square_edge * (0.01 / 77.8), 0.01, 7.0))
+
+
+def smooth_depth_flow(
+    depth: np.ndarray,
+    mask: np.ndarray | None,
+    alpha_threshold: float,
+    width_mm: float,
+    height_mm: float,
+    relief_mm: float,
+    fillet_mm: float,
+    boundary_fillet_mm: float,
+    step_threshold_mm: float,
+) -> tuple[np.ndarray, dict[str, float]]:
+    """Merge abrupt depth layers into one physically smooth relief surface.
+
+    The low-frequency geometry is eased over a distance measured in real
+    millimetres. Every bend receives a small amount of regularization, while
+    depth changes large enough to resemble a near-vertical wall receive the
+    full fillet. Sub-millimetre surface detail is separated first and restored
+    afterwards, preserving beard, hair, skin, and fabric texture.
+    """
+    if fillet_mm <= 0 and boundary_fillet_mm <= 0:
+        return depth, {"changed_fraction": 0.0, "maximum_change_mm": 0.0}
+
+    rows, columns = depth.shape
+    subject = (
+        np.ones(depth.shape, dtype=bool)
+        if mask is None
+        else mask >= alpha_threshold
+    )
+    if not subject.any():
+        return depth, {"changed_fraction": 0.0, "maximum_change_mm": 0.0}
+
+    millimetres_per_pixel_x = width_mm / max(columns - 1, 1)
+    millimetres_per_pixel_y = height_mm / max(rows - 1, 1)
+    back_plane = float(np.percentile(depth[subject], 2.0))
+    working = np.where(subject, depth, back_plane).astype(np.float32)
+
+    # Separate only very fine relief texture. It will be restored after the
+    # common low-frequency surface has been regularized.
+    micro_sigma_x = max(0.55, 0.18 / max(millimetres_per_pixel_x, 1e-6))
+    micro_sigma_y = max(0.55, 0.18 / max(millimetres_per_pixel_y, 1e-6))
+    low_geometry = cv2.GaussianBlur(
+        working,
+        (0, 0),
+        sigmaX=micro_sigma_x,
+        sigmaY=micro_sigma_y,
+        borderType=cv2.BORDER_REPLICATE,
+    )
+    micro_detail = working - low_geometry
+
+    if fillet_mm > 0:
+        # A Gaussian sigma of fillet/2.35 places almost the whole transition
+        # inside the requested physical width, giving an S-shaped turn rather
+        # than a softened but still visibly square step.
+        flow_sigma_x = max(0.01, fillet_mm / (2.35 * max(millimetres_per_pixel_x, 1e-6)))
+        flow_sigma_y = max(0.01, fillet_mm / (2.35 * max(millimetres_per_pixel_y, 1e-6)))
+        common_flow = cv2.GaussianBlur(
+            low_geometry,
+            (0, 0),
+            sigmaX=flow_sigma_x,
+            sigmaY=flow_sigma_y,
+            borderType=cv2.BORDER_REPLICATE,
+        )
+        change_mm = np.abs(low_geometry - common_flow) * relief_mm
+        sharpness = smoothstep(change_mm / max(step_threshold_mm, 1e-4))
+        # All bends receive a light flow pass. Near-vertical transitions ramp
+        # continuously to the full fillet strength.
+        flow_strength = 0.18 + 0.82 * sharpness
+        smoothed = low_geometry * (1.0 - flow_strength) + common_flow * flow_strength
+        smoothed += micro_detail * (0.96 - 0.24 * flow_strength)
+    else:
+        smoothed = working.copy()
+
+    if boundary_fillet_mm > 0:
+        # Padding the alpha mask with zero makes the image frame an explicit
+        # exterior boundary. A subject touching the crop therefore bends back
+        # over the requested distance instead of ending in a vertical wall.
+        padded = cv2.copyMakeBorder(
+            subject.astype(np.uint8),
+            1,
+            1,
+            1,
+            1,
+            cv2.BORDER_CONSTANT,
+            value=0,
+        )
+        distance_pixels = cv2.distanceTransform(padded, cv2.DIST_L2, 5)[1:-1, 1:-1]
+        average_mm_per_pixel = math.sqrt(
+            millimetres_per_pixel_x * millimetres_per_pixel_y
+        )
+        boundary_weight = smoothstep(
+            distance_pixels * average_mm_per_pixel / boundary_fillet_mm
+        )
+        smoothed = back_plane * (1.0 - boundary_weight) + smoothed * boundary_weight
+
+    result = depth.copy()
+    result[subject] = np.clip(smoothed[subject], 0.0, 1.0)
+    difference_mm = np.abs(result - depth) * relief_mm
+    return result, {
+        "changed_fraction": float(np.mean(difference_mm[subject] > 0.05)),
+        "maximum_change_mm": float(np.max(difference_mm[subject])),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build a relief mesh from a depth map.")
     parser.add_argument("--depth", required=True, type=Path, help="16-bit depth PNG from depth_map.py.")
     parser.add_argument("--photo", type=Path, help="Photograph, for vertex colour and the alpha mask.")
+    parser.add_argument(
+        "--texture-image",
+        type=Path,
+        help="Optional visual texture separate from --photo; --photo still supplies the alpha mask.",
+    )
+    parser.add_argument(
+        "--mask-image",
+        type=Path,
+        help=(
+            "Optional explicit L/RGBA geometry mask. White/opaque pixels become mesh; "
+            "this overrides --photo alpha and lets print-empty black border regions stay transparent."
+        ),
+    )
     parser.add_argument("--output", required=True, type=Path, help="GLB to write.")
     parser.add_argument("--obj", type=Path, help="Also write this OBJ, for mesh_to_pointcloud.py.")
 
@@ -142,7 +277,38 @@ def main() -> int:
         default=0.0,
         help="Millimetres of flat backing behind the relief. 0 leaves an open surface.",
     )
-    parser.add_argument("--vertex-color", choices=["luma", "rgb", "none"], default="luma")
+    parser.add_argument(
+        "--edge-fillet-mm",
+        type=float,
+        default=-1.0,
+        help="Physical width used to merge every depth bend. Negative selects the crystal-size formula; 0 disables it.",
+    )
+    parser.add_argument(
+        "--boundary-fillet-mm",
+        type=float,
+        default=-1.0,
+        help="Physical roll-off at cut-out/image-frame boundaries. Negative uses the size formula; 0 disables it.",
+    )
+    parser.add_argument(
+        "--depth-step-threshold-mm",
+        type=float,
+        default=0.65,
+        help="Low-frequency deviation that receives the full fillet strength.",
+    )
+    parser.add_argument(
+        "--flow-depth-output",
+        type=Path,
+        help="Optional 16-bit QA depth PNG after smooth-flow regularization.",
+    )
+    parser.add_argument(
+        "--vertex-color",
+        choices=["texture", "luma", "rgb", "none"],
+        default="luma",
+        help=(
+            "Visual appearance for GLB/OBJ approval. texture embeds the full photo as a UV/base-color "
+            "texture; luma/rgb store per-vertex colours; none writes geometry only."
+        ),
+    )
     args = parser.parse_args()
 
     try:
@@ -168,13 +334,30 @@ def main() -> int:
 
     mask = None
     colours = None
+    texture_image = None
+    if args.mask_image:
+        with Image.open(args.mask_image) as mask_source:
+            mask_source.load()
+            if mask_source.mode in ("RGBA", "LA") or "transparency" in mask_source.info:
+                mask_plane = mask_source.convert("RGBA").getchannel("A")
+            else:
+                mask_plane = mask_source.convert("L")
+            mask = np.asarray(
+                mask_plane.resize((columns, rows), Image.Resampling.LANCZOS),
+                dtype=np.float64,
+            ) / 255.0
+        report(
+            f"[mesh] explicit mask subject covers "
+            f"{(mask >= args.alpha_threshold).mean() * 100:.1f}% of the frame"
+        )
+
     if args.photo:
         with Image.open(args.photo) as probe:
             has_alpha = probe.mode in ("RGBA", "LA") or "transparency" in probe.info
-        if has_alpha:
+        if has_alpha and mask is None:
             mask = load_plane(args.photo, (columns, rows), "RGBA")[:, :, 3].astype(np.float64) / 255.0
             report(f"[mesh] subject covers {(mask >= args.alpha_threshold).mean() * 100:.1f}% of the frame")
-        else:
+        elif not has_alpha and mask is None:
             report("[mesh] photo has no alpha channel - the whole rectangle gets geometry.")
 
         if args.vertex_color == "luma":
@@ -182,6 +365,11 @@ def main() -> int:
             colours = np.repeat(luma.reshape(-1, 1), 3, axis=1)
         elif args.vertex_color == "rgb":
             colours = load_plane(args.photo, (columns, rows), "RGB").reshape(-1, 3).astype(np.uint8)
+        elif args.vertex_color == "texture":
+            texture_path = args.texture_image or args.photo
+            with Image.open(texture_path) as source_texture:
+                source_texture.load()
+                texture_image = source_texture.convert("RGB").copy()
 
     # ── Vertices ─────────────────────────────────────────────────────────────
     width_mm, height_mm = fit_into(space["width"], space["height"], columns, rows)
@@ -192,6 +380,42 @@ def main() -> int:
         )
     report(f"[mesh] relief {width_mm:.2f} x {height_mm:.2f} x {relief_mm:.2f} mm")
 
+    # ── Physical smooth-flow regularization ─────────────────────────────────
+    formula_fillet_mm = automatic_fillet_mm(width_mm, height_mm)
+    resolved_edge_fillet_mm = (
+        formula_fillet_mm if args.edge_fillet_mm < 0 else args.edge_fillet_mm
+    )
+    resolved_boundary_fillet_mm = (
+        formula_fillet_mm
+        if args.boundary_fillet_mm < 0
+        else args.boundary_fillet_mm
+    )
+    depth, flow_report = smooth_depth_flow(
+        depth,
+        mask,
+        args.alpha_threshold,
+        width_mm,
+        height_mm,
+        relief_mm,
+        max(0.0, resolved_edge_fillet_mm),
+        max(0.0, resolved_boundary_fillet_mm),
+        max(0.01, args.depth_step_threshold_mm),
+    )
+    report(
+        f"[mesh] smooth flow formula={formula_fillet_mm:.2f}mm "
+        f"edge={resolved_edge_fillet_mm:.2f}mm "
+        f"boundary={resolved_boundary_fillet_mm:.2f}mm "
+        f"changed={flow_report['changed_fraction'] * 100:.1f}% "
+        f"max={flow_report['maximum_change_mm']:.2f}mm"
+    )
+    if args.flow_depth_output:
+        prepare_output(args.flow_depth_output)
+        Image.fromarray(
+            np.round(np.clip(depth, 0.0, 1.0) * 65535.0).astype(np.uint16),
+            mode="I;16",
+        ).save(args.flow_depth_output)
+        report(f"[mesh] wrote smooth-flow QA depth {args.flow_depth_output}")
+
     # Image row 0 is the top of the picture; +Y is up in the crystal.
     x = np.linspace(-width_mm / 2, width_mm / 2, columns)
     y = np.linspace(height_mm / 2, -height_mm / 2, rows)
@@ -199,6 +423,11 @@ def main() -> int:
     grid_z = (depth - 0.5) * relief_mm
 
     vertices = np.stack([grid_x.ravel(), grid_y.ravel(), grid_z.ravel()], axis=1)
+    grid_u, grid_v = np.meshgrid(
+        np.linspace(0.0, 1.0, columns),
+        np.linspace(1.0, 0.0, rows),
+    )
+    texture_uv = np.stack([grid_u.ravel(), grid_v.ravel()], axis=1)
     faces, kept = build_surface(depth, mask, args.alpha_threshold)
     if not len(faces):
         fail("Every cell was masked out - check --alpha-threshold, or the cut-out itself.")
@@ -218,15 +447,21 @@ def main() -> int:
         vertices = np.concatenate([vertices, back])
         if colours is not None:
             colours = np.concatenate([colours, colours])
+        if texture_image is not None:
+            texture_uv = np.concatenate([texture_uv, texture_uv])
         backing_faces = mirrored
         report(f"[mesh] backing plane {args.backing:g}mm behind the deepest point")
 
     all_faces = faces if backing_faces is None else np.concatenate([faces, backing_faces])
 
+    visual = None
+    if texture_image is not None:
+        visual = trimesh.visual.texture.TextureVisuals(uv=texture_uv, image=texture_image)
     mesh = trimesh.Trimesh(
         vertices=vertices,
         faces=all_faces,
         vertex_colors=colours if colours is not None else None,
+        visual=visual,
         process=False,
     )
     mesh.remove_unreferenced_vertices()
@@ -239,7 +474,18 @@ def main() -> int:
     if args.obj:
         # The OBJ deliberately carries only the relief surface, never the
         # backing, because this file's next stop is the point sampler.
-        surface = trimesh.Trimesh(vertices=vertices[: columns * rows], faces=faces, process=False)
+        surface_visual = None
+        if texture_image is not None:
+            surface_visual = trimesh.visual.texture.TextureVisuals(
+                uv=texture_uv[: columns * rows],
+                image=texture_image,
+            )
+        surface = trimesh.Trimesh(
+            vertices=vertices[: columns * rows],
+            faces=faces,
+            visual=surface_visual,
+            process=False,
+        )
         surface.remove_unreferenced_vertices()
         prepare_output(args.obj)
         surface.export(args.obj)

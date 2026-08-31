@@ -11,9 +11,9 @@ other file changing.
 
 Output convention, fixed here so nothing downstream has to think about it:
 16-bit grayscale PNG, BRIGHT = NEAR = raised toward the viewer. Depth Anything
-predicts inverse depth and already reads that way; Marigold predicts true
-depth and is flipped on the way out. --invert flips the final result when a
-particular photo still comes out inside-out.
+predicts inverse depth and already reads that way; metric/true-depth engines
+(MoGe-2, Depth Pro and Marigold) are flipped on the way out. --invert flips the
+final result when a particular photo still comes out inside-out.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).parent))
 
 from utils import (  # noqa: E402
+    MODELS_DIR,
     base_parser,
     fail,
     prepare_output,
@@ -44,8 +45,20 @@ DEPTH_ANYTHING_MODELS = {
 
 MARIGOLD_MODEL = "prs-eth/marigold-depth-lcm-v1-0"
 
+MOGE_MODELS = {
+    "vitb": MODELS_DIR / "moge-2-vitb-normal" / "model.pt",
+    "vitl": MODELS_DIR / "moge-2-vitl-normal" / "model.pt",
+}
+
+DEPTH_PRO_CHECKPOINT = MODELS_DIR / "depth-pro" / "checkpoints" / "depth_pro.pt"
+
 # True when the engine's raw output is already "high value = near the camera".
-ENGINE_NEAR_IS_HIGH = {"depth-anything": True, "marigold": False}
+ENGINE_NEAR_IS_HIGH = {
+    "depth-anything": True,
+    "depth-pro": False,
+    "marigold": False,
+    "moge-2": False,
+}
 
 
 def gaussian_blur(plane: np.ndarray, sigma: float) -> np.ndarray:
@@ -199,6 +212,97 @@ def run_marigold(image: Image.Image, device: str, steps: int, ensemble: int) -> 
     return np.squeeze(prediction)
 
 
+def run_moge(
+    image: Image.Image,
+    model_size: str,
+    device: str,
+    resolution_level: int,
+    apply_mask: bool,
+    aux_output: Path | None,
+) -> np.ndarray:
+    """Run a pinned local MoGe-2 checkpoint and optionally retain normal/mask maps."""
+    import torch
+
+    try:
+        from moge.model.v2 import MoGeModel
+    except ImportError:
+        fail(
+            "MoGe-2 is installed in Models/runtimes/.venv-geometry. "
+            "Run this script with that environment's python.exe."
+        )
+
+    checkpoint = MOGE_MODELS[model_size]
+    if not checkpoint.is_file():
+        fail(f"Missing MoGe-2 checkpoint: {checkpoint}. Run download_models.py --baseline")
+
+    report(f"[depth] loading MoGe-2 {model_size} from {checkpoint} on {device}")
+    model = MoGeModel.from_pretrained(checkpoint).to(device).eval()
+    image_array = np.array(image, dtype=np.float32, copy=True) / 255.0
+    image_tensor = torch.from_numpy(image_array).permute(2, 0, 1).to(device)
+
+    report(
+        f"[depth] MoGe-2 resolution level {resolution_level}/9, "
+        f"fp16 autocast on CUDA, apply_mask={apply_mask}"
+    )
+    output = model.infer(
+        image_tensor,
+        resolution_level=resolution_level,
+        apply_mask=apply_mask,
+        use_fp16=device == "cuda",
+    )
+
+    if aux_output is not None:
+        aux_output.mkdir(parents=True, exist_ok=True)
+        normal = output.get("normal")
+        if normal is not None:
+            normal_rgb = ((normal.float().cpu().numpy() + 1.0) * 127.5).clip(0, 255).astype(np.uint8)
+            Image.fromarray(normal_rgb, mode="RGB").save(aux_output / "normal.png")
+            report(f"[depth] wrote {aux_output / 'normal.png'}")
+        mask = output.get("mask")
+        if mask is not None:
+            mask_image = (mask.float().cpu().numpy().clip(0, 1) * 255).astype(np.uint8)
+            Image.fromarray(mask_image, mode="L").save(aux_output / "mask.png")
+            report(f"[depth] wrote {aux_output / 'mask.png'}")
+
+    return output["depth"].float().cpu().numpy()
+
+
+def run_depth_pro(image: Image.Image, device: str) -> np.ndarray:
+    """Run Apple's pinned local Depth Pro checkpoint in metric-depth mode."""
+    from dataclasses import replace
+
+    import torch
+
+    try:
+        from depth_pro.depth_pro import (
+            DEFAULT_MONODEPTH_CONFIG_DICT,
+            create_model_and_transforms,
+        )
+    except ImportError:
+        fail(
+            "Depth Pro is installed in Models/runtimes/.venv-geometry. "
+            "Run this script with that environment's python.exe."
+        )
+
+    if not DEPTH_PRO_CHECKPOINT.is_file():
+        fail(f"Missing Depth Pro checkpoint: {DEPTH_PRO_CHECKPOINT}. Run download_models.py --baseline")
+
+    precision = torch.float16 if device == "cuda" else torch.float32
+    config = replace(
+        DEFAULT_MONODEPTH_CONFIG_DICT,
+        checkpoint_uri=str(DEPTH_PRO_CHECKPOINT),
+    )
+    report(f"[depth] loading Apple Depth Pro from {DEPTH_PRO_CHECKPOINT} on {device}")
+    model, transform = create_model_and_transforms(
+        config=config,
+        device=torch.device(device),
+        precision=precision,
+    )
+    model.eval()
+    prediction = model.infer(transform(image))
+    return prediction["depth"].float().cpu().numpy()
+
+
 def normalise(depth: np.ndarray, clip_percent: float, mask: np.ndarray | None) -> np.ndarray:
     """
     Stretch to 0..1 against robust percentiles rather than raw min/max.
@@ -207,9 +311,12 @@ def normalise(depth: np.ndarray, clip_percent: float, mask: np.ndarray | None) -
     the whole useful range with it and leave the face occupying the middle 5%.
     Percentiles are measured over the subject only when a cut-out mask exists.
     """
-    sample = depth if mask is None else depth[mask > 0.5]
+    finite = np.isfinite(depth)
+    sample = depth[finite] if mask is None else depth[(mask > 0.5) & finite]
     if sample.size == 0:
-        sample = depth
+        sample = depth[finite]
+    if sample.size == 0:
+        fail("The depth model returned no finite depth values.")
 
     low = float(np.percentile(sample, clip_percent))
     high = float(np.percentile(sample, 100 - clip_percent))
@@ -217,7 +324,8 @@ def normalise(depth: np.ndarray, clip_percent: float, mask: np.ndarray | None) -
         fail("The depth model returned a flat image - nothing to build a relief from.")
 
     report(f"[depth] range {low:.4f} .. {high:.4f} (clipped at {clip_percent:g}%)")
-    return np.clip((depth - low) / (high - low), 0.0, 1.0)
+    clean = np.nan_to_num(depth, nan=high, posinf=high, neginf=low)
+    return np.clip((clean - low) / (high - low), 0.0, 1.0)
 
 
 def main() -> int:
@@ -226,7 +334,10 @@ def main() -> int:
         "--engine",
         choices=sorted(ENGINE_NEAR_IS_HIGH),
         default="depth-anything",
-        help="depth-anything is fast and reliable; marigold is slower with finer facial relief.",
+        help=(
+            "Select the depth engine. MoGe-2 also predicts normals/masks; Depth Pro "
+            "focuses on sharp metric depth."
+        ),
     )
     parser.add_argument(
         "--model",
@@ -248,6 +359,36 @@ def main() -> int:
     )
     parser.add_argument("--steps", type=int, default=4, help="Marigold denoising steps.")
     parser.add_argument("--ensemble", type=int, default=5, help="Marigold ensemble size.")
+    parser.add_argument(
+        "--moge-model",
+        choices=sorted(MOGE_MODELS),
+        default="vitb",
+        help="MoGe-2 checkpoint. vitb is the 6 GB GPU baseline; vitl is the quality challenger.",
+    )
+    parser.add_argument(
+        "--moge-resolution-level",
+        type=int,
+        choices=range(10),
+        default=9,
+        metavar="0..9",
+        help=(
+            "MoGe-2 token/detail level. 9 is the production/final-quality default; "
+            "use 5 only for faster previews. Both fit the RTX 3060 6 GB."
+        ),
+    )
+    parser.add_argument(
+        "--moge-apply-mask",
+        action="store_true",
+        help=(
+            "Replace MoGe-invalid/background depth with infinity before normalization. "
+            "Leave off for AC3D-style full scenes; use for foreground-only experiments."
+        ),
+    )
+    parser.add_argument(
+        "--aux-output",
+        type=Path,
+        help="Optional folder for MoGe-2 normal.png and mask.png research outputs.",
+    )
     parser.add_argument(
         "--smooth",
         type=float,
@@ -289,8 +430,19 @@ def main() -> int:
 
     if args.engine == "depth-anything":
         raw = run_depth_anything(image, args.model, device, args.resolution)
-    else:
+    elif args.engine == "marigold":
         raw = run_marigold(image, device, args.steps, args.ensemble)
+    elif args.engine == "moge-2":
+        raw = run_moge(
+            image,
+            args.moge_model,
+            device,
+            args.moge_resolution_level,
+            args.moge_apply_mask,
+            args.aux_output,
+        )
+    else:
+        raw = run_depth_pro(image, device)
 
     if raw.shape != (image.height, image.width):
         # Marigold returns at its own working size; match the photo so the mesh
@@ -336,9 +488,21 @@ def main() -> int:
         json.dumps(
             {
                 "engine": args.engine,
-                "model": MARIGOLD_MODEL if args.engine == "marigold" else DEPTH_ANYTHING_MODELS[args.model],
+                "model": (
+                    MARIGOLD_MODEL
+                    if args.engine == "marigold"
+                    else str(MOGE_MODELS[args.moge_model])
+                    if args.engine == "moge-2"
+                    else str(DEPTH_PRO_CHECKPOINT)
+                    if args.engine == "depth-pro"
+                    else DEPTH_ANYTHING_MODELS[args.model]
+                ),
                 "device": device,
                 "resolution": args.resolution,
+                "moge_resolution_level": (
+                    args.moge_resolution_level if args.engine == "moge-2" else None
+                ),
+                "moge_apply_mask": args.moge_apply_mask if args.engine == "moge-2" else None,
                 "smooth": args.smooth,
                 "masked": mask is not None,
                 "inverted": bool(args.invert),

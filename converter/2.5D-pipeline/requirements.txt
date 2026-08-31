@@ -18,7 +18,7 @@
 #             source .venv/bin/activate
 #             pip install -r requirements.txt
 #
-# Then once, to pull the weights into models/:
+# Then once, to pull the weights into Models/:
 #             python code/download_models.py --model large
 #
 # NOTE ON PINS. The lines below are floors, not frozen pins, because the
@@ -41,6 +41,7 @@ torchvision>=0.19
 transformers>=4.45
 accelerate>=0.34
 safetensors>=0.4.5
+huggingface_hub>=1.29
 
 # Optional second engine. Marigold is diffusion-based - slower per image and a
 # larger download, but it resolves fine facial relief that Depth Anything can
@@ -49,10 +50,27 @@ diffusers>=0.31
 
 # ── Imaging and mesh ─────────────────────────────────────────────────────────
 pillow>=11.0
-numpy>=1.26
+# Depth Pro currently requires NumPy 1.x. Keep this cap when installing
+# MediaPipe, whose resolver would otherwise select NumPy 2.x on Windows.
+numpy>=1.26,<2
 # trimesh writes the GLB the browser preview loads. The [easy] extra pulls the
 # gltf/ply exporters; the base package alone cannot write a binary GLB.
 trimesh[easy]>=4.5
+# MediaPipe's 468-point Face Landmarker uses the contrib wheel. Pin the last
+# OpenCV 4.x build verified with NumPy 1.26 and the shared geometry runtime.
+opencv-contrib-python==4.11.0.86
+mediapipe>=0.10.30,<0.11
+scipy>=1.14
+
+# Google GNM Head v3 is loaded from the local Apache-2.0 source/model folder
+# under Models/research/GNM. These are the lightweight PyTorch-path runtime
+# dependencies; TensorFlow and notebook extras are deliberately not installed.
+absl-py>=2.1
+etils>=1.9
+immutabledict>=4.2
+importlib-resources>=6.4
+opt-einsum>=3.3
+typeguard>=4.3
 
 # ── Console output ───────────────────────────────────────────────────────────
 # Same console library as the other pipelines, so the web runner's line reader
