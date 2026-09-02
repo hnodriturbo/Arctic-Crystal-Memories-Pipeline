@@ -106,6 +106,8 @@ const IS = {
   "Reading the Meshy archive…": "Les Meshy-safnið…",
   "R2 is not available on this server.": "R2 er ekki tiltækt á þessum þjóni.",
   "No OBJ or DXF models are archived yet.": "Engin OBJ- eða DXF-model hafa verið vistuð enn.",
+  "Durable R2 converter outputs": "Varanleg converter-úttök í R2",
+  "No converter results are archived yet.": "Engar converter-niðurstöður hafa verið vistaðar enn.",
   "Source file": "Frumskrá",
   "Click to choose a file": "Smelltu til að velja skrá",
   "Stored in private R2 first, then streamed into the converter; large OBJ files bypass the website proxy limit":
@@ -123,8 +125,64 @@ const IS = {
   "Depth reference": "Dýptarviðmið",
   "on every side": "á öllum hliðum",
   "continuous depth (no layer spacing)": "samfelld dýpt (ekkert layer spacing)",
+  "up to about": "allt að um",
+  "planes across usable depth": "plön yfir nýtanlega dýpt",
+  "or pick one of": "eða veldu eina af",
+  "files already in input/": "skrám sem eru þegar í input/",
+  "wrong type for this operation": "rangt skráarsnið fyrir þessa aðgerð",
+  "Large meshes take a few minutes; progress appears below as it happens.":
+    "Stór mesh geta tekið nokkrar mínútur; framvindan birtist hér fyrir neðan.",
+  "Output appears here once a conversion starts.":
+    "Úttak birtist hér þegar umbreyting hefst.",
+  running: "í vinnslu",
+  idle: "bíður",
+  lines: "línur",
   "Point spacing controls XY density. Depth-dot spacing thins Z before layering; 0 reuses XY. Layer spacing then defines the final focus planes. “UV” below means mesh texture coordinates—not laser wavelength—so DXF output is equally suitable for a green-beam engraver.":
     "Point spacing stjórnar XY-þéttleika. Depth dot spacing grisjar Z fyrir lagskiptingu; 0 endurnotar XY. Layer spacing skilgreinir síðan fókusplönin. „UV“ merkir texture coordinates í meshinu, ekki bylgjulengd lasers; DXF hentar því jafnt fyrir green-beam grafara.",
+
+  "Convert, resize, and slice a 3D model": "Umbreyta, stærðarsetja og sneiða 3D-model",
+  "Reads common Blender-compatible 3D files, reports their geometry, sizes them in millimetres, optionally slices them, and writes every selected format. Multiple formats are also packaged as ZIP.":
+    "Les algeng 3D-snið sem Blender styður, greinir formið, stærðarsetur í millimetrum, sneiðir valfrjálst og skrifar öll valin snið. Mörg snið fara einnig saman í ZIP.",
+  "Model dimensions": "Mál models",
+  "Declare source units and size the result in millimetres.": "Veldu einingu frumskrár og stærðarsettu niðurstöðuna í millimetrum.",
+  "Source coordinate unit": "Hnitaeining frumskrár",
+  "Coordinates are converted to millimetres before sizing or slicing.": "Hnitum er breytt í millimetra áður en modelið er stærðarsett eða sneitt.",
+  "Millimetres (mm)": "Millimetrar (mm)",
+  "Centimetres (cm)": "Sentimetrar (cm)",
+  "Metres (m)": "Metrar (m)",
+  "Inches (in)": "Tommur (in)",
+  "Maximum model width (mm)": "Hámarksbreidd models (mm)",
+  "Maximum model height (mm)": "Hámarkshæð models (mm)",
+  "Maximum model depth (mm)": "Hámarksdýpt models (mm)",
+  "0 keeps the converted source width. Multiple limits preserve aspect ratio and use the tightest fit.":
+    "0 heldur umbreyttri frumbreidd. Mörg mörk varðveita hlutföll og þrengsta markið ræður.",
+  "Placement before slicing": "Staðsetning fyrir sneiðingu",
+  "Center at origin": "Miðja við núllpunkt",
+  "Center X/Y and place bottom at Z=0": "Miðja X/Y og setja botn við Z=0",
+  "Keep imported coordinates": "Halda innfluttum hnitum",
+  "Slice model": "Sneiða model",
+  "Keep geometry between optional millimetre boundaries on one axis.": "Halda formi milli valfrjálsra millimetramarka á einum ás.",
+  "Slice axis": "Sneiðingarás",
+  "Do not slice": "Ekki sneiða",
+  "X · width": "X · breidd",
+  "Y · height": "Y · hæð",
+  "Z · depth": "Z · dýpt",
+  "Keep from coordinate (mm)": "Halda frá hniti (mm)",
+  "Keep through coordinate (mm)": "Halda að hniti (mm)",
+  "Blank leaves this side open. Coordinates are measured after unit conversion, fitting, and placement.":
+    "Tómt gildi skilur þessa hlið opna. Hnit eru mæld eftir einingabreytingu, stærðarsetningu og staðsetningu.",
+  "Cap cut surfaces": "Loka skurðflötum",
+  "Fills closed cut loops when the source topology allows it.": "Fyllir lokaðar skurðlykkjur þegar topology frumskrár leyfir.",
+  "Output formats": "Úttakssnið",
+  "DXF uses ACM's SSLE POINT-cloud writer. Two or more selections also produce one ZIP.":
+    "DXF notar SSLE POINT-punktaskýsskrifara ACM. Tvö eða fleiri val búa einnig til eina ZIP-skrá.",
+  "DXF sampling target (0 = spacing)": "DXF sampling-markmið (0 = spacing)",
+  "Only used when DXF is selected.": "Aðeins notað þegar DXF er valið.",
+  "DXF point spacing (mm)": "DXF punktabil (mm)",
+  "DXF minimum dot distance (mm)": "DXF lágmarks punktabil (mm)",
+  "DXF depth-dot spacing (mm)": "DXF dýptarpunktabil (mm)",
+  "DXF final point cap": "DXF hámarksfjöldi lokapunkta",
+  "DXF sampling seed": "DXF sampling-seed",
 
   "Crystal size": "Kristalstærð",
   "Aspect ratio is always preserved.": "Hlutföll modelsins haldast alltaf óbreytt.",
@@ -136,6 +194,8 @@ const IS = {
   "Custom border (mm)": "Sérsniðin spássía (mm)",
   "Crystal margin (mm)": "Bil frá kristalbrún (mm)",
   "0 keeps the blank above.": "0 notar valda kristalstærð.",
+  "Usually the limit for a full 3D subject. Raise it to get the model bigger.":
+    "Dýptin takmarkar venjulega fullt 3D-myndefni. Hækkaðu gildið til að stækka modelið.",
   "Unengraved margin on every side. 0 keeps the blank preset; 0.1 mm is allowed for a precisely calibrated laser.":
     "Ógrafið bil á öllum hliðum. 0 notar sjálfgefna spássíu kristalsins; 0,1 mm er leyft fyrir nákvæmlega kvarðaðan laser.",
   "Unengraved margin on every side. The standard is 1 mm; enter any value down to 0.1 mm.":
@@ -152,6 +212,8 @@ const IS = {
   "Fixed plane count (alternative)": "Fastur fjöldi plana (valkostur)",
   "Layer spacing (mm)": "Layer spacing (mm)",
   Stagger: "Hliðrun laga",
+  "Offsets alternate layers so dots do not stack into visible columns.":
+    "Hliðrar lögum til skiptis svo punktar staflist ekki í sýnilegar súlur.",
   "Texture toning": "Texture-tónun",
   "Drive dot density from image brightness.": "Láta birtu myndar stjórna punktaþéttleika.",
   "Texture image": "Texture-mynd",

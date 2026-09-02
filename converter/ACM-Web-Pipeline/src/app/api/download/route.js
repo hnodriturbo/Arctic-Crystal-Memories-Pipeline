@@ -13,6 +13,7 @@ import { Readable } from "node:stream";
 import path from "node:path";
 
 import { INPUT_DIR, OUTPUT_DIR, resolveInside } from "@/lib/paths";
+import { presignDownload, r2Configured } from "@/lib/storage/r2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,6 +22,21 @@ const ROOTS = { output: OUTPUT_DIR, input: INPUT_DIR };
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
+  const r2Key = searchParams.get("r2Key");
+  if (r2Key) {
+    const normalized = path.posix.normalize(r2Key);
+    if (
+      normalized !== r2Key ||
+      normalized.includes("..") ||
+      !normalized.startsWith("converter-jobs/") ||
+      !r2Configured()
+    ) {
+      return Response.json({ error: "Invalid or unavailable R2 converter result" }, { status: 400 });
+    }
+    const url = await presignDownload(normalized, { fileName: path.posix.basename(normalized) });
+    return Response.redirect(url, 302);
+  }
+
   const rootKey = searchParams.get("root") || "output";
   const relativePath = searchParams.get("path");
 

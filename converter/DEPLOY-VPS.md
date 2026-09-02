@@ -21,6 +21,10 @@ Production has exactly three isolated Python 3.11 environments under
 `shared/venvs`. A user-scoped uv install downloads and manages CPython 3.11;
 Ubuntu's system Python 3.12 is never replaced or modified.
 
+Universal model inspection, slicing and export runs through the shared Blender
+4.5 LTS binary at `shared/tools/blender/blender`. Blender is not copied into
+each release.
+
 | Environment | Packages and purpose |
 | --- | --- |
 | `image-pipeline` | CPU-only Torch, GFPGAN, Real-ESRGAN, `rembg[cpu]`, ONNX Runtime, Pillow, NumPy 1.26 and SciPy |
@@ -46,6 +50,7 @@ MESHY_PYTHON=/home/hreidar/apps/acm-pipeline/shared/venvs/meshy-pipeline/bin/pyt
 IMAGE_PIPELINE_ROOT=/home/hreidar/apps/acm-pipeline/current/converter/image-pipeline
 IMAGE_PIPELINE_PYTHON=/home/hreidar/apps/acm-pipeline/shared/venvs/image-pipeline/bin/python
 U2NET_HOME=/home/hreidar/apps/acm-pipeline/shared/models/rembg
+BLENDER_EXE=/home/hreidar/apps/acm-pipeline/shared/tools/blender/blender
 ```
 
 The same file also carries `DATABASE_URL`, Meshy/OpenAI/R2 credentials and the
@@ -63,6 +68,17 @@ This is a local-to-VPS transfer, not a Git deployment. It builds before the
 atomic switch, automatically rolls back a failed start and keeps no more than
 three releases: current plus two rollback candidates.
 
+When the reviewed local source must be deployed before the user makes their
+manual commit, use the explicit working-tree mode:
+
+```powershell
+.\scripts\deploy-pipeline-vps.ps1 -DeployWorkingTree
+```
+
+That mode starts from the current commit and overlays only changed or untracked,
+non-ignored files inside `converter/` and `deployment/`. It does not stage,
+commit, push, or include ignored environments, secrets, caches, or workspaces.
+
 ## Production checks
 
 ```bash
@@ -77,3 +93,10 @@ sudo nginx -t
 
 Expected results are an up-to-date migration, PM2 `online`, HTTP 200 for the
 login page, and HTTP 400 for the deliberately incomplete webhook probe.
+
+The deploy also runs the converter test suite with the shared Blender binary.
+Ubuntu needs Blender's small headless runtime libraries:
+
+```bash
+sudo apt-get install --no-install-recommends libxrender1 libxfixes3 libxi6 libsm6 libice6 x11-common
+```

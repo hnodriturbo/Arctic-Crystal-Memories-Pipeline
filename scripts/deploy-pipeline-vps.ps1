@@ -9,7 +9,8 @@ Purpose:
 [CmdletBinding()]
 param(
   [string]$SshHost = "acm-vps",
-  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline"
+  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline",
+  [switch]$DeployWorkingTree
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,8 +18,11 @@ $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 $gitBranch = (& git -C $projectRoot branch --show-current).Trim()
 $gitCommit = (& git -C $projectRoot rev-parse --short=8 HEAD).Trim()
 $gitStatus = @(& git -C $projectRoot status --porcelain)
-$releaseId = "{0}-master-{1}" -f ([DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")), $gitCommit
+$sourceLabel = if ($DeployWorkingTree) { "working-tree" } else { "master" }
+$releaseId = "{0}-{1}-{2}" -f ([DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")), $sourceLabel, $gitCommit
 $archivePath = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-$releaseId.tar.gz"
+$baseArchivePath = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-base-$releaseId.tar.gz"
+$stagingPath = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-stage-$releaseId"
 $remoteUpload = "$RemoteRoot/shared/deploy/$releaseId.tar.gz"
 
 function Invoke-CheckedCommand {
@@ -71,8 +75,10 @@ function Invoke-RemoteScript {
 
 if ($SshHost -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid SSH host alias." }
 if ($RemoteRoot -ne "/home/hreidar/apps/acm-pipeline") { throw "RemoteRoot must be the isolated ACM Pipeline root." }
-if ($gitBranch -ne "master") { throw "Production deploys must run from master, not '$gitBranch'." }
-if ($gitStatus.Count -gt 0) { throw "Commit or restore local source changes before deploying master." }
+if (-not $DeployWorkingTree) {
+  if ($gitBranch -ne "master") { throw "Production deploys must run from master, not '$gitBranch'. Use -DeployWorkingTree only for an explicitly reviewed local release." }
+  if ($gitStatus.Count -gt 0) { throw "Commit or restore local source changes before deploying master, or explicitly use -DeployWorkingTree." }
+}
 
 foreach ($entry in @("converter", "deployment")) {
   if (-not (Test-Path -LiteralPath (Join-Path $projectRoot $entry))) {
@@ -81,8 +87,47 @@ foreach ($entry in @("converter", "deployment")) {
 }
 
 try {
-  Write-Host "Creating release $releaseId from committed master source."
-  Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$archivePath", "HEAD", "converter", "deployment")
+  if ($DeployWorkingTree) {
+    Write-Host "Creating release $releaseId from the reviewed local working tree."
+    if (Test-Path -LiteralPath $stagingPath) { throw "Temporary staging path already exists: $stagingPath" }
+    [System.IO.Directory]::CreateDirectory($stagingPath) | Out-Null
+    Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$baseArchivePath", "HEAD", "converter", "deployment")
+    Invoke-CheckedCommand "tar" @("-xzf", $baseArchivePath, "-C", $stagingPath)
+
+    $changedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=ACMRTUXB -- converter deployment)
+    $untrackedPaths = @(& git -C $projectRoot ls-files --others --exclude-standard -- converter deployment)
+    $deletedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=D -- converter deployment)
+    foreach ($relativePath in @($changedPaths + $untrackedPaths | Sort-Object -Unique)) {
+      if (-not $relativePath) { continue }
+      $sourcePath = [System.IO.Path]::GetFullPath((Join-Path $projectRoot $relativePath))
+      $destinationPath = [System.IO.Path]::GetFullPath((Join-Path $stagingPath $relativePath))
+      if (-not $destinationPath.StartsWith([System.IO.Path]::GetFullPath($stagingPath) + [System.IO.Path]::DirectorySeparatorChar)) {
+        throw "Unsafe working-tree overlay path: $relativePath"
+      }
+      if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) { throw "Changed release file is missing: $relativePath" }
+      [System.IO.Directory]::CreateDirectory((Split-Path $destinationPath -Parent)) | Out-Null
+      Copy-Item -LiteralPath $sourcePath -Destination $destinationPath -Force
+    }
+    foreach ($relativePath in $deletedPaths) {
+      if (-not $relativePath) { continue }
+      $destinationPath = [System.IO.Path]::GetFullPath((Join-Path $stagingPath $relativePath))
+      if (-not $destinationPath.StartsWith([System.IO.Path]::GetFullPath($stagingPath) + [System.IO.Path]::DirectorySeparatorChar)) {
+        throw "Unsafe working-tree deletion path: $relativePath"
+      }
+      if (Test-Path -LiteralPath $destinationPath -PathType Leaf) { [System.IO.File]::Delete($destinationPath) }
+    }
+    Get-ChildItem -LiteralPath $stagingPath -Directory -Recurse |
+      Sort-Object { $_.FullName.Length } -Descending |
+      ForEach-Object {
+        if ((Get-ChildItem -LiteralPath $_.FullName -Force).Count -eq 0) {
+          [System.IO.Directory]::Delete($_.FullName)
+        }
+      }
+    Invoke-CheckedCommand "tar" @("-czf", $archivePath, "-C", $stagingPath, "converter", "deployment")
+  } else {
+    Write-Host "Creating release $releaseId from committed master source."
+    Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$archivePath", "HEAD", "converter", "deployment")
+  }
 
   $archiveListing = & tar -tzf $archivePath
   if ($LASTEXITCODE -ne 0) { throw "Could not inspect the deployment archive." }
@@ -116,6 +161,7 @@ test -L "`$current_link"
 test -d "`$previous_release"
 test -f "`$shared/.env.production"
 test -x "`$shared/tools/uv"
+test -x "`$shared/tools/blender/blender"
 test -f "`$archive"
 test ! -e "`$new_release"
 
@@ -190,6 +236,10 @@ U2NET_HOME="`$shared/models/rembg" \
   "`$new_release/converter/image-pipeline/code/healthcheck.py"
 "`$shared/venvs/meshy-pipeline/bin/python" "`$new_release/converter/meshy-pipeline/code/healthcheck.py"
 "`$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
+"`$shared/tools/blender/blender" --background --version >/dev/null
+BLENDER_EXE="`$shared/tools/blender/blender" \
+  "`$shared/venvs/pipeline-converter/bin/python" -m unittest discover \
+  -s "`$new_release/converter/pipeline-converter/tests" -v
 
 cd "`$new_release/converter/ACM-Web-Pipeline"
 npm ci --no-audit --no-fund
@@ -252,9 +302,15 @@ printf 'PIPELINE_HEALTHCHECK_OK\n'
 "@
   Invoke-RemoteScript -HostName $SshHost -Script $remoteScript
 } finally {
-  $resolvedArchive = [System.IO.Path]::GetFullPath($archivePath)
   $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
-  if ($resolvedArchive.StartsWith($temporaryRoot) -and (Split-Path $resolvedArchive -Leaf) -like "acm-pipeline-*-master-*.tar.gz" -and (Test-Path -LiteralPath $resolvedArchive)) {
-    Remove-Item -LiteralPath $resolvedArchive -Force
+  foreach ($temporaryArchive in @($archivePath, $baseArchivePath)) {
+    $resolvedArchive = [System.IO.Path]::GetFullPath($temporaryArchive)
+    if ($resolvedArchive.StartsWith($temporaryRoot) -and (Split-Path $resolvedArchive -Leaf) -like "acm-pipeline-*.tar.gz" -and (Test-Path -LiteralPath $resolvedArchive)) {
+      [System.IO.File]::Delete($resolvedArchive)
+    }
+  }
+  $resolvedStaging = [System.IO.Path]::GetFullPath($stagingPath)
+  if ($resolvedStaging.StartsWith($temporaryRoot) -and (Split-Path $resolvedStaging -Leaf) -like "acm-pipeline-stage-*" -and (Test-Path -LiteralPath $resolvedStaging -PathType Container)) {
+    [System.IO.Directory]::Delete($resolvedStaging, $true)
   }
 }

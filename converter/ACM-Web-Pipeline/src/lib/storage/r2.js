@@ -37,7 +37,13 @@ const CONTENT_TYPES = {
   ".gltf": "model/gltf+json",
   ".obj": "text/plain; charset=utf-8",
   ".mtl": "text/plain; charset=utf-8",
+  ".dxf": "application/dxf",
+  ".ply": "application/octet-stream",
   ".stl": "model/stl",
+  ".dae": "model/vnd.collada+xml",
+  ".usd": "application/octet-stream",
+  ".usda": "text/plain; charset=utf-8",
+  ".usdc": "application/octet-stream",
   ".usdz": "model/vnd.usdz+zip",
   ".fbx": "application/octet-stream",
   ".3mf": "model/3mf",
@@ -46,6 +52,8 @@ const CONTENT_TYPES = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".json": "application/json; charset=utf-8",
+  ".md": "text/markdown; charset=utf-8",
+  ".zip": "application/zip",
 };
 
 let client = null;
@@ -124,6 +132,34 @@ export async function mirrorJob(jobId, files, localDir, onLine) {
     failed,
     skipped: failed.length
       ? `${failed.length} of ${files.length} files failed to mirror: ${failed.map((item) => item.name).join(", ")}`
+      : null,
+  };
+}
+
+/** Mirror one converter result tree under its own durable R2 namespace. */
+export async function mirrorConverterJob(jobId, files, localDir, onLine) {
+  const report = onLine || (() => {});
+  if (!r2Configured()) return { mirrored: [], skipped: "R2 is not configured" };
+
+  const mirrored = [];
+  const failed = [];
+  for (const file of files) {
+    const relative = String(file.path || file.name).replace(/\\/g, "/");
+    const key = `converter-jobs/${jobId}/${relative}`;
+    try {
+      await uploadFile(path.join(localDir, ...relative.split("/")), key);
+      mirrored.push({ ...file, key });
+      report({ type: "stdout", line: `  r2: ${key}` });
+    } catch (error) {
+      report({ type: "stderr", line: `  r2 upload failed for ${relative}: ${error.message}` });
+      failed.push({ name: relative, error: error.message });
+    }
+  }
+  return {
+    mirrored,
+    failed,
+    skipped: failed.length
+      ? `${failed.length} of ${files.length} converter files failed to mirror.`
       : null,
   };
 }
@@ -221,6 +257,26 @@ export async function listMeshyRuns() {
       files: run.files.sort((a, b) => a.name.localeCompare(b.name)),
     }))
     .sort((a, b) => b.id.localeCompare(a.id));
+}
+
+/** Group durable converter artifacts into newest-first jobs for the result panel. */
+export async function listConverterRuns() {
+  const objects = await listObjects("converter-jobs/");
+  const grouped = new Map();
+
+  for (const object of objects) {
+    const parts = object.key.split("/");
+    if (parts.length < 3 || parts[0] !== "converter-jobs" || !parts[1]) continue;
+    const jobId = parts[1];
+    const run = grouped.get(jobId) || { id: jobId, modified: 0, files: [] };
+    run.modified = Math.max(run.modified, object.modified || 0);
+    run.files.push({ ...object, path: parts.slice(2).join("/") });
+    grouped.set(jobId, run);
+  }
+
+  return [...grouped.values()]
+    .map((run) => ({ ...run, files: run.files.sort((a, b) => a.path.localeCompare(b.path)) }))
+    .sort((a, b) => b.modified - a.modified);
 }
 
 /** Stream one private R2 object into a local workspace file. */

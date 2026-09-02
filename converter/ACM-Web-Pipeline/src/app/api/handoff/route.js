@@ -7,13 +7,12 @@
  *          that consumes it next.
  *
  * The pipelines chain in one direction - clean a photo, turn it into geometry
- * (Meshy for a full 3D subject, the 2.5D pipeline for a relief), sample it
- * into a point cloud - and this is the only door between them. A copy rather
+ * with Meshy, then convert it. This is the only door between them. A copy rather
  * than a link, because each pipeline lists its own input folder and clearing
  * one must never quietly empty another.
  */
 
-import { copyFile, mkdir, readFile, stat } from "node:fs/promises";
+import { copyFile, mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 import { readJob } from "@/lib/meshy/jobs";
@@ -23,8 +22,6 @@ import {
   IMAGE_OUTPUT_DIR,
   MESHY_INPUT_DIR,
   MESHY_OUTPUT_DIR,
-  RELIEF_INPUT_DIR,
-  RELIEF_OUTPUT_DIR,
   UPLOAD_DIR,
   availableFileName,
   resolveInside,
@@ -38,8 +35,6 @@ const SOURCES = {
   "image-input": IMAGE_INPUT_DIR,
   "meshy-output": MESHY_OUTPUT_DIR,
   "meshy-input": MESHY_INPUT_DIR,
-  "relief-output": RELIEF_OUTPUT_DIR,
-  "relief-input": RELIEF_INPUT_DIR,
 };
 
 // Each destination only accepts what the pipeline behind it can actually read.
@@ -57,41 +52,16 @@ const DESTINATIONS = {
     label: "Meshy",
     prefix: "",
   },
-  "relief-input": {
-    dir: RELIEF_INPUT_DIR,
-    // A cut-out PNG is what this pipeline actually wants, but a bare
-    // photograph still works - it just gets no silhouette to mask against.
-    accepts: [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"],
-    label: "the 2.5D pipeline",
-    prefix: "",
-  },
   "converter-input": {
     dir: UPLOAD_DIR,
-    accepts: [".obj", ".dxf"],
+    accepts: [
+      ".blend", ".obj", ".dxf", ".cad", ".xyz", ".ply", ".stl", ".cockpit",
+      ".glb", ".gltf", ".fbx", ".dae", ".usd", ".usda", ".usdc", ".usdz",
+    ],
     label: "the converter",
     prefix: "uploads/",
   },
 };
-
-/**
- * The blank a relief was fitted to, read back out of its job manifest.
- *
- * Without this the converter opens on its default blank and silently refits
- * a mesh that was already scaled to a different one, which is the kind of
- * mistake that only shows up as a wrongly sized engraving.
- */
-async function reliefJobTemplate(relativePath) {
-  const jobFolder = relativePath.replace(/\\/g, "/").split("/")[0];
-  const manifest = resolveInside(RELIEF_OUTPUT_DIR, path.join(jobFolder, "job.json"));
-  if (!manifest) return null;
-
-  try {
-    return JSON.parse(await readFile(manifest, "utf-8"));
-  } catch {
-    // An older job folder with no manifest is not an error worth failing on.
-    return null;
-  }
-}
 
 export async function POST(request) {
   const { from = "meshy-output", to, path: relativePath, jobId } = await request.json();
@@ -143,10 +113,8 @@ export async function POST(request) {
   if (typeof info.isFile === "function") await copyFile(source, destinationPath);
 
   // The size chosen during generation carries over, so the converter opens
-  // already pointed at the crystal this model was made for. A relief carries
-  // it in its own job.json instead of Meshy's.
-  const relief = from === "relief-output" ? await reliefJobTemplate(relativePath) : null;
-  const job = !relief && jobId ? await readJob(jobId) : null;
+  // already pointed at the crystal this model was made for.
+  const job = jobId ? await readJob(jobId) : null;
 
   return Response.json({
     file: {
@@ -155,8 +123,8 @@ export async function POST(request) {
       bytes: info.size ?? info.bytes,
       extension,
     },
-    template: relief?.template || job?.crystalTemplate || null,
+    template: job?.crystalTemplate || null,
     customSize: job?.customSize || null,
-    margin: relief?.values?.border || job?.crystalMargin || job?.values?.crystal_margin || null,
+    margin: job?.crystalMargin || job?.values?.crystal_margin || null,
   });
 }

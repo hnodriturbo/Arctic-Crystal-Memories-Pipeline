@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const LINE_COLOURS = {
   cmd: "text-console-accent",
@@ -24,6 +25,7 @@ const LINE_COLOURS = {
 
 export default function ConsoleLog({ lines, running }) {
   const endRef = useRef(null);
+  const { t } = useLanguage();
 
   // Follow the tail while a script is talking, so progress stays visible.
   useEffect(() => {
@@ -39,11 +41,11 @@ export default function ConsoleLog({ lines, running }) {
           }`}
         />
         <span className="font-mono text-xs text-console-muted">
-          {running ? "running" : "idle"}
+          {running ? t("running") : t("idle")}
         </span>
         {lines.length ? (
           <span className="ml-auto font-mono text-xs text-console-muted">
-            {lines.length} lines
+            {lines.length} {t("lines")}
           </span>
         ) : null}
       </div>
@@ -51,7 +53,7 @@ export default function ConsoleLog({ lines, running }) {
       <div className="max-h-96 overflow-y-auto px-4 py-3">
         {lines.length === 0 ? (
           <p className="font-mono text-xs text-console-muted">
-            Output appears here once a conversion starts.
+            {t("Output appears here once a conversion starts.")}
           </p>
         ) : (
           lines.map((entry, index) => (

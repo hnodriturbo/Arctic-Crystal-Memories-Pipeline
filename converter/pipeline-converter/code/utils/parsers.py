@@ -168,6 +168,7 @@ def parse_dxf_points_fast(file_path, limit=None, scale=1.0):
     in_entities = False
     current_x = None
     current_y = None
+    current_entity = None
 
     with open(file_path, "r", encoding="utf-8", errors="replace") as source:
         it = iter(source)
@@ -183,12 +184,16 @@ def parse_dxf_points_fast(file_path, limit=None, scale=1.0):
             elif code == "0" and value == "ENDSEC" and in_entities:
                 break
             elif in_entities:
-                if code == "10":
+                if code == "0":
+                    current_entity = value.upper()
+                    current_x = None
+                    current_y = None
+                elif current_entity == "POINT" and code == "10":
                     current_x = float(value) * scale
                     current_y = None
-                elif code == "20" and current_x is not None:
+                elif current_entity == "POINT" and code == "20" and current_x is not None:
                     current_y = float(value) * scale
-                elif code == "30" and current_x is not None and current_y is not None:
+                elif current_entity == "POINT" and code == "30" and current_x is not None and current_y is not None:
                     points.append((current_x, current_y, float(value) * scale))
                     current_x = None
                     current_y = None

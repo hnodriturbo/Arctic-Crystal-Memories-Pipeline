@@ -47,9 +47,9 @@ export default function ConverterClient({
   handoff = null,
 }) {
   const { t } = useLanguage();
-  const [operation, setOperation] = useState("mesh_to_pointcloud");
+  const [operation, setOperation] = useState("convert_model");
   const [values, setValues] = useState(() => ({
-    ...defaultValues("mesh_to_pointcloud"),
+    ...defaultValues("convert_model"),
     ...(handoff?.template ? { template: handoff.template } : {}),
     ...(handoff?.margin ? { border: handoff.margin } : {}),
     // A one-off size typed into the Meshy step fills the custom fields here,
@@ -70,6 +70,7 @@ export default function ConverterClient({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [r2Jobs, setR2Jobs] = useState([]);
+  const [converterR2Jobs, setConverterR2Jobs] = useState([]);
   const [r2Configured, setR2Configured] = useState(null);
   const [libraryLoading, setLibraryLoading] = useState(true);
   const [importingKey, setImportingKey] = useState(null);
@@ -102,6 +103,7 @@ export default function ConverterClient({
       if (!response.ok) throw new Error(data.error || "Could not read the R2 library");
       setR2Configured(Boolean(data.configured));
       setR2Jobs(data.jobs || []);
+      setConverterR2Jobs(data.converterJobs || []);
     } catch (error) {
       setR2Configured(false);
       setNotice({ tone: "error", text: error.message });
@@ -134,7 +136,7 @@ export default function ConverterClient({
     const runs = new Map();
     for (const job of initialMeshyJobs) {
       const files = (job.files || [])
-        .filter((file) => [".obj", ".dxf"].includes(file.extension))
+        .filter((file) => OPERATIONS.convert_model.accepts.includes(file.extension))
         .map((file) => ({ ...file, source: "local", jobId: job.id }));
       if (files.length) {
         runs.set(job.id, {
@@ -148,7 +150,7 @@ export default function ConverterClient({
 
     for (const run of r2Jobs) {
       const r2Files = (run.files || [])
-        .filter((file) => [".obj", ".dxf"].includes(file.extension))
+        .filter((file) => OPERATIONS.convert_model.accepts.includes(file.extension))
         .map((file) => ({ ...file, source: "r2", jobId: run.id }));
       const existing = runs.get(run.id);
       const localByName = new Map((existing?.files || []).map((file) => [file.name, file]));
@@ -298,6 +300,14 @@ export default function ConverterClient({
               text: event.code === 0 ? "Finished." : `Exited with code ${event.code}.`,
             },
           ]);
+        } else if (event.type === "result") {
+          const mirrored = event.r2?.mirrored?.length || 0;
+          setNotice({
+            tone: "ok",
+            text: mirrored
+              ? `${event.job.jobId} finished and ${mirrored} files were stored in R2.`
+              : `${event.job.jobId} finished locally.`,
+          });
         } else {
           setLines((current) => [
             ...current,
@@ -306,7 +316,7 @@ export default function ConverterClient({
         }
       });
 
-      await refreshFiles();
+      await Promise.all([refreshFiles(), refreshR2Library()]);
     } catch (error) {
       if (error.name !== "AbortError") {
         setNotice({ tone: "error", text: error.message });
@@ -317,7 +327,7 @@ export default function ConverterClient({
     }
   }
 
-  const recentOutputs = outputs.slice(0, 15);
+  const recentOutputs = outputs.slice(0, 30);
 
   return (
     <div className="space-y-8">
@@ -330,7 +340,13 @@ export default function ConverterClient({
       </header>
 
       {notice ? (
-        <div className="rounded-lg border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger-text">
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            notice.tone === "ok"
+              ? "border-success-border bg-success-soft text-success-text"
+              : "border-danger-border bg-danger-soft text-danger-text"
+          }`}
+        >
           {notice.text}
         </div>
       ) : null}
@@ -443,7 +459,7 @@ export default function ConverterClient({
             </div>
             {!sourceIsCompatible ? (
               <span className="shrink-0 text-xs text-warning-text">
-                wrong type for this operation
+                {t("wrong type for this operation")}
               </span>
             ) : null}
           </div>
@@ -453,7 +469,7 @@ export default function ConverterClient({
         {compatibleInputs.length ? (
           <details>
             <summary className="cursor-pointer text-xs text-muted hover:text-foreground">
-              or pick one of {compatibleInputs.length} files already in input/
+              {t("or pick one of")} {compatibleInputs.length} {t("files already in input/")}
             </summary>
             <ul className="mt-3 max-h-56 space-y-0.5 overflow-y-auto">
               {compatibleInputs.map((item) => (
@@ -533,7 +549,7 @@ export default function ConverterClient({
               <p className="font-semibold text-accent-soft-text">{t("Depth reference")}</p>
               <p className="mt-1 text-muted-strong">
                 {crystalSummary.maximumPlanes
-                  ? `up to about ${crystalSummary.maximumPlanes} planes across usable depth`
+                  ? `${t("up to about")} ${crystalSummary.maximumPlanes} ${t("planes across usable depth")}`
                   : t("continuous depth (no layer spacing)")}
               </p>
             </div>
@@ -571,7 +587,7 @@ export default function ConverterClient({
           </button>
         ) : null}
         <p className="text-xs text-muted">
-          Large meshes take a few minutes; progress appears below as it happens.
+          {t("Large meshes take a few minutes; progress appears below as it happens.")}
         </p>
       </section>
 
@@ -613,6 +629,49 @@ export default function ConverterClient({
             ))}
           </ul>
         )}
+
+        <div className="border-t border-surface-border pt-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-strong">
+            {t("Durable R2 converter outputs")}
+          </h3>
+          {converterR2Jobs.length ? (
+            <div className="mt-3 max-h-96 space-y-2 overflow-y-auto pr-1">
+              {converterR2Jobs.slice(0, 20).map((job) => (
+                <details key={job.id} className="rounded-lg border border-surface-border bg-surface-sunken">
+                  <summary className="cursor-pointer px-4 py-3 text-sm">
+                    <span className="font-medium">{job.id}</span>
+                    <span className="ml-2 text-xs text-muted">{job.files.length} files</span>
+                  </summary>
+                  <ul className="divide-y divide-surface-border border-t border-surface-border px-3">
+                    {job.files.map((item) => (
+                      <li key={item.key} className="flex items-center justify-between gap-4 py-2.5">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm">{item.name}</p>
+                          <p className="truncate font-mono text-xs text-muted">{item.path}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <span className="font-mono text-xs text-muted">{formatBytes(item.bytes)}</span>
+                          <a
+                            href={`/api/download?r2Key=${encodeURIComponent(item.key)}`}
+                            className="rounded-md border border-surface-border px-3 py-1 text-xs transition hover:border-accent hover:text-accent"
+                          >
+                            {t("download")}
+                          </a>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-muted">
+              {r2Configured === false
+                ? t("R2 is not available on this server.")
+                : t("No converter results are archived yet.")}
+            </p>
+          )}
+        </div>
       </section>
     </div>
   );

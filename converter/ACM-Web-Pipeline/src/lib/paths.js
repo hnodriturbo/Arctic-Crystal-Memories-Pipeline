@@ -3,12 +3,11 @@
  * Pipeline Paths
  * ═══════════════════════════════════════════════════════════════
  * Path: src/lib/paths.js
- * Purpose: Resolve the four checkouts this app drives and keep every
+ * Purpose: Resolve the three checkouts this app drives and keep every
  *          filesystem access fenced inside one of them.
  *
- * Four roots, because the app spans four isolated pipelines: image
- * preparation, the Meshy workspace, 2.5D relief building, and point-cloud
- * conversion.
+ * Three roots, because the app spans image preparation, the Meshy workspace,
+ * and point-cloud/model conversion. The 2.5D tree is research-only.
  */
 
 import { access } from "node:fs/promises";
@@ -19,7 +18,6 @@ import path from "node:path";
 const DEFAULT_CONVERTER_ROOT = path.resolve(process.cwd(), "..", "pipeline-converter");
 const DEFAULT_MESHY_ROOT = path.resolve(process.cwd(), "..", "meshy-pipeline");
 const DEFAULT_IMAGE_ROOT = path.resolve(process.cwd(), "..", "image-pipeline");
-const DEFAULT_RELIEF_ROOT = path.resolve(process.cwd(), "..", "2.5D-pipeline");
 
 // turbopackIgnore keeps the bundler from tracing the whole converter tree into the build.
 export const CONVERTER_ROOT = path.resolve(
@@ -48,19 +46,6 @@ export const IMAGE_INPUT_DIR = path.join(IMAGE_ROOT, "input");
 export const IMAGE_OUTPUT_DIR = path.join(IMAGE_ROOT, "output");
 export const IMAGE_CODE_DIR = path.join(IMAGE_ROOT, "code");
 
-export const RELIEF_ROOT = path.resolve(
-  /*turbopackIgnore: true*/ process.env.RELIEF_PIPELINE_ROOT || DEFAULT_RELIEF_ROOT,
-);
-
-// One folder per relief job, holding the depth PNG, the GLB the browser
-// previews and the OBJ the point sampler consumes.
-export const RELIEF_INPUT_DIR = path.join(RELIEF_ROOT, "input");
-export const RELIEF_OUTPUT_DIR = path.join(RELIEF_ROOT, "output");
-export const RELIEF_CODE_DIR = path.join(RELIEF_ROOT, "code");
-
-// Real crystal blank geometry imported from a local Cockpit 3D install by
-// code/import_blanks.py. Internal preview use - see that script's header.
-export const RELIEF_BLANKS_DIR = path.join(RELIEF_ROOT, "blanks");
 
 /** Windows venvs keep interpreters in Scripts/, POSIX ones in bin/. */
 function venvPython(root) {
@@ -79,13 +64,6 @@ export const MESHY_PYTHON_EXE = process.env.MESHY_PYTHON || venvPython(MESHY_ROO
 // the image one carries rembg and onnxruntime. Keeping them apart is what lets
 // the VPS install the image side CPU-only without touching the converter.
 export const IMAGE_PYTHON_EXE = process.env.IMAGE_PIPELINE_PYTHON || venvPython(IMAGE_ROOT);
-
-// The geometry runtime carries MoGe-2, Depth Pro, YuNet/OpenCV and the ordinary
-// relief dependencies together. Native 2.5D always runs face detection and may
-// run MoGe again on face crops, so the older root .venv is no longer sufficient.
-export const RELIEF_PYTHON_EXE =
-  process.env.RELIEF_PIPELINE_PYTHON ||
-  venvPython(path.join(RELIEF_ROOT, "Models", "runtimes", ".venv-geometry"));
 
 /** Reject any path that escapes its allowed root, so a crafted name cannot read the wider disk. */
 export function resolveInside(root, relativePath) {

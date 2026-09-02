@@ -73,7 +73,7 @@ def write_conversion_report(file_path, points, stats, output_paths, options):
 def main():
     parser = argparse.ArgumentParser(description="Convert Cockpit3D-style CAD files to point clouds.")
     parser.add_argument("--file", required=True, help="Path to the .cad file to convert.")
-    parser.add_argument("--formats", nargs="+", default=["xyz"], choices=["xyz", "obj", "stl"],
+    parser.add_argument("--formats", nargs="+", default=["xyz"], choices=["xyz", "ply", "obj", "stl"],
                         help="Output formats (xyz, obj, stl).")
     parser.add_argument("--limit", type=int, default=None, help="Export only the first N points.")
     parser.add_argument("--sample-rate", type=int, default=1, help="Export every Nth candidate point.")

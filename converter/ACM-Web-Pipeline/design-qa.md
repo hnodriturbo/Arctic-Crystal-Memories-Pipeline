@@ -16,14 +16,13 @@ Purpose:
 - Build checks: `npm run lint` and `npm run build` passed.
 - Visual evidence: `design-artifacts/2026-08-29/meshy-review-layout/qa/comparison-reference-and-implementation.png`.
 
-## Crystal workflow — 2026-08-29
+## Production converter workflow — 2026-09-02
 
-- Scope: `Leið A → 2.5D → Leið B` in the local ACM-Web-Pipeline.
-- Model A desktop uses two columns and keeps the composer within the shared content width; tablet and mobile collapse to one column without horizontal overflow.
-- Rectangle Mini Presidential uses the approved bevel scale and authoritative `10×10×4 mm` border.
-- All 27 local 2D Cockpit templates and six crystal families are available.
-- Model B uses a 4:3 frame, a closer camera and a fixed `0.08 mm` preview dot size.
-- The 2.5D form exposes point budget, XY/Z distance, final cap, layer distance/count, stagger, toning, density floor, inversion and seed.
-- Visual evidence: `design-artifacts/2026-08-29/crystal-flow/qa/comparison-reference-and-model-a.png` and the adjacent desktop/mobile captures.
+- Scope: retain the existing `Image → Meshy → Converter` operator sequence.
+- 2.5D research is not exposed or imported by the production web application.
+- Converter remains its own third-step page rather than introducing another workflow.
+- The page accepts uploaded, handed-off, and R2 model inputs; it lists local and durable R2 conversion results.
+- Common model outputs, millimetre sizing, axis slicing, printer DXF, and multi-output ZIP are rendered from the existing operation catalogue.
+- Functional evidence: lint, production build, headless Blender conversion tests, and the converter API SSE flow passed.
 
 final result: passed

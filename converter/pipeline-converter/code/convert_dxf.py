@@ -63,7 +63,7 @@ def write_conversion_report(file_path, points, output_paths, options):
 def main():
     parser = argparse.ArgumentParser(description="Convert Cockpit3D DXF point clouds to XYZ/PLY/OBJ/STL.")
     parser.add_argument("--file", required=True, help="Path to the .dxf file.")
-    parser.add_argument("--formats", nargs="+", default=["xyz"], choices=["xyz", "obj", "stl"],
+    parser.add_argument("--formats", nargs="+", default=["xyz"], choices=["xyz", "ply", "obj", "stl"],
                         help="Output formats (xyz, obj, stl).")
     parser.add_argument("--limit", type=int, default=None, help="Export only the first N points.")
     parser.add_argument("--scale", type=float, default=1.0, help="Scale factor for all coordinates.")
@@ -82,6 +82,10 @@ def main():
     console.print(f"[bold]Parsing DXF:[/bold] {file_path.name}")
     points = parse_dxf_points_fast(file_path, limit=args.limit, scale=args.scale)
     console.print(f"  Extracted [green]{len(points):,}[/green] points.")
+    if not points:
+        raise ValueError(
+            "No POINT entities were found. Use mesh_to_pointcloud.py for a 3DFACE mesh DXF."
+        )
 
     if args.dedupe:
         points = dedupe_points(points)

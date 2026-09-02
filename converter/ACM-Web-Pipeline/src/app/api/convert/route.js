@@ -13,7 +13,8 @@
 import { spawn } from "node:child_process";
 
 import { buildArguments, OPERATIONS } from "@/lib/operations";
-import { CODE_DIR, CONVERTER_ROOT, INPUT_DIR, PYTHON_EXE, resolveInside } from "@/lib/paths";
+import { CODE_DIR, CONVERTER_ROOT, INPUT_DIR, OUTPUT_DIR, PYTHON_EXE, resolveInside } from "@/lib/paths";
+import { mirrorConverterJob } from "@/lib/storage/r2";
 import path from "node:path";
 
 export const runtime = "nodejs";
@@ -56,6 +57,7 @@ export async function POST(request) {
 
       const quote = (part) => (part.includes(" ") ? `"${part}"` : part);
       send({ type: "cmd", line: [PYTHON_EXE, ...args].map(quote).join(" ") });
+      let completedJob = null;
 
       let child;
       try {
@@ -78,7 +80,16 @@ export async function POST(request) {
           const parts = pending.split(/\r?\n/);
           pending = parts.pop() ?? "";
           for (const line of parts) {
-            if (line.trim()) send({ type, line });
+            if (!line.trim()) continue;
+            if (type === "stdout" && line.startsWith("ACM_CONVERTER_JOB=")) {
+              try {
+                completedJob = JSON.parse(line.slice("ACM_CONVERTER_JOB=".length));
+              } catch {
+                send({ type: "stderr", line: "Could not parse converter job manifest." });
+              }
+              continue;
+            }
+            send({ type, line });
           }
         };
         onData.flush = () => {
@@ -98,9 +109,24 @@ export async function POST(request) {
         controller.close();
       });
 
-      child.on("close", (code) => {
+      child.on("close", async (code) => {
         onStdout.flush();
         onStderr.flush();
+        if (code === 0 && completedJob?.jobId && completedJob?.directory && completedJob?.files) {
+          const relativeDirectory = path.relative(OUTPUT_DIR, completedJob.directory);
+          const safeDirectory = resolveInside(OUTPUT_DIR, relativeDirectory);
+          if (safeDirectory && path.basename(safeDirectory) === completedJob.jobId) {
+            const r2 = await mirrorConverterJob(
+              completedJob.jobId,
+              completedJob.files,
+              safeDirectory,
+              send,
+            );
+            send({ type: "result", job: completedJob, r2 });
+          } else {
+            send({ type: "stderr", line: "Converter result directory failed its output-root check." });
+          }
+        }
         send({ type: "done", code });
         controller.close();
       });

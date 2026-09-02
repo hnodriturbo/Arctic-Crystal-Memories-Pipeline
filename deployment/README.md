@@ -20,6 +20,7 @@ VPS. Git and GitHub are not part of the deployment path.
     ├── ecosystem.config.cjs          stable PM2 configuration
     ├── models/rembg -> ~/.u2net      all ten shared image weights
     ├── python/                       uv-managed CPython 3.11
+    ├── tools/blender/                shared Blender 4.5 LTS conversion runtime
     ├── tools/uv                      user-scoped uv binary
     ├── uv-cache/                     shared package/download cache
     ├── venvs/
@@ -34,10 +35,10 @@ pipeline environments use uv-managed Python 3.11 and are shared between
 releases because their requirements change much less often than the web app.
 No CUDA or `onnxruntime-gpu` package belongs on this VPS. Torch is installed
 only from PyTorch's explicit `+cpu` wheels. Install Ubuntu's small OpenCV
-runtime prerequisite once before the first image-AI deployment:
+runtime prerequisites once before the first image-AI/model-converter deployment:
 
 ```bash
-sudo apt-get install --no-install-recommends libgl1
+sudo apt-get install --no-install-recommends libgl1 libxrender1 libxfixes3 libxi6 libsm6 libice6 x11-common
 ```
 
 ## Deploy from the local source of truth
@@ -47,6 +48,15 @@ From PowerShell in the repository root:
 ```powershell
 .\scripts\deploy-pipeline-vps.ps1
 ```
+
+For an explicitly reviewed local release before the user's manual commit:
+
+```powershell
+.\scripts\deploy-pipeline-vps.ps1 -DeployWorkingTree
+```
+
+This packages only non-ignored local changes under `converter/` and
+`deployment/`; it does not modify Git state or contact GitHub.
 
 The script creates a secret-free archive, rejects `.env`, `node_modules`,
 `.next`, `.venv` and customer workspace content, then transfers it over SSH.
@@ -85,6 +95,8 @@ for env in image-pipeline meshy-pipeline pipeline-converter; do
   /home/hreidar/apps/acm-pipeline/shared/venvs/$env/bin/python -c \
     'import platform; print(platform.python_version())'
 done
+
+/home/hreidar/apps/acm-pipeline/shared/tools/blender/blender --background --version
 ```
 
 The public root redirects signed-out users to Auth.js login. Meshy's webhook

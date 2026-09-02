@@ -16,7 +16,10 @@ export const runtime = "nodejs";
 export const maxDuration = 3600;
 
 const ALLOWED_PREFIXES = ["jobs/", "uploads/"];
-const CONVERTER_EXTENSIONS = new Set([".obj", ".dxf", ".cad", ".xyz", ".ply", ".stl", ".cockpit"]);
+const CONVERTER_EXTENSIONS = new Set([
+  ".blend", ".obj", ".dxf", ".cad", ".xyz", ".ply", ".stl", ".cockpit",
+  ".glb", ".gltf", ".fbx", ".dae", ".usd", ".usda", ".usdc", ".usdz",
+]);
 
 export async function POST(request) {
   if (!r2Configured()) {

@@ -19,7 +19,6 @@ import path from "node:path";
 import {
   IMAGE_INPUT_DIR,
   MESHY_INPUT_DIR,
-  RELIEF_INPUT_DIR,
   UPLOAD_DIR,
   availableFileName,
   safeFileName,
@@ -29,22 +28,19 @@ export const runtime = "nodejs";
 export const maxDuration = 3600;
 
 // One target per pipeline: models to the converter, photos to whichever of
-// the three image-side workspaces asked for them.
+// the active image-side workspaces asked for them.
 const TARGETS = {
   converter: {
     directory: UPLOAD_DIR,
-    extensions: [".obj", ".dxf", ".cad", ".xyz", ".ply", ".stl", ".cockpit"],
+    extensions: [
+      ".blend", ".obj", ".dxf", ".cad", ".xyz", ".ply", ".stl", ".cockpit",
+      ".glb", ".gltf", ".fbx", ".dae", ".usd", ".usda", ".usdc", ".usdz",
+    ],
   },
   meshy: { directory: MESHY_INPUT_DIR, extensions: [".jpg", ".jpeg", ".png"] },
   image: {
     directory: IMAGE_INPUT_DIR,
     extensions: [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"],
-  },
-  // The relief pipeline prefers a cut-out PNG, but accepts a plain
-  // photograph too - it simply gets no silhouette to work with.
-  relief: {
-    directory: RELIEF_INPUT_DIR,
-    extensions: [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"],
   },
 };
 

@@ -21,9 +21,6 @@ import {
   MESHY_INPUT_DIR,
   MESHY_OUTPUT_DIR,
   MESHY_WORK_DIR,
-  RELIEF_BLANKS_DIR,
-  RELIEF_INPUT_DIR,
-  RELIEF_OUTPUT_DIR,
   resolveInside,
 } from "@/lib/paths";
 import { presignDownload, r2Configured } from "@/lib/storage/r2";
@@ -37,11 +34,6 @@ const ROOTS = {
   "meshy-input": MESHY_INPUT_DIR,
   "meshy-work": MESHY_WORK_DIR,
   "meshy-output": MESHY_OUTPUT_DIR,
-  "relief-input": RELIEF_INPUT_DIR,
-  // Relief output is one folder per job, so paths here are nested
-  // (<job-id>/relief.glb) rather than flat like the roots above.
-  "relief-output": RELIEF_OUTPUT_DIR,
-  "relief-blanks": RELIEF_BLANKS_DIR,
 };
 
 // model-viewer refuses a GLB served as octet-stream, and the browser would
@@ -87,7 +79,7 @@ export async function GET(request) {
      * A redirect rather than a proxy: the object goes straight from R2 to the
      * browser instead of through this box twice.
      */
-    const bucketPrefix = { "meshy-output": "jobs/", "relief-output": "relief-jobs/" }[
+    const bucketPrefix = { "meshy-output": "jobs/" }[
       searchParams.get("root")
     ];
 

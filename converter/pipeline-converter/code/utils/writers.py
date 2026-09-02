@@ -134,6 +134,11 @@ def write_selected_formats(points, source_name, formats, project_root, stl_metho
         write_xyz(points, xyz_path)
         output_paths["xyz"] = xyz_path
 
+    if "ply" in formats:
+        ply_path = project_root / "output" / "ply" / f"{source_name}.ply"
+        write_ply(points, ply_path)
+        output_paths["ply"] = ply_path
+
     if "obj" in formats:
         obj_path = project_root / "output" / "obj" / f"{source_name}.obj"
         write_obj(points, obj_path, method=stl_method, stl_limit=stl_limit)

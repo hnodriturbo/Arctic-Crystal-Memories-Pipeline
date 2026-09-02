@@ -16,10 +16,28 @@ import { blankOptions } from "@/lib/crystal-blanks";
 export const CRYSTAL_TEMPLATES = blankOptions({ includeNone: false });
 
 export const IMAGE_TYPES = [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"];
+export const MODEL_TYPES = [
+  ".blend",
+  ".dxf",
+  ".obj",
+  ".stl",
+  ".ply",
+  ".glb",
+  ".gltf",
+  ".fbx",
+  ".dae",
+  ".usd",
+  ".usda",
+  ".usdc",
+  ".usdz",
+];
+const ZERO_VALUE_FIELDS = new Set(["points", "max_points", "layer_spacing", "seed"]);
 
 // Field groups, rendered as labelled sections so a long form stays readable.
 export const FIELD_GROUPS = [
+  { id: "model", emoji: "📐", label: "Model dimensions", hint: "Declare source units and size the result in millimetres." },
   { id: "size", emoji: "💠", label: "Crystal size", hint: "Aspect ratio is always preserved." },
+  { id: "slice", emoji: "✂️", label: "Slice model", hint: "Keep geometry between optional millimetre boundaries on one axis." },
   { id: "density", emoji: "⚪", label: "Dot density", hint: "How many laser dots, and how close together." },
   { id: "layers", emoji: "🥞", label: "Depth layers", hint: "Snap depth onto planes the laser focuses on." },
   { id: "texture", emoji: "🖌️", label: "Texture toning", hint: "Drive dot density from image brightness." },
@@ -188,6 +206,214 @@ const LAYER_FIELDS = [
 ];
 
 export const OPERATIONS = {
+  convert_model: {
+    label: "Convert, resize, and slice a 3D model",
+    blurb:
+      "Reads common Blender-compatible 3D files, reports their geometry, sizes them in millimetres, optionally slices them, and writes every selected format. Multiple formats are also packaged as ZIP.",
+    script: "convert_model.py",
+    accepts: MODEL_TYPES,
+    fields: [
+      {
+        name: "formats",
+        emoji: "📦",
+        label: "Output formats",
+        group: "output",
+        type: "multiselect",
+        flag: "--formats",
+        options: ["dxf", "glb", "gltf", "obj", "stl", "ply", "fbx", "usd", "usdz"],
+        default: ["dxf", "glb"],
+        help: "DXF uses ACM's SSLE POINT-cloud writer. Two or more selections also produce one ZIP.",
+      },
+      {
+        name: "input_unit",
+        emoji: "📏",
+        label: "Source coordinate unit",
+        group: "model",
+        type: "select",
+        flag: "--input-unit",
+        options: [
+          { value: "mm", label: "Millimetres (mm)" },
+          { value: "cm", label: "Centimetres (cm)" },
+          { value: "m", label: "Metres (m)" },
+          { value: "in", label: "Inches (in)" },
+        ],
+        default: "mm",
+        help: "Coordinates are converted to millimetres before sizing or slicing.",
+      },
+      {
+        name: "fit_width",
+        emoji: "↔️",
+        label: "Maximum model width (mm)",
+        group: "model",
+        type: "number",
+        flag: "--fit-width",
+        default: 0,
+        min: 0,
+        step: 1,
+        help: "0 keeps the converted source width. Multiple limits preserve aspect ratio and use the tightest fit.",
+      },
+      {
+        name: "fit_height",
+        emoji: "↕️",
+        label: "Maximum model height (mm)",
+        group: "model",
+        type: "number",
+        flag: "--fit-height",
+        default: 0,
+        min: 0,
+        step: 1,
+      },
+      {
+        name: "fit_depth",
+        emoji: "🧊",
+        label: "Maximum model depth (mm)",
+        group: "model",
+        type: "number",
+        flag: "--fit-depth",
+        default: 0,
+        min: 0,
+        step: 1,
+      },
+      {
+        name: "placement",
+        emoji: "🎯",
+        label: "Placement before slicing",
+        group: "model",
+        type: "select",
+        flag: "--placement",
+        options: [
+          { value: "center", label: "Center at origin" },
+          { value: "ground", label: "Center X/Y and place bottom at Z=0" },
+          { value: "keep", label: "Keep imported coordinates" },
+        ],
+        default: "center",
+      },
+      {
+        name: "slice_axis",
+        emoji: "✂️",
+        label: "Slice axis",
+        group: "slice",
+        type: "select",
+        flag: "--slice-axis",
+        options: [
+          { value: "none", label: "Do not slice" },
+          { value: "x", label: "X · width" },
+          { value: "y", label: "Y · height" },
+          { value: "z", label: "Z · depth" },
+        ],
+        default: "none",
+      },
+      {
+        name: "slice_min",
+        emoji: "◀️",
+        label: "Keep from coordinate (mm)",
+        group: "slice",
+        type: "number",
+        flag: "--slice-min",
+        default: "",
+        step: 0.1,
+        passZero: true,
+        help: "Blank leaves this side open. Coordinates are measured after unit conversion, fitting, and placement.",
+      },
+      {
+        name: "slice_max",
+        emoji: "▶️",
+        label: "Keep through coordinate (mm)",
+        group: "slice",
+        type: "number",
+        flag: "--slice-max",
+        default: "",
+        step: 0.1,
+        passZero: true,
+      },
+      {
+        name: "fill_cuts",
+        emoji: "🧱",
+        label: "Cap cut surfaces",
+        group: "slice",
+        type: "boolean",
+        flag: "--fill-cuts",
+        default: true,
+        help: "Fills closed cut loops when the source topology allows it.",
+      },
+      ...SIZE_FIELDS,
+      {
+        name: "points",
+        emoji: "⚪",
+        label: "DXF sampling target (0 = spacing)",
+        group: "density",
+        type: "number",
+        flag: "--points",
+        default: 0,
+        min: 0,
+        max: 5000000,
+        step: 50000,
+        help: "Only used when DXF is selected.",
+      },
+      {
+        name: "spacing",
+        emoji: "📏",
+        label: "DXF point spacing (mm)",
+        group: "density",
+        type: "number",
+        flag: "--spacing",
+        default: 0.08,
+        min: 0.01,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        name: "min_distance",
+        emoji: "⚠️",
+        label: "DXF minimum dot distance (mm)",
+        group: "density",
+        type: "number",
+        flag: "--min-distance",
+        default: 0.08,
+        min: 0.01,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        name: "z_distance",
+        emoji: "📐",
+        label: "DXF depth-dot spacing (mm)",
+        group: "density",
+        type: "number",
+        flag: "--z-distance",
+        default: 0,
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        name: "max_points",
+        emoji: "🛑",
+        label: "DXF final point cap",
+        group: "density",
+        type: "number",
+        flag: "--max-points",
+        default: 500000,
+        min: 1,
+        max: 5000000,
+        step: 50000,
+      },
+      ...LAYER_FIELDS,
+      {
+        name: "seed",
+        emoji: "🎲",
+        label: "DXF sampling seed",
+        group: "output",
+        type: "number",
+        flag: "--seed",
+        default: 7,
+        min: 0,
+        step: 1,
+        passZero: true,
+      },
+    ],
+  },
+
   mesh_to_pointcloud: {
     label: "3D model to printable DXF",
     blurb:
@@ -585,7 +811,12 @@ export function buildArguments(operationKey, values, absoluteInputPath, resolveF
     }
     // Zero means "leave the script's own default alone" for every number except
     // the point budget, where zero is a real instruction to use spacing instead.
-    if (field.type === "number" && Number(value) === 0 && field.name !== "points") continue;
+    if (
+      field.type === "number" &&
+      Number(value) === 0 &&
+      !ZERO_VALUE_FIELDS.has(field.name) &&
+      !field.passZero
+    ) continue;
 
     args.push(field.flag, String(value));
   }

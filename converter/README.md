@@ -6,16 +6,17 @@ Purpose:
 
 # Crystal Converter
 
-Four pipelines that can chain in one direction, plus the web UI that drives
-them. Self-contained: nothing here depends on the main website.
+Three production pipelines chain in one direction through the operator web UI.
+The separate 2.5D folder is a research workspace and is deliberately not
+imported, routed, or exposed by the production site.
 
 ```txt
 converter/
 ├── image-pipeline/       Python CLI - clean a photograph
 ├── meshy-pipeline/       Workspace - photograph to 3D model, via the Meshy API
-├── 2.5D-pipeline/        Local depth map, relief GLB/OBJ and Cockpit blank data
-├── pipeline-converter/   Python CLI - 3D model to printable point cloud
-└── ACM-Web-Pipeline/     Next.js 16 UI that drives all four
+├── 2.5D-pipeline/        Standalone research only; canonical notes are in .Markdown
+├── pipeline-converter/   Python CLI - inspect, resize, slice and convert 3D models
+└── ACM-Web-Pipeline/     Next.js 16 UI for image, Meshy and converter
 ```
 
 ```txt
@@ -25,8 +26,8 @@ a photograph
 a clean cut-out
     │  meshy-pipeline      Meshy generates geometry from it
     ▼
-an OBJ or GLB
-    │  pipeline-converter  sample the surface into a dot cloud, fit to a blank
+an OBJ, GLB or other supported 3D model
+    │  pipeline-converter  inspect/resize/slice, export formats and printer DXF
     ▼
 a DXF the SSLE engraver reads
 ```
@@ -35,9 +36,9 @@ Each stage is usable on its own, and each hands its result to the next with one
 button in the UI. Start anywhere: an existing model can go straight into the
 converter, and a photograph that is already clean can go straight to Meshy.
 
-For the crystal-photo path, the web UI exposes the intended sequence directly:
-`Leið A → 2.5D AutoConvertTo3D → Leið B`. The ACM-Web-Main versions remain
-separate prototypes for a future customer express-checkout flow.
+The production menu remains the existing sequence: image preparation, Meshy,
+then converter. 2.5D experiments stay local until a researched model is ready
+for a later, explicit production integration.
 
 ## The two formats that matter
 
@@ -59,7 +60,17 @@ cd ACM-Web-Pipeline
 npm run dev        # http://localhost:3100
 ```
 
-Everything is driven from there. For a one-off from the command line:
+Everything production-related is driven from there. For a universal one-off
+conversion from the command line:
+
+```powershell
+cd pipeline-converter
+.\.venv\Scripts\python.exe code\convert_model.py `
+    --file "input\uploads\your-model.glb" --formats dxf glb stl `
+    --input-unit mm --fit-width 58 --fit-height 78 --fit-depth 38
+```
+
+For direct printer sampling with the advanced orientation/toning controls:
 
 ```powershell
 cd pipeline-converter
@@ -67,7 +78,7 @@ cd pipeline-converter
     --file "input\your-model.obj" --template 60x80x40 --points 750000 --upright y
 ```
 
-Each pipeline has its own venv and its own README. `ACM-Web-Pipeline/.env.example`
+Each production pipeline has its own venv and README. `ACM-Web-Pipeline/.env.example`
 lists every setting; `DEPLOY-VPS.md` covers the server.
 
 ## 2.5D or full 3D
