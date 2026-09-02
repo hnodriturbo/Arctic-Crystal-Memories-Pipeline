@@ -17,9 +17,15 @@ Ljósmynd
 
 Markmiðið er ekki að búa til óþarfa 360° mannslíkan. Markmiðið er að varðveita ljósmyndina að framan, endurgera trúverðuga dýpt í manneskjum og umhverfi og skila þéttum 2.5D fleti sem má vinna áfram fyrir kristal.
 
-## Staðfest baseline
+## Staðfest baseline og ICON samanburður
 
 Fyrsta sterka baseline-ið er [ECON front-only keyrslan](runs/2026-08-31-econ-front-only-both-together/README.md). Hún notar PIXIE + SMPL-X, ECON normals og d-BiNI front-surface integration. Hún býr til þekkjanleg andlit, hálsa, líkama, fatnað og hendur án HRN, MoGe-2 eða ACM Composer. [PARE](models/PARE/README.md) verður prófað sem occlusion-aware samanburðar-HPS við PIXIE.
+
+[Official ICON + PIXIE keyrslan](runs/2026-09-01-icon-official-pixie-both-together/README.md) staðfestir að ICON front normals eru sterk, en 256³ closed full-3D mesh missir of mikið detail fyrir loka-2.5D. ICON er því varðveitt sem normal/anatomy prior og direct PARE-vs-PIXIE rannsóknarleið; ECON front-only helst aðal geometry baseline.
+
+[ICON raw-normal → adaptive-fillet d-BiNI keyrslan](runs/2026-09-01-icon-front-bni-pixie-both-together/README.md) staðfestir að lossless ICON front normals geta orðið að samfelldum source-facing 2.5D fleti án implicit closure.
+
+[Controlled PARE-vs-PIXIE keyrslan](runs/2026-09-01-icon-front-bni-pare-both-together/README.md) velur PARE sem structural body/posture grunn fyrir þessa occluded sitjandi mynd. PIXIE er áfram skarpari detail-samanburður; næsta geometry-skref er source-camera fusion, ekki fleiri óstýrð full-3D closure-próf.
 
 ## Uppbygging
 
@@ -41,4 +47,11 @@ Fast hugtakasafn er í [GLOSSARY.md](methodology/GLOSSARY.md). „Strekking“ m
 
 ## Næsta lota
 
-Fyrsta verkefni næstu lotu er að prófa almenn dýptarlíkön á varðveittu ECON-senunni. ECON-baseline sjálft verður ekki breytt; hver viðbót verður mæld og vistuð sem afleidd keyrsla. Sjá [pipeline-áætlun](methodology/PIPELINE-ARCHITECTURE.md).
+Næstu aðskildu tilraunir eru:
+
+1. Original source-camera fusion á vinnings-PARE person-flötunum.
+2. Source-aware seam/backfill sem varðveitir raunveruleg occlusion-bil.
+3. Almenn dýptarlíkön á varðveittu senunni fyrir sófa og annað non-human scene.
+4. Region-based PIXIE/HRN detail refinement eftir mælanlegan samanburð.
+
+ECON- og ICON-baseline eru ekki yfirskrifuð; hver viðbót fær nýja run-möppu. Sjá [pipeline-áætlun](methodology/PIPELINE-ARCHITECTURE.md).

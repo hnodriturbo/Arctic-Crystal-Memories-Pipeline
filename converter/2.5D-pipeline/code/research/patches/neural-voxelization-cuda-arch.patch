@@ -1,0 +1,13 @@
+diff --git a/cuda/voxelize_cuda_kernel.cu b/cuda/voxelize_cuda_kernel.cu
+index 9a1a715..bb7c8ae 100644
+--- a/cuda/voxelize_cuda_kernel.cu
++++ b/cuda/voxelize_cuda_kernel.cu
+@@ -12,7 +12,7 @@
+ #define EPSILON_DIV_ZERO 1e-4
+ 
+ // for the older gpus atomicAdd with double arguments does not exist
+-#if  __CUDA_ARCH__ < 600 and defined(__CUDA_ARCH__)
++#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600)
+ static __inline__ __device__ double atomicAdd(double* address, double val) {
+     unsigned long long int* address_as_ull = (unsigned long long int*)address;
+     unsigned long long int old = *address_as_ull, assumed;

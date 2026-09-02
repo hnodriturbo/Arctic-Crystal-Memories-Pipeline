@@ -1,0 +1,32 @@
+diff --git a/lib/common/BNI.py b/lib/common/BNI.py
+--- a/lib/common/BNI.py
++++ b/lib/common/BNI.py
+@@
+         self.cut_intersection = self.cfg['cut_intersection']
++        self.remove_stretched = self.cfg.get('remove_stretched', True)
+@@
+             cut_intersection=self.cut_intersection,
++            remove_stretched=self.remove_stretched,
+         )
+diff --git a/lib/common/BNI_utils.py b/lib/common/BNI_utils.py
+--- a/lib/common/BNI_utils.py
++++ b/lib/common/BNI_utils.py
+@@
+     cut_intersection=True,
++    remove_stretched=True,
+ ):
+@@
+-            vertices_front, faces_front_ = remove_stretched_faces(vertices_front, faces_front)
+-            vertices_back, faces_back_ = remove_stretched_faces(vertices_back, faces_back)
++            if remove_stretched:
++                vertices_front, faces_front_ = remove_stretched_faces(vertices_front, faces_front)
++                vertices_back, faces_back_ = remove_stretched_faces(vertices_back, faces_back)
++            else:
++                faces_front_ = faces_front
++                faces_back_ = faces_back
+@@
+-    vertices_front, faces_front = remove_stretched_faces(vertices_front, faces_front)
+-    vertices_back, faces_back = remove_stretched_faces(vertices_back, faces_back)
++    if remove_stretched:
++        vertices_front, faces_front = remove_stretched_faces(vertices_front, faces_front)
++        vertices_back, faces_back = remove_stretched_faces(vertices_back, faces_back)

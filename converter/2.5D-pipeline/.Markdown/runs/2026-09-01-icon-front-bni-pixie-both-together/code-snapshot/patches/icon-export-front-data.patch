@@ -1,0 +1,82 @@
+diff --git a/apps/infer.py b/apps/infer.py
+--- a/apps/infer.py
++++ b/apps/infer.py
+@@
++    parser.add_argument(
++        "-export_front_data",
++        "--export_front_data",
++        action="store_true",
++        help="Export lossless ICON normal/depth tensors for front-only 2.5D integration.",
++    )
++    parser.add_argument(
++        "-front_thickness",
++        "--front_thickness",
++        type=float,
++        default=0.02,
++        help="Depth offset used when writing the ECON-compatible d-BiNI payload.",
++    )
++    parser.add_argument(
++        "-front_data_only",
++        "--front_data_only",
++        action="store_true",
++        help="Stop after raw front-data and fitted SMPL export; skip implicit 3D closure.",
++    )
+@@
++        # Preserve the high-precision normal prediction before ICON's implicit
++        # occupancy and marching-cubes closure.  The companion BNI payload uses
++        # the same depth/mask transforms as ECON's source-facing d-BiNI path.
++        if args.export_front_data:
++            front_data_dir = os.path.join(args.out_dir, cfg.name, "front-data")
++            os.makedirs(front_data_dir, exist_ok=True)
++
++            render_verts = in_tensor["smpl_verts"].detach() * torch.tensor(
++                [1.0, -1.0, 1.0], device=device
++            )
++            render_faces = in_tensor["smpl_faces"].detach()[:, :, [0, 2, 1]]
++            depth_F, depth_B = dataset.render_depth(render_verts, render_faces)
++
++            normal_F_arr = in_tensor["normal_F"][0].permute(1, 2, 0).detach().cpu().numpy()
++            normal_B_arr = in_tensor["normal_B"][0].permute(1, 2, 0).detach().cpu().numpy()
++            image_arr = in_tensor["image"][0].detach().cpu().numpy()
++            image_energy = np.abs(image_arr).sum(axis=0)
++            normal_mask = image_energy != image_energy[0, 0]
++            depth_F_tensor = depth_F[0] if depth_F.ndim == 3 else depth_F
++            depth_B_tensor = depth_B[0] if depth_B.ndim == 3 else depth_B
++            depth_F_arr = depth_F_tensor.float().detach().cpu().numpy()
++            depth_B_arr = depth_B_tensor.float().detach().cpu().numpy()
++
++            np.savez_compressed(
++                os.path.join(front_data_dir, f"{data['name']}_icon_front_raw.npz"),
++                normal_F=normal_F_arr,
++                normal_B=normal_B_arr,
++                image=image_arr,
++                mask=normal_mask,
++                depth_F=depth_F_arr,
++                depth_B=depth_B_arr,
++                T_normal_F=in_tensor["T_normal_F"][0].permute(1, 2, 0).detach().cpu().numpy(),
++                T_normal_B=in_tensor["T_normal_B"][0].permute(1, 2, 0).detach().cpu().numpy(),
++            )
++
++            bni_payload = {
++                "normal_F": normal_F_arr,
++                "normal_B": normal_B_arr,
++                "mask": normal_mask,
++                "depth_F": depth_F_arr - 100.0 - args.front_thickness,
++                "depth_B": 100.0 - depth_B_arr + args.front_thickness,
++                "depth_mask": depth_F_arr != -1.0,
++            }
++            np.save(
++                os.path.join(front_data_dir, f"{data['name']}_icon_BNI.npy"),
++                bni_payload,
++                allow_pickle=True,
++            )
++@@
++        if args.front_data_only:
++            print(
++                colored(
++                    f"Front-data-only export complete for {data['name']}; "
++                    "skipping implicit reconstruction.",
++                    "yellow",
++                )
++            )
++            continue

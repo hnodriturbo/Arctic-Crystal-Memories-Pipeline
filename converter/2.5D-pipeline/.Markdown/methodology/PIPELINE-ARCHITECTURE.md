@@ -17,6 +17,10 @@ Upprunaleg ljósmynd
         +-- ECON front surface
         |     normals + d-BiNI fyrir líkama, fatnað, háls, axlir, hendur og coarse höfuð
         |
+        +-- ICON research branch
+        |     PIXIE/PARE human prior + front/back clothed normals
+        |     full-3D closure aðeins sem anatomy/depth prior, ekki lokaoutput
+        |
         +-- HRN per face
         |     sýnilegt andlit, eyru, enni og nákvæmara höfuðform
         |
@@ -37,6 +41,10 @@ Dense source-aligned 2.5D triangular geometry
 ECON getur eitt og sér gefið mjög nytsamlegan front-facing mannflöt. Fyrir kristalþörfina er rétt að stöðva ferlið eftir d-BiNI front-surface og áður en IF-Net/Poisson lokar yfir í 360° volume. Það minnkar óstaðfesta bakhlið, heldur source detail og takmarkar skráarstærð.
 
 Fyrsta baseline notaði PIXIE. PARE verður prófað sem occlusion-aware HPS þar sem part-guided attention getur bætt pose/body-shape mat fyrir skarandi hendur, handleggi og bol. Attention masks PARE eru innri feature-vægi, ekki print-mask.
+
+Official ICON + PIXIE samanburðurinn staðfestir að `cloth-norm(pred)` getur varðveitt skýra source-derived lögun, en 256³ implicit closure sléttar detail og bætir óstaðfestri bakhlið við. ICON-leiðin á því fyrst að exporta raw `normal_F` og nota front-surface integration. Closed `recon.obj` er regularizer/samanburður, ekki replacement fyrir ECON front-only baseline.
+
+Raw-normal front-integration prófið staðfestir þessa hönnun í geometry: d-BiNI framflötur varðveitir posture betur, og opt-in adaptive fillet mýkir aðeins sterkustu depth-stökkin. Ekki má eyða bröttum triangles blindandi því það myndar sprungur; varðveita þarf samfelldan flöt og breyta bröttu tengingunum síðar í stutta, stýrða útlínustrekkingu.
 
 ## Það sem á ekki að blanda saman
 
@@ -73,4 +81,6 @@ Fyrsta baseline notaði PIXIE. PARE verður prófað sem occlusion-aware HPS þa
 
 ## HPS-samanburður
 
-Current local ECON `TestDataset` tengir `hps_type` beint við `pixie` eða `pymafx`; PARE er ekki plug-and-play option í þessari branch. PARE-checkpoints og config eru til undir ICON `data/pare_data`, en PARE-vs-PIXIE þarf adapter sem mappar PARE body/camera output í það SMPL-X/camera form sem ECON-leiðin notar. Samanburðurinn verður því varðveitt sjálfstæð rannsókn, ekki config-breyting á frysta baseline-inu.
+Current local ECON `TestDataset` tengir `hps_type` beint við `pixie` eða `pymafx`; PARE er ekki plug-and-play option í þeirri branch. Official ICON styður hins vegar `hps_type: pare` beint.
+
+Controlled A/B prófið innan ICON er nú lokið. PARE gaf lægra fitting-loss og samfelldari structural body/posture flöt á hjónamyndinni, en PIXIE hélt meiri depth-amplitude. PARE er því valið sem body-prior fyrir þetta input. Næsta skref er original source-camera registration; ECON-adapter eða region-based prior fusion kemur aðeins þegar samanburður sýnir hvaða upplýsingar þarf að flytja.

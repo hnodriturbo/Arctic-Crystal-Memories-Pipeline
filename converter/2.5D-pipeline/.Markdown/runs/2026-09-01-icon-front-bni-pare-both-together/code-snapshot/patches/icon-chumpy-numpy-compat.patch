@@ -1,0 +1,22 @@
+diff --git a/apps/infer.py b/apps/infer.py
+--- a/apps/infer.py
++++ b/apps/infer.py
+@@
+ import torch
+ 
++# Legacy SMPL pickle files import chumpy, whose last release still expects
++# NumPy scalar aliases removed in NumPy 1.24. Restore only the aliases needed
++# during model deserialization; values and tensor math remain unchanged.
++for legacy_alias, builtin_type in {
++    "bool": bool,
++    "int": int,
++    "float": float,
++    "complex": complex,
++    "object": object,
++    "unicode": str,
++    "str": str,
++}.items():
++    if legacy_alias not in np.__dict__:
++        setattr(np, legacy_alias, builtin_type)
++
+ torch.backends.cudnn.benchmark = True
