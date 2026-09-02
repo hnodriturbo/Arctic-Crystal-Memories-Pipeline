@@ -390,6 +390,14 @@ def main() -> int:
         help="Optional folder for MoGe-2 normal.png and mask.png research outputs.",
     )
     parser.add_argument(
+        "--raw-output",
+        type=Path,
+        help=(
+            "Optional float32 .npy output before percentile normalization. "
+            "Use this for measured scene/person depth alignment research."
+        ),
+    )
+    parser.add_argument(
         "--smooth",
         type=float,
         default=1.0,
@@ -454,6 +462,11 @@ def main() -> int:
             dtype=np.float32,
         )
 
+    if args.raw_output is not None:
+        prepare_output(args.raw_output)
+        np.save(args.raw_output, raw.astype(np.float32, copy=False))
+        report(f"[depth] wrote raw float32 depth {args.raw_output}")
+
     depth = normalise(raw, args.clip_percent, mask)
 
     # Flip to the fixed "bright = near" convention before anything else, so the
@@ -503,6 +516,7 @@ def main() -> int:
                     args.moge_resolution_level if args.engine == "moge-2" else None
                 ),
                 "moge_apply_mask": args.moge_apply_mask if args.engine == "moge-2" else None,
+                "raw_output": str(args.raw_output) if args.raw_output is not None else None,
                 "smooth": args.smooth,
                 "masked": mask is not None,
                 "inverted": bool(args.invert),

@@ -27,6 +27,13 @@ Fyrsta sterka baseline-ið er [ECON front-only keyrslan](runs/2026-08-31-econ-fr
 
 [Controlled PARE-vs-PIXIE keyrslan](runs/2026-09-01-icon-front-bni-pare-both-together/README.md) velur PARE sem structural body/posture grunn fyrir þessa occluded sitjandi mynd. PIXIE er áfram skarpari detail-samanburður; næsta geometry-skref er source-camera fusion, ekki fleiri óstýrð full-3D closure-próf.
 
+[Samþykkta source-camera runnið](runs/2026-09-02-source-camera-pare-both-together/README.md)
+varpar PARE-flötunum aftur í exact 1086×1177 source camera með 0,18 px miðgildisvillu.
+[Exact-source MoGe runnið](runs/2026-09-02-moge-exact-source-both-together/README.md)
+gefur scene-depth fyrir restina af myndinni. [Scene-fusion og fyrstu depth-skirt
+tilraunirnar](runs/2026-09-02-scene-fusion-and-depth-skirts/README.md) varðveita
+náttúrulega arm-opnunina og sýna næsta óleysta back-edge join skref í gallery.
+
 ## Uppbygging
 
 - `models/`: rannsóknarsíða fyrir hvert líkan og skýrt hlutverk þess.
@@ -49,9 +56,9 @@ Fast hugtakasafn er í [GLOSSARY.md](methodology/GLOSSARY.md). „Strekking“ m
 
 Næstu aðskildu tilraunir eru:
 
-1. Original source-camera fusion á vinnings-PARE person-flötunum.
-2. Source-aware seam/backfill sem varðveitir raunveruleg occlusion-bil.
-3. Almenn dýptarlíkön á varðveittu senunni fyrir sófa og annað non-human scene.
-4. Region-based PIXIE/HRN detail refinement eftir mælanlegan samanburð.
+1. Refinement á outer back-edge join fyrir silhouette depth skirt án þess að loka raunverulegum occlusion-bilum.
+2. Region-based PIXIE/HRN detail refinement fyrir andlit, hár, gleraugu og hendur.
+3. Confidence-weighted transition milli human normals og MoGe scene normals.
+4. Crystal scaling og mesh-budget eftir að geometry hefur verið samþykkt.
 
 ECON- og ICON-baseline eru ekki yfirskrifuð; hver viðbót fær nýja run-möppu. Sjá [pipeline-áætlun](methodology/PIPELINE-ARCHITECTURE.md).
