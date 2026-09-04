@@ -41,6 +41,7 @@ náttúrulega arm-opnunina og sýna næsta óleysta back-edge join skref í gall
 - `models/`: rannsóknarsíða fyrir hvert líkan og skýrt hlutverk þess.
 - `runs/`: óbreytanlegar keyrslufærslur með stillingum, artifacts, villum og kóðaafritum.
 - `methodology/`: sameiginleg aðferðafræði, AC3D-samanburður og fyrirhugaður samruni líkana.
+- [`reference-gallery/`](../reference-gallery/README.md): local-only Cockpit-viðmið og original tester-myndir með tracked source-manifest.
 
 Fast hugtakasafn er í [GLOSSARY.md](methodology/GLOSSARY.md). „Strekking“ merkir sérstaklega útlínustrekkingu: geometry sem er teygð aftur í dýpt frá silhouette-mörkum.
 
@@ -118,6 +119,18 @@ portrait-output á erfiðu gleraugnamyndinni. Það varðveitir skarpara local r
 en PARE full-body routing og óbundin silhouette-strekking mynda rangt form og
 lárétta profile-gadda. Næsta leið heldur native HRN head volume úr v3.3 og fær
 sér source-aligned gleraugnalag með staðbundinni backfill/strekkingu.
+
+[Portrait v3.4 source-structured control og stress-test](runs/2026-09-04-portrait-v34-source-structured/README.md)
+bætir við opnum source-aligned gleraugnarömmum, sex-hringja staðbundnu backfill,
+vægu source-detail og hair-only pullback. Bæði `amma-1` og `amma-2` lenda við
+mælt AC3D depth/height hlutfall, en eldri HRN–MoGe háls-/búksaumar og hair-profile
+halda niðurstöðunni í research-candidate stöðu.
+
+[V3.5 single-surface portrait warp planið fyrir 2026-09-05](plans/2026-09-05-V35-SINGLE-SURFACE-PORTRAIT-WARP.md)
+fjarlægir closed HRN-höfuð, sérstaka hárskel og sjálfgefið parametric
+gleraugnamesh úr lokaforminu. `dad-fish` AC3D-parið mælir fyrst low-frequency
+halla og depth envelope; síðan prófar `amma-1` hár og gleraugu sem hluta af einu
+source-aligned yfirborði.
 
 ## Reglur um baseline
 

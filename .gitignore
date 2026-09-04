@@ -447,8 +447,10 @@ pipeline-converter/models/
 **/pipeline-*/**/models/
 **/pipeline-*/**/Models/
 
-# Cockpit projects and their large CAD/DXF/RMD/CBF exports stay local.
-converter/2.5D-pipeline/cockpit-files/
+# Local 2.5D reference assets stay off GitHub. The tracked README in the
+# parent folder records the collection structure and source hashes.
+converter/2.5D-pipeline/reference-gallery/cockpit-files/
+converter/2.5D-pipeline/reference-gallery/original-images/
 
 # ModelScope HRN may emit these face-detector scratch images at repo root.
 /0face.jpg

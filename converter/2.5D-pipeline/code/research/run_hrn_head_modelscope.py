@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import platform
 import sys
@@ -58,7 +59,36 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Disable HRN's native hair-texture post-processing.",
     )
+    parser.add_argument(
+        "--nvdiffrast-plugin",
+        type=Path,
+        help=(
+            "Optional previously compiled nvdiffrast_plugin.so. This keeps the "
+            "frozen CUDA 11.8 HRN runtime usable when the host GCC is newer than 11."
+        ),
+    )
     return parser.parse_args()
+
+
+def preload_nvdiffrast_plugin(plugin_path: Path) -> None:
+    """Load a verified local CUDA extension without asking PyTorch to rebuild it."""
+
+    plugin_path = plugin_path.resolve()
+    if not plugin_path.is_file():
+        raise FileNotFoundError(f"nvdiffrast plugin not found: {plugin_path}")
+    specification = importlib.util.spec_from_file_location(
+        "nvdiffrast_plugin", plugin_path
+    )
+    if specification is None or specification.loader is None:
+        raise RuntimeError(f"Could not load nvdiffrast plugin spec: {plugin_path}")
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    sys.modules["nvdiffrast_plugin"] = module
+
+    import nvdiffrast.torch.ops as nvdiffrast_ops
+
+    nvdiffrast_ops._cached_plugin[False] = module
+    print(f"Loaded precompiled nvdiffrast plugin: {plugin_path}", flush=True)
 
 
 def sha256_file(path: Path) -> str:
@@ -101,6 +131,9 @@ def main() -> int:
 
     if not model_dir.is_dir():
         raise FileNotFoundError(f"HRN model directory not found: {model_dir}")
+
+    if args.nvdiffrast_plugin is not None:
+        preload_nvdiffrast_plugin(args.nvdiffrast_plugin)
 
     output_root.mkdir(parents=True, exist_ok=True)
 

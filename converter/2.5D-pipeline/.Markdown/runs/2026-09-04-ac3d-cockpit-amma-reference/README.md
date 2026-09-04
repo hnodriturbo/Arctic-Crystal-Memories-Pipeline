@@ -22,8 +22,8 @@ Staða: **staðfest ytra viðmið; v3.1 endurkeyrsla hafnað sem lokaúttak**.
 
 - Original ljósmynd: `input-testers/amma-og-afi/amma-2.jpeg`
 - Bakgrunnsfjarlægð mynd: `output/local-workbench/preprocess/898dfc7155e0/03-background-removed.png`
-- Cockpit verkefni: `cockpit-files/amma.cockpit`
-- Cockpit export: `cockpit-files/exported/amma-exports/`
+- Cockpit verkefni: `reference-gallery/cockpit-files/amma.cockpit`
+- Cockpit export: `reference-gallery/cockpit-files/exported/amma-exports/`
 
 Originalmyndin og sýnileg crop-mörk hennar eru sannleikurinn. Þessi rannsókn
 má ekki outpaint-a líkama, fatnað eða önnur ljósmyndarmörk sem sjást ekki.
@@ -125,4 +125,3 @@ mælda dýptaruppbyggingu reference-módelsins og sameina:
 3. sér gleraugnalag með local occlusion backfill;
 4. þunna flík við crop-brún;
 5. oversized reconstruction sem er trimmað eftir á.
-
