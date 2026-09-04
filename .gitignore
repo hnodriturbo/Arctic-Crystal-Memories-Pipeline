@@ -451,6 +451,8 @@ pipeline-converter/models/
 # parent folder records the collection structure and source hashes.
 converter/2.5D-pipeline/reference-gallery/cockpit-files/
 converter/2.5D-pipeline/reference-gallery/original-images/
+converter/2.5D-pipeline/reference-gallery/videos/
+converter/2.5D-pipeline/reference-gallery/supplier-videos/
 
 # ModelScope HRN may emit these face-detector scratch images at repo root.
 /0face.jpg
