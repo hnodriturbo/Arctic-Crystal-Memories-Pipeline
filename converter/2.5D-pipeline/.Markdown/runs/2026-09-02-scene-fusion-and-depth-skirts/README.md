@@ -28,7 +28,7 @@ occlusion-bil. Global d-BiNI re-integration jók einnig dýpt manns úr 0,523745
 
 ![Rejected gap fill](artifacts/gallery/rejected-gap-fill-v2.jpg)
 
-## Depth-skirt v3 — candidate
+## Depth-skirt v3 — accepted reference
 
 Hver boundary-edge fær back-duplicate við sampled MoGe depth og tvö triangles
 sem mynda stýrða útlínustrekkingu. Innri arm-opnunin er ekki fyllt; hún fær sinn
@@ -38,9 +38,34 @@ eigin jaðar sem teygist aftur og sýnir scene-lagið fyrir aftan.
 - Kona: 1.404 boundary edges / 2.808 skirt triangles.
 - Combined: 193.551 vertices / 374.592 triangles.
 - 0 px scene clearance var betra en 2 px variant.
-- Ytri back-edge join og lárétt banding þarf áfram refinement áður en samþykkt.
+- Notandinn samþykkti formið sem núverandi gullviðmið og staðfesti að innra
+  arm-bilið sé rétt náttúrulegt bil, ekki hola sem á að loka.
+- Ytri back-edge join og lárétt banding eru áfram refinement-markmið án þess að
+  breyta samþykkta v3 artifactinu.
 
 ![Depth skirts v3](artifacts/gallery/depth-skirts-v3.jpg)
+
+## Feathered depth-skirt v4 — rejected
+
+Fyrsta multi-ring feathering tilraunin teygði kantinn út frá silhouette. Hún
+sléttaði hluta jaðarsins en myndaði sýnilegan ljósan halo framan frá og hélt
+láréttum þrepum í skáhornum. Hún er varðveitt sem neikvætt evidence.
+
+![Feathered v4 rejected](artifacts/gallery/feathered-v4-rejected.jpg)
+
+## Feathered depth-skirt v5 — candidate
+
+V5 snýr feathering inn undir samþykkta framflötinn og lætur scene-lagið ná
+9 px undir silhouette. Það hreinsar framkantinn verulega án þess að loka
+náttúrulega arm-bilinu. 30°/45° QA sýnir þó enn lárétt stair-bands, þannig að
+v5 leysir ekki v3 af hólmi enn.
+
+- Feather width: 6 px inn á við.
+- Scene sample offset: 3 px út á við.
+- 12 rings og 80 depth-smoothing iterations.
+- Combined: 229.772 vertices / 446.974 triangles.
+
+![Feathered v5 candidate](artifacts/gallery/feathered-v5-candidate.jpg)
 
 ## Local galleries
 
@@ -48,6 +73,8 @@ eigin jaðar sem teygist aftur og sýnir scene-lagið fyrir aftan.
 output/research/scene-fusion/pare-icon-econ-moge2-both-together-v1/artifacts/gallery/
 output/research/source-camera-fusion/both-together-ai-enhanced-pare-repaired-v2/artifacts/gallery/
 output/research/scene-fusion/pare-icon-econ-moge2-clearance0-depth-skirts-v3/artifacts/gallery/
+output/research/scene-fusion/pare-icon-econ-moge2-clearance0-feathered-depth-skirts-v4/artifacts/gallery/
+output/research/scene-fusion/pare-icon-econ-moge2-underlap9-feathered-v5/artifacts/gallery/
 ```
 
 Sjá [artifact skrá](ARTIFACTS.md).

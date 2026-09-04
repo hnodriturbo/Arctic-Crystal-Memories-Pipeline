@@ -32,6 +32,12 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--scene-depth-span", type=float, default=0.35)
     parser.add_argument("--clip-percent", type=float, default=1.0)
     parser.add_argument("--boundary-clearance-px", type=int, default=2)
+    parser.add_argument(
+        "--scene-underlap-px",
+        type=int,
+        default=0,
+        help="Extend the rear scene under the human edge to close sampling gaps from behind.",
+    )
     return parser.parse_args()
 
 
@@ -78,7 +84,16 @@ def main() -> None:
     args = parse_arguments()
     if args.stride < 1:
         raise ValueError("--stride must be at least 1")
-    source = np.array(Image.open(args.source).convert("RGB"))
+    if args.boundary_clearance_px > 0 and args.scene_underlap_px > 0:
+        raise ValueError("boundary clearance and scene underlap cannot both be enabled")
+    with Image.open(args.source) as source_image:
+        source_image.load()
+        source = np.array(source_image.convert("RGB"))
+        source_alpha = (
+            np.array(source_image.convert("RGBA").getchannel("A")) >= 128
+            if source_image.mode in ("RGBA", "LA") or "transparency" in source_image.info
+            else np.ones((source_image.height, source_image.width), dtype=bool)
+        )
     height, width = source.shape[:2]
     depth = np.load(args.scene_depth_raw).astype(np.float32)
     if depth.shape != (height, width):
@@ -98,7 +113,12 @@ def main() -> None:
             flags=cv2.INTER_NEAREST,
         ).astype(bool)
     human_union = np.logical_or.reduce(list(subject_masks.values()))
-    if args.boundary_clearance_px > 0:
+    if args.scene_underlap_px > 0:
+        kernel_size = args.scene_underlap_px * 2 + 1
+        clearance_mask = cv2.erode(
+            human_union.astype(np.uint8), np.ones((kernel_size, kernel_size), np.uint8)
+        ).astype(bool)
+    elif args.boundary_clearance_px > 0:
         kernel_size = args.boundary_clearance_px * 2 + 1
         clearance_mask = cv2.dilate(
             human_union.astype(np.uint8), np.ones((kernel_size, kernel_size), np.uint8)
@@ -116,7 +136,11 @@ def main() -> None:
     rows = sample_axis(height, args.stride)
     columns = sample_axis(width, args.stride)
     grid_columns, grid_rows = np.meshgrid(columns, rows)
-    valid = (~clearance_mask[grid_rows, grid_columns]) & finite[grid_rows, grid_columns]
+    valid = (
+        (~clearance_mask[grid_rows, grid_columns])
+        & finite[grid_rows, grid_columns]
+        & source_alpha[grid_rows, grid_columns]
+    )
     sampled_pixels = np.column_stack((grid_columns[valid], grid_rows[valid])).astype(np.float64)
     scene_xy = source_pixels_to_scene(sampled_pixels, (width, height))
     scene_z = (global_human_anchor - depth[grid_rows[valid], grid_columns[valid]]) * depth_scale
@@ -170,12 +194,14 @@ def main() -> None:
         "source_size": [width, height],
         "stride": args.stride,
         "boundary_clearance_px": args.boundary_clearance_px,
+        "scene_underlap_px": args.scene_underlap_px,
         "scene_depth_span": args.scene_depth_span,
         "raw_depth_percentiles": {"low": float(low), "high": float(high)},
         "raw_depth_units_per_scene_unit": float(1.0 / depth_scale),
         "global_human_depth_anchor": global_human_anchor,
         "subject_offsets": subject_offsets,
         "natural_internal_gaps_preserved": True,
+        "source_alpha_respected": bool(not source_alpha.all()),
         "scene": {
             "vertices": int(len(scene_mesh.vertices)),
             "triangles": int(len(scene_mesh.faces)),

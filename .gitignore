@@ -20,6 +20,7 @@
 *.fbx
 *.dae
 *.3ds
+*.cockpit
 
 # .obj is already listed above under C/C++ — intentionally also blocked here
 # for clarity: all generated 3D mesh output must stay local
@@ -445,6 +446,13 @@ pipeline-converter/models/
 **/pipeline-*/**/output/
 **/pipeline-*/**/models/
 **/pipeline-*/**/Models/
+
+# Cockpit projects and their large CAD/DXF/RMD/CBF exports stay local.
+converter/2.5D-pipeline/cockpit-files/
+
+# ModelScope HRN may emit these face-detector scratch images at repo root.
+/0face.jpg
+/0face_roi.jpg
 
 
 # ========================================

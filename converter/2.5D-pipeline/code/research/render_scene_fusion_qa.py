@@ -77,8 +77,12 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     scene_stats_path = fusion_dir / "scene_fusion_stats.json"
     skirt_stats_path = fusion_dir / "silhouette_depth_skirt_stats.json"
+    feathered_stats_path = fusion_dir / "feathered_depth_skirt_stats.json"
+    stats_path = next(
+        path for path in (scene_stats_path, skirt_stats_path, feathered_stats_path) if path.exists()
+    )
     stats = json.loads(
-        (scene_stats_path if scene_stats_path.exists() else skirt_stats_path).read_text(encoding="utf-8")
+        stats_path.read_text(encoding="utf-8")
     )
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -88,7 +92,7 @@ def main() -> None:
     import_obj(fusion_dir / "scene_depth_layer.obj", "MoGe_Rest_Of_Image", scene_material)
     import_obj(fusion_dir / "man_source_camera_scene_anchored.obj", "PARE_Man", human_material)
     import_obj(fusion_dir / "woman_source_camera_scene_anchored.obj", "PARE_Woman", human_material)
-    for skirt_path in sorted(fusion_dir.glob("*_silhouette_depth_skirt.obj")):
+    for skirt_path in sorted(fusion_dir.glob("*_depth_skirt.obj")):
         import_obj(skirt_path, skirt_path.stem, skirt_material)
 
     world = bpy.data.worlds.new("Scene_Fusion_QA_World")

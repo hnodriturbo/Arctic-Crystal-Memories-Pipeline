@@ -89,6 +89,9 @@ def main() -> None:
         f"## {label}\n\n![{label}]({path.name})" for label, path in copied_items
     )
     (output_dir / "README.md").write_text(
+        "<!--\nFile: generated gallery README.md\nPurpose:\n"
+        " - Index full-resolution images and the contact sheet for one visual research run.\n"
+        "-->\n\n"
         f"# {args.title}\n\nStatus: **{args.status.upper()}**\n\n"
         f"![Contact sheet]({contact_sheet.name})\n\n## Notes\n\n{notes_markdown}\n\n{image_markdown}\n",
         encoding="utf-8",
@@ -101,6 +104,7 @@ def main() -> None:
     )
     notes_html = "".join(f"<li>{html.escape(note)}</li>" for note in args.note)
     (output_dir / "index.html").write_text(
+        "<!-- Generated visual research gallery; full-resolution files are linked from every card. -->"
         "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" "
         "content=\"width=device-width,initial-scale=1\"><title>"
         + html.escape(args.title)

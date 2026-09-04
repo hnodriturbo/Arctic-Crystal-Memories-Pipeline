@@ -119,7 +119,10 @@ def main() -> None:
         "natural_internal_gaps_preserved": True,
         "subjects": {},
     }
-    for subject in ("man", "woman"):
+    subjects = list(parent.get("subject_offsets", {}).keys())
+    if not subjects:
+        raise RuntimeError("Scene fusion stats contain no subjects")
+    for subject in subjects:
         human_name = f"{subject}_source_camera_scene_anchored.obj"
         human = trimesh.load(fusion_dir / human_name, force="mesh", process=False, maintain_order=True)
         human.export(output_dir / human_name)
