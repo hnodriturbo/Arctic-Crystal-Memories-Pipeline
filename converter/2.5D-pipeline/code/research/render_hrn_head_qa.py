@@ -77,14 +77,16 @@ def add_area_light(
 
 def main() -> None:
     args = parse_args()
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    input_path = args.input.resolve()
+    output_dir = args.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
-    bpy.ops.wm.obj_import(filepath=str(args.input.resolve()), use_split_objects=False)
+    bpy.ops.wm.obj_import(filepath=str(input_path), use_split_objects=False)
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     if not meshes:
-        raise RuntimeError(f"{args.input} imported no mesh")
+        raise RuntimeError(f"{input_path} imported no mesh")
 
     low, high = mesh_bounds(meshes)
     center = (low + high) * 0.5
@@ -95,7 +97,7 @@ def main() -> None:
     vertical_scale = max(float(extent.z), float(extent.x)) * 1.15
     camera_distance = max(float(extent.x), float(extent.y), float(extent.z)) * 2.4
 
-    texture_path = args.input.with_suffix(".jpg")
+    texture_path = input_path.with_suffix(".jpg")
     if not texture_path.is_file():
         raise FileNotFoundError(f"HRN texture not found: {texture_path}")
     texture_material = bpy.data.materials.new("HRN_NATIVE_TEXTURE")
@@ -151,7 +153,7 @@ def main() -> None:
         camera,
         (0.0, -camera_distance, 0.0),
         vertical_scale,
-        args.output_dir / "front-texture.png",
+        output_dir / "front-texture.png",
         "TEXTURE",
     )
 
@@ -172,7 +174,7 @@ def main() -> None:
         camera,
         (0.0, -camera_distance, 0.0),
         vertical_scale,
-        args.output_dir / "front-clay.png",
+        output_dir / "front-clay.png",
         "MATERIAL",
     )
     render_view(
@@ -180,7 +182,7 @@ def main() -> None:
         camera,
         (camera_distance * 0.7, -camera_distance * 0.7, 0.0),
         vertical_scale,
-        args.output_dir / "oblique-clay.png",
+        output_dir / "oblique-clay.png",
         "MATERIAL",
     )
     render_view(
@@ -188,10 +190,10 @@ def main() -> None:
         camera,
         (camera_distance, 0.0, 0.0),
         vertical_scale,
-        args.output_dir / "profile-clay.png",
+        output_dir / "profile-clay.png",
         "MATERIAL",
     )
-    print(f"HRN_HEAD_QA_OK {args.output_dir.resolve()}")
+    print(f"HRN_HEAD_QA_OK {output_dir}")
 
 
 if __name__ == "__main__":

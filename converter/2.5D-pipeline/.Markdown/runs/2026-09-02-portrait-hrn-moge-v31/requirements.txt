@@ -1,0 +1,22 @@
+# ==========================================
+# File: .Markdown/runs/2026-09-02-portrait-hrn-moge-v31/requirements.txt
+# Purpose:
+#  - Freeze the directly relevant Python package versions observed in this run.
+#  - Document both the Windows 2.5D runtime and the isolated WSL HRN runtime.
+# ==========================================
+
+# Windows: converter/2.5D-pipeline/.venv
+mediapipe==0.10.35
+numpy==1.26.4
+opencv-python==4.11.0
+Pillow==12.3.0
+trimesh==5.0.0
+
+# WSL: /home/hreid/.micromamba/envs/hrn-head
+# HRN also used CUDA 11-compatible extensions with GCC/G++ 11.4 as host compiler.
+modelscope==1.9.5
+ninja==1.13.2
+torch==2.0.1+cu118
+
+# External application runtime
+# Blender 5.1

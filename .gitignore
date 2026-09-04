@@ -20,6 +20,7 @@
 *.fbx
 *.dae
 *.3ds
+*.cockpit
 
 # .obj is already listed above under C/C++ — intentionally also blocked here
 # for clarity: all generated 3D mesh output must stay local
@@ -445,6 +446,15 @@ pipeline-converter/models/
 **/pipeline-*/**/output/
 **/pipeline-*/**/models/
 **/pipeline-*/**/Models/
+
+# Local 2.5D reference assets stay off GitHub. The tracked README in the
+# parent folder records the collection structure and source hashes.
+converter/2.5D-pipeline/reference-gallery/cockpit-files/
+converter/2.5D-pipeline/reference-gallery/original-images/
+
+# ModelScope HRN may emit these face-detector scratch images at repo root.
+/0face.jpg
+/0face_roi.jpg
 
 
 # ========================================

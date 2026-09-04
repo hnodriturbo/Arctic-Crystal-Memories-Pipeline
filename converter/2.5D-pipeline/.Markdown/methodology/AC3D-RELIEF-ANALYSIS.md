@@ -38,3 +38,23 @@ Munurinn sem enn þarf að leysa:
 ## Vinnudýptarrými
 
 Nýja preview-viðmiðunin sýnir processed 2.5D flöt inni í stærra preview-volume með lausu rými fyrir framan og aftan. Þetta styður að dýptarsköpun fari fram áður en geometry er fitted í endanlega kristalstærð. Fremsti punktur, til dæmis nef, fær því framsvigrúm í stað þess að vera clamped við fremri ramma. Sjá [nákvæma scaling-reglu](DEPTH-SPACE-AND-CRYSTAL-SCALING.md).
+
+## Staðfest með `amma.cockpit` 2026-09-04
+
+Nýja reference-skráin gerir okkur kleift að aðgreina staðreyndir frá eldri
+sjónrænum tilgátum:
+
+- `.cockpit` er ZIP-container með XML, triangle `.ci`, JPEG texture og PNG maska;
+- `.ci` surface hefur 99.614 vertices og 198.063 triangles;
+- scene-space stærðin er 67,304 × 127,528 × 28,901 mm;
+- 4.435.041 í DXF eru `POINT` entities, ekki triangle-count;
+- 120 mm kristall inniheldur surface sem er 127,528 mm hátt fyrir trim;
+- black texture/mask svæði merkir óprentað svæði þótt samfelld geometry sé til;
+- höfuðið notar mikla convex dýpt en framhlið flíkur er mun þynnri;
+- gleraugu og local backfill eru hluti af sama surface, ekki fullkomið
+  sjálfstætt eyewear-módel.
+
+Við vitum enn ekki hvaða dýptarnet, morphable model eða manual edit-skref var
+notað til að búa til upprunalega `.ci`. Sú framkvæmd er því áfram tilgáta. Sjá
+[eigin evidence-led portrait plan](AC3D-LIKE-PORTRAIT-PIPELINE-PLAN.md) og
+[nákvæmu run-færsluna](../runs/2026-09-04-ac3d-cockpit-amma-reference/README.md).

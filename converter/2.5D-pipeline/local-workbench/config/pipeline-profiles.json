@@ -1,0 +1,49 @@
+{
+  "profiles": [
+    {
+      "id": "approved-v3-reference",
+      "name": "Samþykkt v3 ferli",
+      "environment": "RTX / CUDA · PARE + ICON + ECON + MoGe",
+      "description": "Keyrir nýja mynd í gegnum frystu depth-skirt v3 uppskriftina. Gamla samþykkta dæmið helst í run history til samanburðar.",
+      "estimatedTime": "8–20 mín",
+      "runnable": true,
+      "accent": "emerald"
+    },
+    {
+      "id": "cuda-preview",
+      "name": "CUDA hraðpróf",
+      "environment": "RTX / CUDA · MoGe ViT-B 5/9",
+      "description": "Hröð heildarsenu-dýpt, svarthvít crystal-tone og GLB. Gott fyrir crop, kristalval og composition.",
+      "estimatedTime": "1–3 mín",
+      "runnable": true,
+      "accent": "cyan"
+    },
+    {
+      "id": "cuda-quality",
+      "name": "CUDA gæðakeyrsla",
+      "environment": "RTX / CUDA · MoGe ViT-L 9/9",
+      "description": "Full MoGe dýpt, face crop refinement, normal-detail fusion, crystal-tone og þéttara GLB.",
+      "estimatedTime": "4–10 mín",
+      "runnable": true,
+      "accent": "violet"
+    },
+    {
+      "id": "cuda-quality-deep",
+      "name": "CUDA gæði · sterk dýpt",
+      "environment": "RTX / CUDA · MoGe ViT-L 9/9 · 20 mm",
+      "description": "Sama face- og normal-detail vinnsla og CUDA gæðakeyrslan, en 20 mm relief fyrir beinan dýptarsamanburð.",
+      "estimatedTime": "4–10 mín",
+      "runnable": true,
+      "accent": "violet"
+    },
+    {
+      "id": "cpu-safe",
+      "name": "CPU samhæft",
+      "environment": "CPU · Depth Anything V2 Small",
+      "description": "Léttara fallback þegar CUDA er ekki tiltækt. Hægara og ekki sami PARE/ICON/ECON structural grunnur.",
+      "estimatedTime": "5–15 mín",
+      "runnable": true,
+      "accent": "amber"
+    }
+  ]
+}

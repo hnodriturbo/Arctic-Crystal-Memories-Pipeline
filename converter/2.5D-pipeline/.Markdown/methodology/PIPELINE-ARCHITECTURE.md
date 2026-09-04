@@ -11,6 +11,9 @@ Purpose:
 ```text
 Upprunaleg ljósmynd
         |
+        +-- model router / source-evidence
+        |     skráir hvað sést og velur profile áður en reconstruction hefst
+        |
         +-- PIXIE eða PARE + SMPL-X HPS
         |     pose, camera og body/head/hand prior
         |
@@ -35,6 +38,8 @@ Allt varpað í upprunalegu myndavélina
         v
 Dense source-aligned 2.5D triangular geometry
 ```
+
+Routing-reglur og `model-route.json` schema eru skilgreind í [MODEL-ROUTER-AND-EVIDENCE.md](MODEL-ROUTER-AND-EVIDENCE.md). Ein mynd af einni manneskju fær eitt profile-val, skýrt region ownership og mannlegt QA sem staðfestir hvort valið reyndist rétt.
 
 ## Það sem ECON-baseline staðfestir
 
