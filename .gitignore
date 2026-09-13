@@ -453,6 +453,15 @@ converter/2.5D-pipeline/reference-gallery/cockpit-files/
 converter/2.5D-pipeline/reference-gallery/original-images/
 converter/2.5D-pipeline/reference-gallery/videos/
 converter/2.5D-pipeline/reference-gallery/supplier-videos/
+converter/2.5D-pipeline/reference-gallery/legacy-inputs/
+Main-Pipelines-Web/2.5D-pipeline/reference-gallery/
+**/pipeline-converter/input/
+**/pipeline-converter/output/
+*.cad
+*.dxf
+*.cbf
+*.rmd
+*.xyz
 
 # ModelScope HRN may emit these face-detector scratch images at repo root.
 /0face.jpg
@@ -501,3 +510,7 @@ Afangi_2/Timaverkefni_5/Timaverkefni_5_codes_and_videos.zip
 Afangi_2_V24/Timaverkefni_5/Timaverkefni_5_codes_and_videos.zip
 Afangi_2/Timaverkefni_5/verkefni_5_videos/
 Afangi_2_V24/Timaverkefni_5/verkefni_5_videos/
+
+# Crystal Workshop rename: preserve the same private asset exclusions.
+Crystal-Workshop/2.5D-pipeline/reference-gallery/
+Crystal-Workshop/.acm-web-cache-backup*/

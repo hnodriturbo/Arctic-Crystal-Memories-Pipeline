@@ -1,0 +1,14 @@
+{
+  "name": "approved-showroom-smooth-v1",
+  "purpose": "Owner-approved default showroom reconstruction; retain every DXF point.",
+  "approvedDate": "2026-09-13",
+  "sampleRate": 1,
+  "resolution": 768,
+  "smoothing": 2.25,
+  "gap": 7.5,
+  "percentile": 85,
+  "maxVertices": 500000,
+  "boundaryIterations": 8,
+  "boundaryMaximumMm": 0.2,
+  "material": "KHR_materials_unlit"
+}

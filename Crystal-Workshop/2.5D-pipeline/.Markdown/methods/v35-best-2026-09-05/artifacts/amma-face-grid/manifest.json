@@ -1,0 +1,47 @@
+{
+  "id": "amma-face-grid",
+  "label": "Amma \u00b7 andlitsyfirfer\u00f0 \u00b7 fast punktanet",
+  "vertices": 128580,
+  "point_count": 509099,
+  "triangles": 255441,
+  "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-face-adaptive\\mesh\\relief.glb",
+  "source_sha256": "2acb6f97a08247654fab6463c5c222d2f0759924d0caed64d3df041ba7168811",
+  "size_mm": [
+    36.80751100182533,
+    67.85602495074272,
+    25.08658729493618
+  ],
+  "ply_units": "millimetres",
+  "glb_units": "metres",
+  "sampling": {
+    "spacing_mm": 0.08,
+    "original_points": 128580,
+    "points": 1678914,
+    "added_points": 1550334,
+    "stretched_triangles_sampled": 255441,
+    "original_max_edge_mm": 3.148068442614636,
+    "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+    "layer_spacing_mm": 0.09000000000000001,
+    "layer_axis": "source-camera Z (near/far)",
+    "max_z_quantization_mm": 0.0449999929592014,
+    "points_after_layer_deduplication": 509099,
+    "point_spacing_xy_mm": 0.08,
+    "unique_lattice_points": 509099,
+    "max_axis_quantization_mm": [
+      0.03999988824129105,
+      0.03999988824129105,
+      4.556775078795594e-07
+    ],
+    "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+    "max_axis_error_vs_original_surface_bound_mm": [
+      0.04,
+      0.04,
+      0.045
+    ]
+  },
+  "geometry_unchanged": false,
+  "mesh_geometry_unchanged": true,
+  "minimum_points": 0,
+  "ply_roundtrip_verified": true,
+  "pre_lattice_sample_count": 1678914
+}

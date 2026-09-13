@@ -1,0 +1,49 @@
+{
+  "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\reference-gallery\\original-images\\hreidar-upscaled-bg-removed.png",
+  "source_sha256": "5ac16426e691e867ec66037e5f2b9cdf5a66677cc18cb9c1421828f0a4f4d832",
+  "status": "TRANSFER_TEST_NOT_USER_APPROVED",
+  "extra_edge_mm": 1.0,
+  "extra_edge_width_grid_px": 5.0,
+  "calibration": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\ac3d-dad-fish-1",
+  "calibration_note": "Frozen dad-fish global tilt and relative depth span; style hypothesis, not pose ground truth.",
+  "transferred": [
+    "MoGe depth and normals",
+    "own detected face crop refinement",
+    "screened normal integration",
+    "single fixed-UV surface",
+    "narrow edge stretch"
+  ],
+  "not_transferred": [
+    "manual Pabbi ICON head replacement",
+    "manual bald scalp smoothing"
+  ],
+  "metrics": {
+    "vertices": 75326,
+    "triangles": 148497,
+    "bounds_mm": [
+      [
+        -25.226917057902973,
+        -40.0,
+        -8.95363473892212
+      ],
+      [
+        28.607198748043817,
+        34.616588419405325,
+        7.953634738922119
+      ]
+    ],
+    "size_mm": [
+      53.834115805946794,
+      74.61658841940533,
+      16.90726947784424
+    ],
+    "depth_height_ratio": 0.22658861569510208,
+    "boundary_edges": 2179,
+    "nonmanifold_edges": 0,
+    "zero_area_triangles": 0,
+    "finite_vertices": true,
+    "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+    "glb_units": "metres",
+    "obj_units": "millimetres"
+  }
+}

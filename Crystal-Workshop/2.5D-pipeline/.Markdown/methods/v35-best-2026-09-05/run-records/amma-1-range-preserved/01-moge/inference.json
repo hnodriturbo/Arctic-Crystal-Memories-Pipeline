@@ -1,0 +1,47 @@
+{
+  "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\01-preprocess\\source-prepared.png",
+  "source_sha256": "3439324571c6150b0130b165b913451515abc1d47d48d13cc730adf32673b55f",
+  "checkpoint": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\Models\\moge-2-vitl-normal\\model.pt",
+  "checkpoint_sha256": "280741fd09bc3f403ccff9967784c2a391b52d2c0742ae3efdb21d9f90cc1a01",
+  "resolution_level": 9,
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GeForce RTX 3060 Laptop GPU",
+  "elapsed_seconds": 19.818616900000052,
+  "background": "neutral grey composite from supplied cutout; original background unavailable in this file",
+  "shapes": {
+    "depth": [
+      2046,
+      944
+    ],
+    "normal": [
+      2046,
+      944,
+      3
+    ],
+    "intrinsics": [
+      3,
+      3
+    ],
+    "mask": [
+      2046,
+      944
+    ]
+  },
+  "intrinsics_normalized": [
+    [
+      3.4351398944854736,
+      0.0,
+      0.5
+    ],
+    [
+      0.0,
+      1.584932565689087,
+      0.5
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ]
+}

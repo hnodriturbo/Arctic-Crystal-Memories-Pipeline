@@ -1,0 +1,129 @@
+{
+  "method": "native HRN topology transformed directly into source camera",
+  "surface_mode": "closed-head",
+  "rasterized_geometry": false,
+  "model_stack": {
+    "head_and_face": "Official ModelScope HRN Head v0.1 native mesh",
+    "depth_anchor_only": "MoGe-2 ViT-L",
+    "silhouette": "BiRefNet portrait alpha"
+  },
+  "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\01-preprocess\\source-prepared.png",
+  "hrn_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\03-hrn-head\\source-prepared\\hrn-head.obj",
+  "alpha": {
+    "component_count": 1,
+    "kept_area_px": 1315512,
+    "kept_bbox_xywh": [
+      0,
+      311,
+      944,
+      1735
+    ],
+    "discarded_area_px": 0
+  },
+  "face": {
+    "box_xywh": [
+      214.80923461914062,
+      491.114501953125,
+      409.41546630859375,
+      520.9261474609375
+    ],
+    "right_eye": [
+      332.0450134277344,
+      675.2633056640625
+    ],
+    "left_eye": [
+      520.5447998046875,
+      659.2420043945312
+    ],
+    "nose": [
+      443.88323974609375,
+      784.9957275390625
+    ],
+    "mouth_right": [
+      364.0916442871094,
+      876.305908203125
+    ],
+    "mouth_left": [
+      520.0579833984375,
+      862.9746704101562
+    ],
+    "confidence": 0.879692554473877
+  },
+  "head_region": {
+    "bounds_xyxy": [
+      112,
+      241,
+      727,
+      1043
+    ],
+    "pixels": 346934,
+    "rule": "source subject within face box expanded L/R 25%, top 48%, bottom 6%"
+  },
+  "registration": {
+    "hrn_keypoints": 220,
+    "source_keypoints": 1045,
+    "ratio_test_matches": 37,
+    "inliers": 24,
+    "inlier_ratio": 0.6486486486486487,
+    "median_reprojection_error_px": 1.1386804580688477,
+    "p95_reprojection_error_px": 2.5710397481918332,
+    "affine_hrn_to_source": [
+      [
+        1.1646600989018794,
+        0.13411725413718728,
+        -223.26629170851302
+      ],
+      [
+        -0.13411725413718728,
+        1.1646600989018794,
+        294.8836377955426
+      ]
+    ]
+  },
+  "visibility": {
+    "linear_coefficients": [
+      0.4773277951848936,
+      0.5250348778131116
+    ],
+    "fit_faces": 19193,
+    "median_residual": 0.00014758261607639156,
+    "p95_residual": 0.000491291608016109,
+    "tolerance": 0.035,
+    "front_normal_maximum": 0.1,
+    "candidate_faces": 74836,
+    "connected_faces": 74832,
+    "closed_head_neck_cut_row": 1142
+  },
+  "depth": {
+    "head_depth_span_requested": 0.6,
+    "body_anchor": 0.1958828568458557,
+    "head_anchor": 0.7421100787071974,
+    "z_percentiles": [
+      -0.03262699643501893,
+      0.20877118440912007,
+      0.31331770595039093
+    ],
+    "z_span": 0.6
+  },
+  "mesh": {
+    "vertices": 37476,
+    "triangles": 74832,
+    "components": 1,
+    "bounds": [
+      [
+        -0.3210736934728243,
+        -0.14411300880314928,
+        -0.24938319037846268
+      ],
+      [
+        0.3229075815923442,
+        0.7017128848847551,
+        0.3506168096215373
+      ]
+    ]
+  },
+  "outputs": {
+    "obj": "hrn-direct-front-patch.obj",
+    "glb": "hrn-direct-front-patch.glb"
+  }
+}

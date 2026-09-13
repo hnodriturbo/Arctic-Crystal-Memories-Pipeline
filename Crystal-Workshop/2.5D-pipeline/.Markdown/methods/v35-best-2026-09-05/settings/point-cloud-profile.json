@@ -1,0 +1,21 @@
+{
+  "purpose": "User-fixed point-cloud settings, separate from the immutable E2 shape recipe",
+  "date": "2026-09-05",
+  "default_display": "grayscale",
+  "point_spacing_mm": 0.08,
+  "layer_spacing_mm": 0.09,
+  "layer_axis": "source-camera Z",
+  "reference_cube_mm": 120,
+  "alternative_cube_mm": 150,
+  "reshape_to_fit_cube": false,
+  "preserved_comparison_cloud": "pabbi-e2-dense",
+  "preserved_comparison_point_count": 537418,
+  "point_count_policy": "Derived from model surface and spacing; do not downsample the preserved 537418-point cloud to 350000",
+  "layer_sampling": "Sample existing triangles densely, snap XYZ to an exact 0.08 x 0.08 x 0.09 mm lattice, and keep one point per occupied cell. Source mesh is unchanged.",
+  "max_layer_quantization_error_mm": 0.045,
+  "mesh_geometry_modified": false,
+  "applies_at": "Stored physical model size; resample after any future physical resizing",
+  "screen_point_size_px": 2,
+  "screen_point_size_is_laser_size": false,
+  "max_xy_quantization_error_mm": 0.04
+}

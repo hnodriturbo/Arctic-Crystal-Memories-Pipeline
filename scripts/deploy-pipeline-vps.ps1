@@ -10,15 +10,18 @@ Purpose:
 param(
   [string]$SshHost = "acm-vps",
   [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline",
-  [switch]$DeployWorkingTree
+  [switch]$DeployWorkingTree,
+  [string]$ReleaseLabel = 'crystal-workshop'
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+$sourceFolder = 'Crystal-Workshop'
+$committedFolder = if ((& git -C $projectRoot ls-tree --name-only HEAD Crystal-Workshop)) { 'Crystal-Workshop' } else { 'converter' }
 $gitBranch = (& git -C $projectRoot branch --show-current).Trim()
 $gitCommit = (& git -C $projectRoot rev-parse --short=8 HEAD).Trim()
 $gitStatus = @(& git -C $projectRoot status --porcelain)
-$sourceLabel = if ($DeployWorkingTree) { "working-tree" } else { "master" }
+$sourceLabel = $ReleaseLabel
 $releaseId = "{0}-{1}-{2}" -f ([DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")), $sourceLabel, $gitCommit
 $archivePath = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-$releaseId.tar.gz"
 $baseArchivePath = Join-Path ([System.IO.Path]::GetTempPath()) "acm-pipeline-base-$releaseId.tar.gz"
@@ -74,13 +77,14 @@ function Invoke-RemoteScript {
 }
 
 if ($SshHost -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid SSH host alias." }
+if ($ReleaseLabel -notmatch '^[a-z0-9-]+$') { throw "Invalid release label." }
 if ($RemoteRoot -ne "/home/hreidar/apps/acm-pipeline") { throw "RemoteRoot must be the isolated ACM Pipeline root." }
 if (-not $DeployWorkingTree) {
   if ($gitBranch -ne "master") { throw "Production deploys must run from master, not '$gitBranch'. Use -DeployWorkingTree only for an explicitly reviewed local release." }
   if ($gitStatus.Count -gt 0) { throw "Commit or restore local source changes before deploying master, or explicitly use -DeployWorkingTree." }
 }
 
-foreach ($entry in @("converter", "deployment")) {
+foreach ($entry in @($sourceFolder, "deployment")) {
   if (-not (Test-Path -LiteralPath (Join-Path $projectRoot $entry))) {
     throw "Required runtime entry is missing: $entry"
   }
@@ -91,12 +95,23 @@ try {
     Write-Host "Creating release $releaseId from the reviewed local working tree."
     if (Test-Path -LiteralPath $stagingPath) { throw "Temporary staging path already exists: $stagingPath" }
     [System.IO.Directory]::CreateDirectory($stagingPath) | Out-Null
-    Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$baseArchivePath", "HEAD", "converter", "deployment")
+    Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$baseArchivePath", "HEAD", $committedFolder, "deployment")
     Invoke-CheckedCommand "tar" @("-xzf", $baseArchivePath, "-C", $stagingPath)
+    if ($committedFolder -ne $sourceFolder) {
+      # Copy archived source into the final staging name; Windows scanners may lock newly extracted directories against renaming.
+      $oldStage = [System.IO.Path]::GetFullPath((Join-Path $stagingPath $committedFolder))
+      $newStage = [System.IO.Path]::GetFullPath((Join-Path $stagingPath $sourceFolder))
+      $stageBoundary = [System.IO.Path]::GetFullPath($stagingPath) + [System.IO.Path]::DirectorySeparatorChar
+      if (-not $oldStage.StartsWith($stageBoundary) -or -not $newStage.StartsWith($stageBoundary)) { throw 'Unsafe staging paths' }
+      Copy-Item -LiteralPath $oldStage -Destination $newStage -Recurse
+      if (-not (Test-Path -LiteralPath (Join-Path $newStage 'ACM-Web-Pipeline/package.json'))) { throw 'Staged runtime missing' }
+    }
 
-    $changedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=ACMRTUXB -- converter deployment)
-    $untrackedPaths = @(& git -C $projectRoot ls-files --others --exclude-standard -- converter deployment)
-    $deletedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=D -- converter deployment)
+    # Only runtime applications enter the overlay; unrelated research and lessons stay local.
+    $runtimePaths = @('Crystal-Workshop/ACM-Web-Pipeline', 'Crystal-Workshop/pipeline-converter', 'Crystal-Workshop/image-pipeline', 'Crystal-Workshop/meshy-pipeline', 'Crystal-Workshop/docs/WORKSHOP-OPERATIONS.md', 'Crystal-Workshop/docs/GLB-POINT-CLOUD-DXF.md', 'deployment')
+    $changedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=ACMRTUXB -- @runtimePaths)
+    $untrackedPaths = @(& git -C $projectRoot ls-files --others --exclude-standard -- @runtimePaths)
+    $deletedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=D -- @runtimePaths)
     foreach ($relativePath in @($changedPaths + $untrackedPaths | Sort-Object -Unique)) {
       if (-not $relativePath) { continue }
       $sourcePath = [System.IO.Path]::GetFullPath((Join-Path $projectRoot $relativePath))
@@ -123,10 +138,10 @@ try {
           [System.IO.Directory]::Delete($_.FullName)
         }
       }
-    Invoke-CheckedCommand "tar" @("-czf", $archivePath, "-C", $stagingPath, "converter", "deployment")
+    Invoke-CheckedCommand "tar" @("-czf", $archivePath, "-C", $stagingPath, $sourceFolder, "deployment")
   } else {
     Write-Host "Creating release $releaseId from committed master source."
-    Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$archivePath", "HEAD", "converter", "deployment")
+    Invoke-CheckedCommand "git" @("-C", $projectRoot, "archive", "--format=tar.gz", "--output=$archivePath", "HEAD", $sourceFolder, "deployment")
   }
 
   $archiveListing = & tar -tzf $archivePath
@@ -185,18 +200,18 @@ link_shared_directory() {
   ln -s "`$destination" "`$target"
 }
 
-link_shared_directory converter/image-pipeline/.venv "`$shared/venvs/image-pipeline"
-link_shared_directory converter/image-pipeline/input "`$shared/workspaces/image-pipeline/input"
-link_shared_directory converter/image-pipeline/output "`$shared/workspaces/image-pipeline/output"
-link_shared_directory converter/image-pipeline/models "`$shared/models/rembg"
-link_shared_directory converter/meshy-pipeline/.venv "`$shared/venvs/meshy-pipeline"
-link_shared_directory converter/meshy-pipeline/input "`$shared/workspaces/meshy-pipeline/input"
-link_shared_directory converter/meshy-pipeline/work "`$shared/workspaces/meshy-pipeline/work"
-link_shared_directory converter/meshy-pipeline/output "`$shared/workspaces/meshy-pipeline/output"
-link_shared_directory converter/pipeline-converter/.venv "`$shared/venvs/pipeline-converter"
-link_shared_directory converter/pipeline-converter/input "`$shared/workspaces/pipeline-converter/input"
-link_shared_directory converter/pipeline-converter/output "`$shared/workspaces/pipeline-converter/output"
-ln -s "`$shared/.env.production" "`$new_release/converter/ACM-Web-Pipeline/.env.production"
+link_shared_directory Crystal-Workshop/image-pipeline/.venv "`$shared/venvs/image-pipeline"
+link_shared_directory Crystal-Workshop/image-pipeline/input "`$shared/workspaces/image-pipeline/input"
+link_shared_directory Crystal-Workshop/image-pipeline/output "`$shared/workspaces/image-pipeline/output"
+link_shared_directory Crystal-Workshop/image-pipeline/models "`$shared/models/rembg"
+link_shared_directory Crystal-Workshop/meshy-pipeline/.venv "`$shared/venvs/meshy-pipeline"
+link_shared_directory Crystal-Workshop/meshy-pipeline/input "`$shared/workspaces/meshy-pipeline/input"
+link_shared_directory Crystal-Workshop/meshy-pipeline/work "`$shared/workspaces/meshy-pipeline/work"
+link_shared_directory Crystal-Workshop/meshy-pipeline/output "`$shared/workspaces/meshy-pipeline/output"
+link_shared_directory Crystal-Workshop/pipeline-converter/.venv "`$shared/venvs/pipeline-converter"
+link_shared_directory Crystal-Workshop/pipeline-converter/input "`$shared/workspaces/pipeline-converter/input"
+link_shared_directory Crystal-Workshop/pipeline-converter/output "`$shared/workspaces/pipeline-converter/output"
+ln -s "`$shared/.env.production" "`$new_release/Crystal-Workshop/ACM-Web-Pipeline/.env.production"
 
 sync_environment() {
   local name="`$1"
@@ -213,15 +228,15 @@ sync_environment() {
     printf '%s\n' "`$required_hash" > "`$environment/.requirements.sha256"
   fi
 }
-sync_environment image-pipeline "`$new_release/converter/image-pipeline/requirements.txt"
-sync_environment meshy-pipeline "`$new_release/converter/meshy-pipeline/requirements.txt"
-sync_environment pipeline-converter "`$new_release/converter/pipeline-converter/requirements.txt"
+sync_environment image-pipeline "`$new_release/Crystal-Workshop/image-pipeline/requirements.txt"
+sync_environment meshy-pipeline "`$new_release/Crystal-Workshop/meshy-pipeline/requirements.txt"
+sync_environment pipeline-converter "`$new_release/Crystal-Workshop/pipeline-converter/requirements.txt"
 
 # All image weights live outside releases and venvs. The downloader is
 # idempotent and verifies expected file sizes before making a download visible.
 U2NET_HOME="`$shared/models/rembg" \
   "`$shared/venvs/image-pipeline/bin/python" \
-  "`$new_release/converter/image-pipeline/code/download_models.py"
+  "`$new_release/Crystal-Workshop/image-pipeline/code/download_models.py"
 
 verify_python() {
   local python="`$1"
@@ -233,15 +248,15 @@ verify_python "`$shared/venvs/pipeline-converter/bin/python"
 ldconfig -p | grep 'libGL.so.1' >/dev/null
 U2NET_HOME="`$shared/models/rembg" \
   "`$shared/venvs/image-pipeline/bin/python" \
-  "`$new_release/converter/image-pipeline/code/healthcheck.py"
-"`$shared/venvs/meshy-pipeline/bin/python" "`$new_release/converter/meshy-pipeline/code/healthcheck.py"
+  "`$new_release/Crystal-Workshop/image-pipeline/code/healthcheck.py"
+"`$shared/venvs/meshy-pipeline/bin/python" "`$new_release/Crystal-Workshop/meshy-pipeline/code/healthcheck.py"
 "`$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
 "`$shared/tools/blender/blender" --background --version >/dev/null
 BLENDER_EXE="`$shared/tools/blender/blender" \
   "`$shared/venvs/pipeline-converter/bin/python" -m unittest discover \
-  -s "`$new_release/converter/pipeline-converter/tests" -v
+  -s "`$new_release/Crystal-Workshop/pipeline-converter/tests" -v
 
-cd "`$new_release/converter/ACM-Web-Pipeline"
+cd "`$new_release/Crystal-Workshop/ACM-Web-Pipeline"
 npm ci --no-audit --no-fund
 npm run db:generate
 node --input-type=module -e 'import argon2 from "argon2"; const hash = await argon2.hash("runtime-probe"); if (!await argon2.verify(hash, "runtime-probe")) process.exit(1)'

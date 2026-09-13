@@ -1,0 +1,89 @@
+{
+  "baseline": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\04-e-transfer-edge",
+  "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\01-preprocess\\source-prepared.png",
+  "status": "FINAL_FACE_PASS_CANDIDATE",
+  "outside_faces_unchanged": true,
+  "xy_uv_topology_unchanged": true,
+  "boundary_width_grid_px": 14.0,
+  "broad_shape_retention": 0.2,
+  "faces": [
+    {
+      "backend": "registered-HRN-visible-face-only",
+      "face_box": [
+        214,
+        491,
+        626,
+        1012
+      ],
+      "modified_pixels": 17356,
+      "support": {
+        "supplied_landmarks": 468,
+        "usable_landmarks": 465,
+        "visibility_source": "not_available_inferred_landmarks_only",
+        "hidden_landmarks_are_not_verified_observations": true,
+        "boundary_width_grid_px": 14.7439712806351,
+        "broad_smoothing_grid_px": 7.37198564031755,
+        "eye_nose_asymmetry_heuristic": 0.03886040437612422,
+        "needs_occlusion_review": true,
+        "policy": "No edit beyond available landmark hull; optional visibility mask can remove holes/occluders."
+      },
+      "max_change_mm": 1.8873852688607347,
+      "registration": {
+        "hrn_keypoints": 220,
+        "source_keypoints": 1045,
+        "ratio_test_matches": 37,
+        "inliers": 24,
+        "inlier_ratio": 0.6486486486486487,
+        "median_reprojection_error_px": 1.1386804580688477,
+        "p95_reprojection_error_px": 2.5710397481918332,
+        "affine_hrn_to_source": [
+          [
+            1.1646600989018794,
+            0.13411725413718728,
+            -223.26629170851302
+          ],
+          [
+            -0.13411725413718728,
+            1.1646600989018794,
+            294.8836377955426
+          ]
+        ]
+      },
+      "boundary_plane_coefficients": [
+        -15.232505613904783,
+        -9.734047512582377,
+        -4.085334799315152
+      ],
+      "limitation": "Visible face only; fallback landmarks are lower-detail than dedicated reconstruction."
+    }
+  ],
+  "metrics": {
+    "vertices": 128580,
+    "triangles": 255441,
+    "bounds_mm": [
+      [
+        -18.4037558685446,
+        -40.0,
+        -13.043293952941895
+      ],
+      [
+        18.4037558685446,
+        27.856025039123633,
+        12.043293952941895
+      ]
+    ],
+    "size_mm": [
+      36.8075117370892,
+      67.85602503912364,
+      25.08658790588379
+    ],
+    "depth_height_ratio": 0.3697031750890161,
+    "boundary_edges": 1717,
+    "nonmanifold_edges": 0,
+    "zero_area_triangles": 0,
+    "finite_vertices": true,
+    "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+    "glb_units": "metres",
+    "obj_units": "millimetres"
+  }
+}

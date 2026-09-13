@@ -1,0 +1,35 @@
+{
+  "purpose": "Adaptive face and dense point-cloud research extension; original E2 snapshot remains unchanged",
+  "files": [
+    {
+      "path": "code/research/finalize_v35_faces.py",
+      "sha256": "9a7938be6e8ca5cd48aededd770209760d47577ae3e1641ea6cd51088337ffaa"
+    },
+    {
+      "path": "code/research/face_support_v35.py",
+      "sha256": "d3db66504b21f222bdb2483a811d45bc66d6e5bf479b5bcb6936891773108b09"
+    },
+    {
+      "path": "code/research/sample_relief_surface.py",
+      "sha256": "ec1c8bf6a032025f8ccf87ff64e1f0fcd98d70c101ef24ab109fd43fcfa253a2"
+    },
+    {
+      "path": "code/research/export_v35_point_review.py",
+      "sha256": "ed619985fd21750d282420bc337c00879bb29a8c76778100cb03409c8e1d731f"
+    },
+    {
+      "path": "code/research/run_v35_transfer.py",
+      "sha256": "5bd4f0c57caa7b280c2f3666c296413f96331a0869a7f1a4092cdae3c24803c3"
+    },
+    {
+      "path": "code/research/build_portrait_v35.py",
+      "sha256": "eccb3b135908d2b7398ab869b39ef4462c0e5fa04ce91e1c8871f19cae5053f4"
+    },
+    {
+      "path": "code/research/v35_point_review.html",
+      "sha256": "a20e6a6d32ef12241e8b915635e510f07f3b775ec2b0b98285b7aebcd3ef3aa9"
+    }
+  ],
+  "point_spacing_mm": 0.08,
+  "layer_spacing_mm": 0.09
+}

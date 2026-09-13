@@ -1,0 +1,278 @@
+{
+  "status": "RESEARCH_CANDIDATE",
+  "reference_measurements": [
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\ac3d-dad-fish-1",
+      "vertices": 161557,
+      "triangles": 319871,
+      "depth_height_ratio": 0.27778946341851324,
+      "z_per_y_slope": -0.09377126646796574,
+      "residual_p99_p1_per_height": 0.2062981657304619,
+      "row_quantiles_y_p10_p50_p90": [
+        [
+          0.05,
+          0.1570689809338276,
+          0.18963096028601456,
+          0.21544342373164588
+        ],
+        [
+          0.1,
+          0.1590818803200807,
+          0.18929176506113282,
+          0.21259985957259056
+        ],
+        [
+          0.15,
+          0.15837716632732488,
+          0.18627402693919554,
+          0.2098490229447833
+        ],
+        [
+          0.2,
+          0.15035312656203503,
+          0.18268789495208904,
+          0.19714471205784787
+        ],
+        [
+          0.25,
+          0.11889546953033042,
+          0.16505573854116737,
+          0.19407142741969766
+        ],
+        [
+          0.3,
+          0.13413782847627467,
+          0.15434026235592632,
+          0.1962619865347998
+        ],
+        [
+          0.35,
+          0.12408087035677065,
+          0.14166594107618993,
+          0.18132785695753317
+        ],
+        [
+          0.39999999999999997,
+          0.11127643091572449,
+          0.13458650870781863,
+          0.1479537908804271
+        ],
+        [
+          0.44999999999999996,
+          0.0989280023687964,
+          0.13413535267361767,
+          0.15253684020738695
+        ],
+        [
+          0.49999999999999994,
+          0.08209277370518747,
+          0.14764375120015596,
+          0.20410742403654045
+        ],
+        [
+          0.5499999999999999,
+          0.09420564699950014,
+          0.1595315324031117,
+          0.2521070942226874
+        ],
+        [
+          0.6,
+          0.10959872794461473,
+          0.21196684857732961,
+          0.26541607703278935
+        ],
+        [
+          0.65,
+          0.11094180178040847,
+          0.18154563964098663,
+          0.25282534963933023
+        ],
+        [
+          0.7,
+          0.09636725212290184,
+          0.19090580809524438,
+          0.23489189141648456
+        ],
+        [
+          0.75,
+          0.06331861923796876,
+          0.09356302302980198,
+          0.22011723636512887
+        ],
+        [
+          0.7999999999999999,
+          0.05462409576035286,
+          0.07450512530727657,
+          0.09052947143298988
+        ],
+        [
+          0.85,
+          0.05516750512677312,
+          0.10166849896585034,
+          0.1145140889148831
+        ],
+        [
+          0.9,
+          0.07406525916772573,
+          0.104665052044626,
+          0.1158012527063059
+        ],
+        [
+          0.95,
+          0.07262636487966193,
+          0.09599466727645584,
+          0.11010156067915268
+        ]
+      ],
+      "xy_uv_correlation": [
+        0.9999999962462879,
+        0.999999996515183
+      ]
+    }
+  ],
+  "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\reference-gallery\\original-images\\hreidar-upscaled-bg-removed.png",
+  "geometry": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\01-moge\\geometry.npz",
+  "settings": {
+    "grid": [
+      550,
+      640
+    ],
+    "height_mm": 80.0,
+    "reference_tilt": -0.09377126646796574,
+    "original_depth_trend": [
+      -2.7280543256325185,
+      -2.8685631785713515
+    ],
+    "mm_per_predicted_m": 8.860526999858925,
+    "normal_cap_mm": 0.6,
+    "normal_mean_abs_mm": 0.007740354226386008,
+    "transition_mm": 0.6,
+    "transition_width_grid_px": 3
+  },
+  "face_refinement": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\02-face\\refined-depth.png",
+  "coarse_sigma_grid_px": 1.5,
+  "limitations": [
+    "Reference-derived tilt is a controlled hypothesis for this photograph, not a general pose rule.",
+    "Selected source is an existing cutout; neutral-grey inference is an explicit background hypothesis.",
+    "Normals supply screened medium/fine shape; no ground-truth depth or new neural model is trained.",
+    "Generic full-head, hair shell and hidden anatomy are absent."
+  ],
+  "variants": {
+    "A-base": {
+      "vertices": 75326,
+      "triangles": 148497,
+      "bounds_mm": [
+        [
+          -25.226917057902973,
+          -40.0,
+          -3.498445997803292
+        ],
+        [
+          28.607198748043817,
+          34.616588419405325,
+          3.498445997803292
+        ]
+      ],
+      "size_mm": [
+        53.834115805946794,
+        74.61658841940533,
+        6.996891995606584
+      ],
+      "depth_height_ratio": 0.09377126646796574,
+      "boundary_edges": 2179,
+      "nonmanifold_edges": 0,
+      "zero_area_triangles": 0,
+      "finite_vertices": true,
+      "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+      "glb_units": "metres",
+      "obj_units": "millimetres"
+    },
+    "B-depth": {
+      "vertices": 75326,
+      "triangles": 148497,
+      "bounds_mm": [
+        [
+          -25.226917057902973,
+          -40.0,
+          -7.63558966651823
+        ],
+        [
+          28.607198748043817,
+          34.616588419405325,
+          7.63558966651823
+        ]
+      ],
+      "size_mm": [
+        53.834115805946794,
+        74.61658841940533,
+        15.27117933303646
+      ],
+      "depth_height_ratio": 0.20466198812521597,
+      "boundary_edges": 2179,
+      "nonmanifold_edges": 0,
+      "zero_area_triangles": 0,
+      "finite_vertices": true,
+      "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+      "glb_units": "metres",
+      "obj_units": "millimetres"
+    },
+    "C-normals": {
+      "vertices": 75326,
+      "triangles": 148497,
+      "bounds_mm": [
+        [
+          -25.226917057902973,
+          -40.0,
+          -7.653634904045338
+        ],
+        [
+          28.607198748043817,
+          34.616588419405325,
+          7.653634904045338
+        ]
+      ],
+      "size_mm": [
+        53.834115805946794,
+        74.61658841940533,
+        15.307269808090677
+      ],
+      "depth_height_ratio": 0.20514566710087964,
+      "boundary_edges": 2179,
+      "nonmanifold_edges": 0,
+      "zero_area_triangles": 0,
+      "finite_vertices": true,
+      "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+      "glb_units": "metres",
+      "obj_units": "millimetres"
+    },
+    "D-transition": {
+      "vertices": 75326,
+      "triangles": 148497,
+      "bounds_mm": [
+        [
+          -25.226917057902973,
+          -40.0,
+          -7.953634904045337
+        ],
+        [
+          28.607198748043817,
+          34.616588419405325,
+          7.953634904045337
+        ]
+      ],
+      "size_mm": [
+        53.834115805946794,
+        74.61658841940533,
+        15.907269808090675
+      ],
+      "depth_height_ratio": 0.21318677448342993,
+      "boundary_edges": 2179,
+      "nonmanifold_edges": 0,
+      "zero_area_triangles": 0,
+      "finite_vertices": true,
+      "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+      "glb_units": "metres",
+      "obj_units": "millimetres"
+    }
+  }
+}

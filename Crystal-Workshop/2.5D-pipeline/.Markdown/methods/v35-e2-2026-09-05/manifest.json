@@ -1,0 +1,57 @@
+{
+  "purpose": "Frozen local source snapshot for user-selected Pabbi-Bleikja E2",
+  "date": "2026-09-05",
+  "files": [
+    {
+      "path": "code/research/build_portrait_v35.py",
+      "sha256": "a0c9b9a1d46e70394ff12c2805fd1255ad66d793f29e5a7753e53ae0b0101eaa"
+    },
+    {
+      "path": "code/research/infer_v35_geometry.py",
+      "sha256": "e636d6b13f8ae1b16060e551a3626d9d2de051555afd9e280d1a5b4e033f2742"
+    },
+    {
+      "path": "code/research/refine_v35_accepted_e.py",
+      "sha256": "7bc0c8fbbf376b3ae3e01b0239d6bc605aaffc311b2671ec77a09292eae79ccf"
+    },
+    {
+      "path": "code/research/prepare_v35_reference.py",
+      "sha256": "88fa340840c43efdb0e4a341f0cdd34492cf7b3c4ff600437af44950c669e01f"
+    },
+    {
+      "path": "code/research/source_camera_fusion.py",
+      "sha256": "7c285f0082916090d6cd9244185915670cbc2e97c4fa75edeb33bec489efe366"
+    },
+    {
+      "path": "code/research/integrate_icon_front_bni.py",
+      "sha256": "a7a8c3397b64e2e7b163506ad1387988cfccbdc81f2fdeb0a574fed37e68c87c"
+    },
+    {
+      "path": "code/research/run_icon_windows.ps1",
+      "sha256": "12356b77a036aa76740a8247d19d03731d413dc4754ccf22c1cfe7b5e956584e"
+    },
+    {
+      "path": "code/research/run_icon_bni_windows.ps1",
+      "sha256": "abcf2324af81154303bd0b23662479bc025df997bfeca3d662adfe8ddee7cdf7"
+    },
+    {
+      "path": "code/research/detect_and_prepare_icon_people.py",
+      "sha256": "c2a1e7f8d461fbf0abef5cdf5ebe285b9a74dae6a56cded165d1effdea228f98"
+    },
+    {
+      "path": "code/research/build_glb_from_cockpit.py",
+      "sha256": "be872b552c69549eb3e93e897347a9fe32f66fe01a7b05a775ecd08c76364fdc"
+    },
+    {
+      "path": "code/research/render_v35_comparison.py",
+      "sha256": "69098e7b2f06828e099fd81e709717fb7a8b659c9bb144db18576cd68c4fbfb2"
+    },
+    {
+      "path": "code/face_refine.py",
+      "sha256": "df1feb5563cbb67cbc77728c6e44f749b5d24054ff19229323e08b53e4404588"
+    }
+  ],
+  "artifact": "output/research/2026-09-05-portrait-v35-single-surface/pabbi-bleikja/10-accepted-e-refinement/E2-head-edge/relief.glb",
+  "artifact_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+  "status": "USER_SELECTED_VISUAL_REFERENCE_NOT_PHYSICAL_PRINT_VALIDATION"
+}

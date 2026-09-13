@@ -1,0 +1,47 @@
+{
+  "id": "pabbi-e2-grid",
+  "label": "Pabbi E2 \u00b7 fast 0,08 / 0,09 mm net",
+  "vertices": 126832,
+  "point_count": 593235,
+  "triangles": 251183,
+  "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+  "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+  "size_mm": [
+    46.447575092315674,
+    75.61815157532692,
+    20.736576057970524
+  ],
+  "ply_units": "millimetres",
+  "glb_units": "metres",
+  "sampling": {
+    "spacing_mm": 0.08,
+    "original_points": 126832,
+    "points": 1884449,
+    "added_points": 1757617,
+    "stretched_triangles_sampled": 251183,
+    "original_max_edge_mm": 2.995640068273179,
+    "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+    "layer_spacing_mm": 0.09000000000000001,
+    "layer_axis": "source-camera Z (near/far)",
+    "max_z_quantization_mm": 0.044999993095794395,
+    "points_after_layer_deduplication": 593235,
+    "point_spacing_xy_mm": 0.08,
+    "unique_lattice_points": 593235,
+    "max_axis_quantization_mm": [
+      0.03999988824129105,
+      0.03999988824129105,
+      4.488229753130124e-07
+    ],
+    "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+    "max_axis_error_vs_original_surface_bound_mm": [
+      0.04,
+      0.04,
+      0.045
+    ]
+  },
+  "geometry_unchanged": false,
+  "mesh_geometry_unchanged": true,
+  "minimum_points": 350000,
+  "ply_roundtrip_verified": true,
+  "pre_lattice_sample_count": 1884449
+}

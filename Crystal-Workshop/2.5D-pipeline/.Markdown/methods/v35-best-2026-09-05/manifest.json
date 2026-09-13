@@ -1,0 +1,897 @@
+{
+  "baseline_id": "v35-best-2026-09-05",
+  "status": "USER_APPROVED_BEST_VISUAL_BASELINE",
+  "approved_on": "2026-09-05",
+  "frozen_at_utc": "2026-09-05T15:42:41.2165766Z",
+  "approval_scope": "Latest adaptive face results and previously approved Pabbi E2; visual comparison with AC3D",
+  "physical_crystal_print_validated": false,
+  "preservation": "Independent local copies verified by SHA-256; no filesystem write protection",
+  "source_snapshot_note": "Current code after runs, including later guards and orchestration wiring; not claimed identical to every historical execution revision",
+  "new_pipeline_orchestrator_end_to_end_verified": false,
+  "approved_catalog_entries": [
+    {
+      "id": "pabbi-e2-dense",
+      "label": "Pabbi E2 · þéttari strekkifletir",
+      "vertices": 126832,
+      "point_count": 537418,
+      "triangles": 251183,
+      "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+      "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+      "size_mm": [
+        46.447575092315674,
+        75.61815157532692,
+        20.736576057970524
+      ],
+      "ply_units": "millimetres",
+      "glb_units": "metres",
+      "sampling": {
+        "spacing_mm": 0.18,
+        "original_points": 126832,
+        "points": 537418,
+        "added_points": 410586,
+        "stretched_triangles_sampled": 174234,
+        "original_max_edge_mm": 2.995640068273179,
+        "sampling": "original vertices + shared edge subdivisions + interior barycentric rows"
+      },
+      "geometry_unchanged": true,
+      "ply_roundtrip_verified": true
+    },
+    {
+      "id": "pabbi-e2-grid",
+      "label": "Pabbi E2 · fast 0,08 / 0,09 mm net",
+      "vertices": 126832,
+      "point_count": 593235,
+      "triangles": 251183,
+      "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+      "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+      "size_mm": [
+        46.447575092315674,
+        75.61815157532692,
+        20.736576057970524
+      ],
+      "ply_units": "millimetres",
+      "glb_units": "metres",
+      "sampling": {
+        "spacing_mm": 0.08,
+        "original_points": 126832,
+        "points": 1884449,
+        "added_points": 1757617,
+        "stretched_triangles_sampled": 251183,
+        "original_max_edge_mm": 2.995640068273179,
+        "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+        "layer_spacing_mm": 0.09000000000000001,
+        "layer_axis": "source-camera Z (near/far)",
+        "max_z_quantization_mm": 0.044999993095794395,
+        "points_after_layer_deduplication": 593235,
+        "point_spacing_xy_mm": 0.08,
+        "unique_lattice_points": 593235,
+        "max_axis_quantization_mm": [
+          0.03999988824129105,
+          0.03999988824129105,
+          4.488229753130124E-07
+        ],
+        "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+        "max_axis_error_vs_original_surface_bound_mm": [
+          0.04,
+          0.04,
+          0.045
+        ]
+      },
+      "geometry_unchanged": false,
+      "mesh_geometry_unchanged": true,
+      "minimum_points": 350000,
+      "ply_roundtrip_verified": true,
+      "pre_lattice_sample_count": 1884449
+    },
+    {
+      "id": "amma-face-grid",
+      "label": "Amma · andlitsyfirferð · fast punktanet",
+      "vertices": 128580,
+      "point_count": 509099,
+      "triangles": 255441,
+      "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-face-adaptive\\mesh\\relief.glb",
+      "source_sha256": "2acb6f97a08247654fab6463c5c222d2f0759924d0caed64d3df041ba7168811",
+      "size_mm": [
+        36.80751100182533,
+        67.85602495074272,
+        25.08658729493618
+      ],
+      "ply_units": "millimetres",
+      "glb_units": "metres",
+      "sampling": {
+        "spacing_mm": 0.08,
+        "original_points": 128580,
+        "points": 1678914,
+        "added_points": 1550334,
+        "stretched_triangles_sampled": 255441,
+        "original_max_edge_mm": 3.148068442614636,
+        "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+        "layer_spacing_mm": 0.09000000000000001,
+        "layer_axis": "source-camera Z (near/far)",
+        "max_z_quantization_mm": 0.0449999929592014,
+        "points_after_layer_deduplication": 509099,
+        "point_spacing_xy_mm": 0.08,
+        "unique_lattice_points": 509099,
+        "max_axis_quantization_mm": [
+          0.03999988824129105,
+          0.03999988824129105,
+          4.556775078795594E-07
+        ],
+        "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+        "max_axis_error_vs_original_surface_bound_mm": [
+          0.04,
+          0.04,
+          0.045
+        ]
+      },
+      "geometry_unchanged": false,
+      "mesh_geometry_unchanged": true,
+      "minimum_points": 0,
+      "ply_roundtrip_verified": true,
+      "pre_lattice_sample_count": 1678914
+    },
+    {
+      "id": "hreidar-face-grid",
+      "label": "Hreiðar · andlitsyfirferð · fast punktanet",
+      "vertices": 75326,
+      "point_count": 373097,
+      "triangles": 148497,
+      "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar-face-adaptive\\mesh\\relief.glb",
+      "source_sha256": "b7ec7c0f7d5007e8250042e3c4861ae5026dc68c1bb07eae3a8d5fd4084f14db",
+      "size_mm": [
+        53.83411608636379,
+        74.61658865213394,
+        16.90726913511753
+      ],
+      "ply_units": "millimetres",
+      "glb_units": "metres",
+      "sampling": {
+        "spacing_mm": 0.08,
+        "original_points": 75326,
+        "points": 1229089,
+        "added_points": 1153763,
+        "stretched_triangles_sampled": 148497,
+        "original_max_edge_mm": 4.243740546069105,
+        "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+        "layer_spacing_mm": 0.09000000000000001,
+        "layer_axis": "source-camera Z (near/far)",
+        "max_z_quantization_mm": 0.04499998941094292,
+        "points_after_layer_deduplication": 373097,
+        "point_spacing_xy_mm": 0.08,
+        "unique_lattice_points": 373097,
+        "max_axis_quantization_mm": [
+          0.03999988824129105,
+          0.03999993108212935,
+          4.488229753130124E-07
+        ],
+        "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+        "max_axis_error_vs_original_surface_bound_mm": [
+          0.04,
+          0.04,
+          0.045
+        ]
+      },
+      "geometry_unchanged": false,
+      "mesh_geometry_unchanged": true,
+      "minimum_points": 0,
+      "ply_roundtrip_verified": true,
+      "pre_lattice_sample_count": 1229089
+    }
+  ],
+  "face_settings": {
+    "max_change_mm": 3.0,
+    "broad_shape_retention": 0.2,
+    "boundary": "adaptive",
+    "amma_actual_boundary_grid_px": 14.7439712806351,
+    "hreidar_actual_boundary_grid_px": 4.493306818822056,
+    "hidden_landmark_visibility_automatically_verified": false
+  },
+  "methodology": "MoGe-2 depth/normals + own face crop + screened normal integration + fixed-UV relief + narrow edge stretch + per-image final face route + grayscale surface/lattice sampling",
+  "code_and_artifact_files": [
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\pabbi-e2-dense\\relief.glb",
+      "snapshot": "artifacts/pabbi-e2-dense/relief.glb",
+      "sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+      "bytes": 7356232
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\pabbi-e2-dense\\points-gray-mm.ply",
+      "snapshot": "artifacts/pabbi-e2-dense/points-gray-mm.ply",
+      "sha256": "57b317a5eec55d489e53ac88d4d88f1ce348883b4ee1449c9f017af4ca0b7f15",
+      "bytes": 8598931
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\pabbi-e2-dense\\manifest.json",
+      "snapshot": "artifacts/pabbi-e2-dense/manifest.json",
+      "sha256": "771e1331a8d0b3e81b57dbe2b11f636fcb271f9d9d7c52f573df6152810296da",
+      "bytes": 1017
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\pabbi-e2-grid\\relief.glb",
+      "snapshot": "artifacts/pabbi-e2-grid/relief.glb",
+      "sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+      "bytes": 7356232
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\pabbi-e2-grid\\points-gray-mm.ply",
+      "snapshot": "artifacts/pabbi-e2-grid/points-gray-mm.ply",
+      "sha256": "f28840252be1f651549d2f15ad579f6d5f9ff186d078670bab9519ba54daabcd",
+      "bytes": 9492003
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\pabbi-e2-grid\\manifest.json",
+      "snapshot": "artifacts/pabbi-e2-grid/manifest.json",
+      "sha256": "8f8862e923d2742117bb6abbf79692d400b753b5faf55d88a8e68fcd5b7b53e3",
+      "bytes": 1727
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\amma-face-grid\\relief.glb",
+      "snapshot": "artifacts/amma-face-grid/relief.glb",
+      "sha256": "2acb6f97a08247654fab6463c5c222d2f0759924d0caed64d3df041ba7168811",
+      "bytes": 6757668
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\amma-face-grid\\points-gray-mm.ply",
+      "snapshot": "artifacts/amma-face-grid/points-gray-mm.ply",
+      "sha256": "fb5b53b2fe0a83d06492e220127a02384b7588ac1a48231acedbfffa41673490",
+      "bytes": 8145827
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\amma-face-grid\\manifest.json",
+      "snapshot": "artifacts/amma-face-grid/manifest.json",
+      "sha256": "1e196e2c3724e8a92544762eb2131ed8a89e6efd53cd20a4b519536fe3bdda49",
+      "bytes": 1692
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\hreidar-face-grid\\relief.glb",
+      "snapshot": "artifacts/hreidar-face-grid/relief.glb",
+      "sha256": "b7ec7c0f7d5007e8250042e3c4861ae5026dc68c1bb07eae3a8d5fd4084f14db",
+      "bytes": 4678272
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\hreidar-face-grid\\points-gray-mm.ply",
+      "snapshot": "artifacts/hreidar-face-grid/points-gray-mm.ply",
+      "sha256": "6e7d4bc5e9a45b93cb17ad5060107f2f440425b47b09a6f86712c9ed0c696f80",
+      "bytes": 5969795
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\hreidar-face-grid\\manifest.json",
+      "snapshot": "artifacts/hreidar-face-grid/manifest.json",
+      "sha256": "25ec3dba6ab67dac77263984652690013d2a6e8998f6d45ce448ccfe6c75eede",
+      "bytes": 1703
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-point-review\\catalog.json",
+      "snapshot": "run-records/viewer-catalog.json",
+      "sha256": "552a90cae905665d9720b6ac1af6c52d24641879f72e8227db11ea1bfb04b227",
+      "bytes": 9475
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\appearance_refine.py",
+      "snapshot": "code-snapshot/code/appearance_refine.py",
+      "sha256": "a67646859261c03a1d84c1a77e51f3fc435e020bcb9bd5a39e8dc1f0a0fec0a6",
+      "bytes": 8512
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\build_gnm_mediapipe_correspondence.py",
+      "snapshot": "code-snapshot/code/build_gnm_mediapipe_correspondence.py",
+      "sha256": "49a90ad3b2cac4515d7940fb28dabeea401f4b15f9fd9210d5213159cfee8434",
+      "bytes": 11061
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\crystal_mask.py",
+      "snapshot": "code-snapshot/code/crystal_mask.py",
+      "sha256": "a1961fb64acac6a291c753389d1aafaab173ab72e82b3572b494260d2979b8dd",
+      "bytes": 5604
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\depth_map.py",
+      "snapshot": "code-snapshot/code/depth_map.py",
+      "sha256": "f0429ff53519e2af9e876dec41c38ac73f1fd3c62f3dac0a5a4e5197ff870c79",
+      "bytes": 20679
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\depth_to_mesh.py",
+      "snapshot": "code-snapshot/code/depth_to_mesh.py",
+      "sha256": "f494f8fefff9aaed719d20fb87d5e7d2c1a9bfd3f10ca1c7ca10899f41b8ad97",
+      "bytes": 20602
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\detail_refine.py",
+      "snapshot": "code-snapshot/code/detail_refine.py",
+      "sha256": "7f3c5ed67f26fd9dd2459712a24222b4ae5225e8362a7aa23bf6929cc13f7459",
+      "bytes": 10275
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\download_models.py",
+      "snapshot": "code-snapshot/code/download_models.py",
+      "sha256": "6aa2546f0fa2fb32f262dd0a2a0eef860610197222f196d3b6896f1773d6c85b",
+      "bytes": 7632
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\face_landmarks.py",
+      "snapshot": "code-snapshot/code/face_landmarks.py",
+      "sha256": "521a5e2192fb726abe435ac91a14aa198a43ca1e398bfaf5c1f1afee130971b0",
+      "bytes": 10613
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\face_refine.py",
+      "snapshot": "code-snapshot/code/face_refine.py",
+      "sha256": "df1feb5563cbb67cbc77728c6e44f749b5d24054ff19229323e08b53e4404588",
+      "bytes": 20871
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\gnm_head_refine.py",
+      "snapshot": "code-snapshot/code/gnm_head_refine.py",
+      "sha256": "e3ea4a293ce9402f3897c12e3361346544a8ca306712cd3b4f8e01a1064f2722",
+      "bytes": 26183
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\healthcheck.py",
+      "snapshot": "code-snapshot/code/healthcheck.py",
+      "sha256": "e44a7b9a42c784c606a5dc8d033f8a36120abb3666059116233243010edb3858",
+      "bytes": 4219
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\import_blanks.py",
+      "snapshot": "code-snapshot/code/import_blanks.py",
+      "sha256": "fa74402dc542af09f320a312b560c4ed18adce6078cca67840625ecb2a6e866a",
+      "bytes": 8274
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\local_workbench_server.py",
+      "snapshot": "code-snapshot/code/local_workbench_server.py",
+      "sha256": "426dd946cdd6a3d746bdf5278933f4acb7d801a08b787216703ab39441169623",
+      "bytes": 27443
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\pose_landmarks.py",
+      "snapshot": "code-snapshot/code/pose_landmarks.py",
+      "sha256": "9808c2d81538829a6e81724b7f87289959f29ac542bb442030cd00a1f10995bd",
+      "bytes": 8617
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\render_head_prior_comparison.py",
+      "snapshot": "code-snapshot/code/render_head_prior_comparison.py",
+      "sha256": "ac068fdaf8ce24c6705580ec8104e26c49fb1894d3b469ca74d7afae8f053c6b",
+      "bytes": 3318
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\render_meshy_shape_prior.py",
+      "snapshot": "code-snapshot/code/render_meshy_shape_prior.py",
+      "sha256": "29d0d800a1458376cf52ad0abde11dea2969c614bef843ab23f1ecfd85fa05a4",
+      "bytes": 6286
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\render_people_reliefs.py",
+      "snapshot": "code-snapshot/code/render_people_reliefs.py",
+      "sha256": "77f72636ded2c3398b1c9a3d8dffc59137ae380076b52394dfbbadaf5f698e46",
+      "bytes": 3218
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\render_relief_variants.py",
+      "snapshot": "code-snapshot/code/render_relief_variants.py",
+      "sha256": "6e96305e45673824fcd0b00727e839db84d6024160b17d6c01c7675688899097",
+      "bytes": 9482
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\render_single_relief_qa.py",
+      "snapshot": "code-snapshot/code/render_single_relief_qa.py",
+      "sha256": "7d5c950392ab5c312c71f82bccc044712dfce7e8be772c1f031197e9346c514d",
+      "bytes": 4362
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\utils.py",
+      "snapshot": "code-snapshot/code/utils.py",
+      "sha256": "d24ac779f1b00fad76cd29e8ccf437279d4305a3e6ff16e0eb54b4ef2ee94d38",
+      "bytes": 7102
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\add_feathered_depth_skirts.py",
+      "snapshot": "code-snapshot/code/research\\add_feathered_depth_skirts.py",
+      "sha256": "ee5bad27bd11eb8cdeb11e7efa37154a4c29e04782328981e090ad5d0655dc4a",
+      "bytes": 11543
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\add_portrait_silhouette_backfill.py",
+      "snapshot": "code-snapshot/code/research\\add_portrait_silhouette_backfill.py",
+      "sha256": "74a2981313da816c850e902935f2af6ab040c03124bdd9a422c257f3b4b64f81",
+      "bytes": 6966
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\add_silhouette_depth_skirts.py",
+      "snapshot": "code-snapshot/code/research\\add_silhouette_depth_skirts.py",
+      "sha256": "0086bc39b734457bb72ac2faae95ddeb63cf1cd145d2542ebb8a153d627524bc",
+      "bytes": 6518
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\analyze_single_person_2_5d_route.py",
+      "snapshot": "code-snapshot/code/research\\analyze_single_person_2_5d_route.py",
+      "sha256": "bef796ada93fdaaa5000e60af58feb89d12a0c6af4d36213b48d18ad290ce6c0",
+      "bytes": 8764
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\audit_icon_data.py",
+      "snapshot": "code-snapshot/code/research\\audit_icon_data.py",
+      "sha256": "038a5774baf0cc2b9fbeb68852d86a60c465c598d77bcb4abfeeeb38bf738b15",
+      "bytes": 5178
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\build_glb_from_cockpit.py",
+      "snapshot": "code-snapshot/code/research\\build_glb_from_cockpit.py",
+      "sha256": "be872b552c69549eb3e93e897347a9fe32f66fe01a7b05a775ecd08c76364fdc",
+      "bytes": 11920
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\build_portrait_v35.py",
+      "snapshot": "code-snapshot/code/research\\build_portrait_v35.py",
+      "sha256": "eccb3b135908d2b7398ab869b39ef4462c0e5fa04ce91e1c8871f19cae5053f4",
+      "bytes": 14303
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\build_run_gallery.py",
+      "snapshot": "code-snapshot/code/research\\build_run_gallery.py",
+      "sha256": "45798a8aa54e0a312e5187f454617348830295b807576bfbf4daf934d18a9006",
+      "bytes": 5862
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\compose_hrn_direct_moge_portrait.py",
+      "snapshot": "code-snapshot/code/research\\compose_hrn_direct_moge_portrait.py",
+      "sha256": "4fb78377659e307756d2a37d6bde7646789b812b3410429199f6c74a4e6f90e1",
+      "bytes": 28684
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\detect_and_prepare_icon_people.py",
+      "snapshot": "code-snapshot/code/research\\detect_and_prepare_icon_people.py",
+      "sha256": "c2a1e7f8d461fbf0abef5cdf5ebe285b9a74dae6a56cded165d1effdea228f98",
+      "bytes": 4805
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\download_mpg_models.py",
+      "snapshot": "code-snapshot/code/research\\download_mpg_models.py",
+      "sha256": "74cf3ec477c60efb470fa2464e1b113b991de312e505e73d47c74dd357193fba",
+      "bytes": 7989
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\enhance_portrait_v34.py",
+      "snapshot": "code-snapshot/code/research\\enhance_portrait_v34.py",
+      "sha256": "d0f8d056d5062f98178a5bfff8e8050f466687a0f3f045d637b2c6ecb38d747e",
+      "bytes": 29341
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\export_v35_point_review.py",
+      "snapshot": "code-snapshot/code/research\\export_v35_point_review.py",
+      "sha256": "a97f418f1d4b60c12ead46bfbf57011d276881c0aa0f7e50e52ef4cc24d7eca0",
+      "bytes": 6460
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\extract_hrn_direct_front_patch.py",
+      "snapshot": "code-snapshot/code/research\\extract_hrn_direct_front_patch.py",
+      "sha256": "64adb9378be6cfb7410eaaa9005e21dcd2345ca343694e81d554171eef45d232",
+      "bytes": 15617
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\extract_icon_normal_maps.py",
+      "snapshot": "code-snapshot/code/research\\extract_icon_normal_maps.py",
+      "sha256": "3b13f2cbf0ca5b8b8818feda34813f5cd05be3035e4b67cd2d088475c7438384",
+      "bytes": 1635
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\face_support_v35.py",
+      "snapshot": "code-snapshot/code/research\\face_support_v35.py",
+      "sha256": "d3db66504b21f222bdb2483a811d45bc66d6e5bf479b5bcb6936891773108b09",
+      "bytes": 3331
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\finalize_point_lattice.py",
+      "snapshot": "code-snapshot/code/research\\finalize_point_lattice.py",
+      "sha256": "de7753f2bfe638a74a112dc013a4e96cd08a95b5c9692f30deddfbfb63a79063",
+      "bytes": 2533
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\finalize_v35_faces.py",
+      "snapshot": "code-snapshot/code/research\\finalize_v35_faces.py",
+      "sha256": "9a7938be6e8ca5cd48aededd770209760d47577ae3e1641ea6cd51088337ffaa",
+      "bytes": 8766
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\fuse_hrn_locked_head_moge_body_depth.py",
+      "snapshot": "code-snapshot/code/research\\fuse_hrn_locked_head_moge_body_depth.py",
+      "sha256": "c4aee7fb143b2d6c464d14b5dd2dc5150160de6ccd4fd6cf6ad8f0e9d54ec292",
+      "bytes": 10739
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\fuse_hrn_moge_portrait_depth.py",
+      "snapshot": "code-snapshot/code/research\\fuse_hrn_moge_portrait_depth.py",
+      "sha256": "275ac3caaf3df963b93809f9ff8946e8cb8b46e5006d7d376afa2e0731d52256",
+      "bytes": 10470
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\fuse_scene_depth_layers.py",
+      "snapshot": "code-snapshot/code/research\\fuse_scene_depth_layers.py",
+      "sha256": "1a6634097cedf0d1211f7c96dcdc98931a0cfd065a397f3194cc806edc892969",
+      "bytes": 9763
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\infer_v35_geometry.py",
+      "snapshot": "code-snapshot/code/research\\infer_v35_geometry.py",
+      "sha256": "e636d6b13f8ae1b16060e551a3626d9d2de051555afd9e280d1a5b4e033f2742",
+      "bytes": 2981
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\install_econ_model_assets.py",
+      "snapshot": "code-snapshot/code/research\\install_econ_model_assets.py",
+      "sha256": "01683d5e38cb61a3611d755098a7abc23aa6560270ee5e399f1eadb97b5833b4",
+      "bytes": 6145
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\integrate_icon_front_bni.py",
+      "snapshot": "code-snapshot/code/research\\integrate_icon_front_bni.py",
+      "sha256": "a7a8c3397b64e2e7b163506ad1387988cfccbdc81f2fdeb0a574fed37e68c87c",
+      "bytes": 12395
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\merge_silhouette_depth_fields.py",
+      "snapshot": "code-snapshot/code/research\\merge_silhouette_depth_fields.py",
+      "sha256": "94358014a182d1420d8824111dbb4395480e8df401ef784e433870994d75afc1",
+      "bytes": 6310
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\prepare_icon_person_inputs.py",
+      "snapshot": "code-snapshot/code/research\\prepare_icon_person_inputs.py",
+      "sha256": "692c59c4ed95ea2706064570bf9ce59ce0fabe630b61ce3287d42098176db636",
+      "bytes": 2914
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\prepare_v35_reference.py",
+      "snapshot": "code-snapshot/code/research\\prepare_v35_reference.py",
+      "sha256": "88fa340840c43efdb0e4a341f0cdd34492cf7b3c4ff600437af44950c669e01f",
+      "bytes": 3316
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\recolor_glb_crystal_tone.py",
+      "snapshot": "code-snapshot/code/research\\recolor_glb_crystal_tone.py",
+      "sha256": "b542c34d1421c67a454acdcb103688e90d08cf923b821a3c47d72f0db47c2d2d",
+      "bytes": 2923
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\refine_v35_accepted_e.py",
+      "snapshot": "code-snapshot/code/research\\refine_v35_accepted_e.py",
+      "sha256": "7bc0c8fbbf376b3ae3e01b0239d6bc605aaffc311b2671ec77a09292eae79ccf",
+      "bytes": 6473
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_econ_front_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_econ_front_qa.py",
+      "sha256": "4cf39e78472ea50ed466d94bb4a9ff0aee4c4b59fd3a467322fdcd20353bef09",
+      "bytes": 5119
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_hrn_fusion_assets.py",
+      "snapshot": "code-snapshot/code/research\\render_hrn_fusion_assets.py",
+      "sha256": "34f162550249df2e0077b5e5d64321d1ddfd8df3ac89d1750d952bc8e047271a",
+      "bytes": 6512
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_hrn_head_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_hrn_head_qa.py",
+      "sha256": "6079c036eb4a89f2bf29943c6da152b5699833a54702de28792be3d954c8d55b",
+      "bytes": 6353
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_icon_front_bni_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_icon_front_bni_qa.py",
+      "sha256": "7d3125f7d0025132cc7977f39d034010bfc0b833e68e9679ea55310c3d670932",
+      "bytes": 5172
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_icon_full_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_icon_full_qa.py",
+      "sha256": "5a8b0031bde436d07974e45099a75bec02a8f9ac1ece3ca8f1d8a045b34bb3ba",
+      "bytes": 5099
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_scene_depth_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_scene_depth_qa.py",
+      "sha256": "aae22e127e2dff7cf13aafc84cc551e4de6015ef7eb6fbdc117acd3d55a0d33b",
+      "bytes": 3154
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_scene_fusion_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_scene_fusion_qa.py",
+      "sha256": "362d234c654f708f208becd8b0e8da871e64793b2cc08e13293c932ee22319cd",
+      "bytes": 5150
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_single_front_depth_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_single_front_depth_qa.py",
+      "sha256": "4b5c050502ceb7ca661893d4a5f52c94cacbc01113d81a9e221fe35818ce3963",
+      "bytes": 4458
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_source_camera_fusion_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_source_camera_fusion_qa.py",
+      "sha256": "c2fd553088c5ffea3585d0f843ba9b79b7db4dd4d6e73da7e3246887ff192e5a",
+      "bytes": 4698
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_source_portrait_qa.py",
+      "snapshot": "code-snapshot/code/research\\render_source_portrait_qa.py",
+      "sha256": "2e431011c500caa22a25ff103d11a79436bbb9da001bc6d6ad734402369ad731",
+      "bytes": 4075
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\render_v35_comparison.py",
+      "snapshot": "code-snapshot/code/research\\render_v35_comparison.py",
+      "sha256": "69098e7b2f06828e099fd81e709717fb7a8b659c9bb144db18576cd68c4fbfb2",
+      "bytes": 3821
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\run_hrn_head_modelscope.py",
+      "snapshot": "code-snapshot/code/research\\run_hrn_head_modelscope.py",
+      "sha256": "98cf82dd9f85d87db05022c40cb25af14fa49aeae4d45ba038bb6568b2e4e5e1",
+      "bytes": 7650
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\run_v35_transfer.py",
+      "snapshot": "code-snapshot/code/research\\run_v35_transfer.py",
+      "sha256": "5bd4f0c57caa7b280c2f3666c296413f96331a0869a7f1a4092cdae3c24803c3",
+      "bytes": 6662
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\sample_relief_surface.py",
+      "snapshot": "code-snapshot/code/research\\sample_relief_surface.py",
+      "sha256": "8d1ac32d040de6e6abc2cb745e16ed52a102b6c33f508efc8317f0fe76db519b",
+      "bytes": 3944
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\smooth_v35_scalp.py",
+      "snapshot": "code-snapshot/code/research\\smooth_v35_scalp.py",
+      "sha256": "9c5ad219263cf694ebf345fd23ac5cefeb8efa81476a7c4ba67b0864adf9666c",
+      "bytes": 2858
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\source_camera_fusion.py",
+      "snapshot": "code-snapshot/code/research\\source_camera_fusion.py",
+      "sha256": "7c285f0082916090d6cd9244185915670cbc2e97c4fa75edeb33bec489efe366",
+      "bytes": 15083
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\tests\\test_portrait_v35.py",
+      "snapshot": "code-snapshot/tests/test_portrait_v35.py",
+      "sha256": "94ee35ce0c5ec23b8a7f7b8cbe1afd35e4991a31ade8c40143d66acd29142c7b",
+      "bytes": 2508
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\tests\\test_relief_surface_sampling.py",
+      "snapshot": "code-snapshot/tests/test_relief_surface_sampling.py",
+      "sha256": "def2f8c9d864ece4354626c89c9b6c53924dba44b361bbeb05f19930a4a274a4",
+      "bytes": 2157
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\tests\\test_face_support_v35.py",
+      "snapshot": "code-snapshot/tests/test_face_support_v35.py",
+      "sha256": "55556693e2e5e040829b8688e221869b1dae926b525d8bb052e376db649e9d74",
+      "bytes": 1300
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\code\\research\\v35_point_review.html",
+      "snapshot": "code-snapshot/code/research/v35_point_review.html",
+      "sha256": "dbda9e3ab92492a4cba4e0785d657d031cc64b415145d0a4c2cc417738fb5b9c",
+      "bytes": 11951
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-face-adaptive\\face-pass.json",
+      "snapshot": "run-records/amma-1-face-adaptive/face-pass.json",
+      "sha256": "e78404f9a00863c4e84fe196d3a47c7c3e679e02fa696bf3f8b7e05d6bc5fd6f",
+      "bytes": 2979
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-face-adaptive\\mesh\\height-mm.npy",
+      "snapshot": "artifacts/amma-1-face-adaptive/height-mm.npy",
+      "sha256": "3bd1e0c27bc37912ef06f3cb59b77104c85f4680a0bfa85c0d842b600d348eb5",
+      "bytes": 755328
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar-face-adaptive\\face-pass.json",
+      "snapshot": "run-records/hreidar-face-adaptive/face-pass.json",
+      "sha256": "4b3ce63bdde095794c6e58ecea392e4933c96a70e7dec5f74fb5f25e0957f297",
+      "bytes": 2338
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar-face-adaptive\\mesh\\height-mm.npy",
+      "snapshot": "artifacts/hreidar-face-adaptive/height-mm.npy",
+      "sha256": "480ec48724c765757801d4a0e39b7ebe5bfd01d6fb19d6fbef63e6c515367213",
+      "bytes": 1408128
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\transfer.json",
+      "snapshot": "run-records/amma-1-range-preserved/transfer.json",
+      "sha256": "ceeb3e98551b8e98bb5898989fe78d539115d34f18071f45e8c8e3d95976a457",
+      "bytes": 1759
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\01-moge\\inference.json",
+      "snapshot": "run-records/amma-1-range-preserved/01-moge/inference.json",
+      "sha256": "8d6464052a5b549fe33886560cfc3defc8a2691308cf6ceeb0aecc2d4d53bea0",
+      "bytes": 1209
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\02-face\\normalization.json",
+      "snapshot": "run-records/amma-1-range-preserved/02-face/normalization.json",
+      "sha256": "2be67221173fa1b3d78624fa3527179a443161250a6dc0d7486c51ffabf88af2",
+      "bytes": 66
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\02-face\\refined-depth.json",
+      "snapshot": "run-records/amma-1-range-preserved/02-face/refined-depth.json",
+      "sha256": "7df26b0a741e3a79f43d2005d3307e484cdb8c5d36b68396c6fa62175bac7c9c",
+      "bytes": 57177
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\03-e-variants\\experiment.json",
+      "snapshot": "run-records/amma-1-range-preserved/03-e-variants/experiment.json",
+      "sha256": "7cc5f659ea18a2b66a9764b88d15c2fbe94cf2eb00f9f7ea8f893e1840350138",
+      "bytes": 7899
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\transfer.json",
+      "snapshot": "run-records/hreidar/transfer.json",
+      "sha256": "acce7576edb6c8ab4bb159e94c547c00e4b9bb6e95a91e271b8ef23c318b5fd4",
+      "bytes": 1702
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\01-moge\\inference.json",
+      "snapshot": "run-records/hreidar/01-moge/inference.json",
+      "sha256": "ed6e0711c58c9680ed156bf88a734ecb8a43709a62f8a1ea4cc9f702fabca7b0",
+      "bytes": 1186
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\02-face\\normalization.json",
+      "snapshot": "run-records/hreidar/02-face/normalization.json",
+      "sha256": "374945a7073874f3dfcc2dfe53883948e1f97db0e58288228b6be725cae90581",
+      "bytes": 66
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\02-face\\refined-depth.json",
+      "snapshot": "run-records/hreidar/02-face/refined-depth.json",
+      "sha256": "0ffc6f64892ed6c122ca8d06ae364408eef4bf896e41243e548a356fcaa3a4ef",
+      "bytes": 56886
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\03-e-variants\\experiment.json",
+      "snapshot": "run-records/hreidar/03-e-variants/experiment.json",
+      "sha256": "d61394dabcfe07debfe6a1e0fc1127698e0851cbc737e90336e63dfe6b02ea46",
+      "bytes": 7824
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\experiment.json",
+      "snapshot": "run-records/pabbi-e2/experiment.json",
+      "sha256": "15ea47dc5259d15a63b4dcf43b62de7305a3a0291feb0478748133e78ef1a960",
+      "bytes": 2860
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\height-mm.npy",
+      "snapshot": "artifacts/pabbi-e2/height-mm.npy",
+      "sha256": "69eaff82ed84a8f2b37093ee0502c8b39512067cc3b8efce221ff95a32d3b213",
+      "bytes": 1200768
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\01-moge\\inference.json",
+      "snapshot": "run-records/pabbi-e2/inference.json",
+      "sha256": "20f04c240c950ec5c5443d300581beea9af801d7868dd1ecdbf358b34c77f98f",
+      "bytes": 1181
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\.Markdown\\methods\\v35-e2-2026-09-05\\e-baseline-settings.json",
+      "snapshot": "run-records/pabbi-e2/e-baseline-settings.json",
+      "sha256": "2ad79421e66834555daf0a2d11d13c329aaf224c1ee87f23dc88afec995b75dd",
+      "bytes": 7697
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\.Markdown\\methods\\v35-e2-2026-09-05\\point-cloud-profile.json",
+      "snapshot": "settings/point-cloud-profile.json",
+      "sha256": "1d7b8df5e09855389dbccebb58e87775854fcb58d2052ce0ea3d69460b852cf8",
+      "bytes": 1037
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\reference-gallery\\original-images\\Pabbi-Bleikja-Upscaled.png",
+      "snapshot": "inputs/pabbi-source.png",
+      "sha256": "b603ea42362613771b1d2c9f1ef85eb5c2fb6bd92454a0d414fd12b23a3b950f",
+      "bytes": 1804008
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\reference-gallery\\original-images\\hreidar-upscaled-bg-removed.png",
+      "snapshot": "inputs/hreidar-source.png",
+      "sha256": "5ac16426e691e867ec66037e5f2b9cdf5a66677cc18cb9c1421828f0a4f4d832",
+      "bytes": 1347630
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\01-preprocess\\source-prepared.png",
+      "snapshot": "inputs/amma-source.png",
+      "sha256": "3439324571c6150b0130b165b913451515abc1d47d48d13cc730adf32673b55f",
+      "bytes": 1049559
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\04-hrn-assets\\hrn-front-assets.json",
+      "snapshot": "inputs/amma-hrn/hrn-front-assets.json",
+      "sha256": "7fa7f6a62a06cd4ec3c3a3b779d89e10647da56d3281af946540ca9ac43f76b6",
+      "bytes": 1063
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\04-hrn-assets\\hrn-front-depth.png",
+      "snapshot": "inputs/amma-hrn/hrn-front-depth.png",
+      "sha256": "f55e27bec50f7fc543d09add7d45c31926a3bb56c33fdab46b1d76f7ad8566af",
+      "bytes": 528284
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\04-hrn-assets\\hrn-front-texture.png",
+      "snapshot": "inputs/amma-hrn/hrn-front-texture.png",
+      "sha256": "bff9d0cc07f71e164320a8519a34c33601f5f9df04ea1fee3ad4e880425adb31",
+      "bytes": 714478
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\05-hrn-closed-head\\hrn-direct-front-patch-stats.json",
+      "snapshot": "inputs/amma-hrn/registration.json",
+      "sha256": "1b7cbbcf7addb3f8cadbb034723f8f795138bbadfea702ae50e0422b8d43ac2a",
+      "bytes": 3339
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\gallery-adaptive\\Amma-adaptive-+030.png",
+      "snapshot": "previews/Amma-adaptive-+030.png",
+      "sha256": "134e632c807804eec272531b23c390f99c12b1558b5b80fc2221afa3512ac394",
+      "bytes": 591652
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\gallery-adaptive\\Hreidar-adaptive-+030.png",
+      "snapshot": "previews/Hreidar-adaptive-+030.png",
+      "sha256": "ba780649e189ee505ee5a2e249ae4b3e959e3b4f5dc5af7014bb727c9c1c76c0",
+      "bytes": 556650
+    },
+    {
+      "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\gallery-accepted-e\\E2-head-edge-+030.png",
+      "snapshot": "previews/Pabbi-E2-+030.png",
+      "sha256": "96c55b21755e9ea7d61fbabaee4995c9aa4ef05357324bc15efb22c648fefcb8",
+      "bytes": 587991
+    }
+  ],
+  "retained_large_input_references": [
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\01-moge\\geometry.npz",
+      "sha256": "f054fea68833b0ee46f5d0f198c9768cb0448519ae5c430a0342a96a4404c911",
+      "bytes": 26678244,
+      "copied": false
+    },
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\02-face\\refined-depth.png",
+      "sha256": "90e2c25ecfaf92853f8837495ce2728f39b1a9b186d5b282699c8fb2144f9483",
+      "bytes": 2283606,
+      "copied": false
+    },
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\01-moge\\geometry.npz",
+      "sha256": "ff699954b10d1910abf0cee44cf0ab48e6b75a382ad4b3f8000d0cd6108983dc",
+      "bytes": 38967163,
+      "copied": false
+    },
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\02-face\\refined-depth.png",
+      "sha256": "516358a072743958fc90bd2e22a88e19c2787157b7a4e488468b31c050e07882",
+      "bytes": 3521626,
+      "copied": false
+    },
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\01-moge\\geometry.npz",
+      "sha256": "d9b67d210ca3847b6ac5df89a25047b3c0fc6a05974a5aced9b8eb35c57f2bf0",
+      "bytes": 33605668,
+      "copied": false
+    },
+    {
+      "path": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\08-icon-source\\person_01_source_camera.glb",
+      "sha256": "628178a3827f498bbd5aadab0a9adb2170adcc650530af6a342f3d764a66ffd7",
+      "bytes": 3134252,
+      "copied": false
+    }
+  ],
+  "prior_component_test_results": "11 passed; historical test result, not a new run during this freeze"
+}

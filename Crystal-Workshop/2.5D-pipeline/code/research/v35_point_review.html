@@ -1,0 +1,74 @@
+<!--
+Purpose: Inspect exact relief geometry as source-coloured points, grayscale points,
+triangles or wireframe. All dependencies and data are served locally.
+-->
+<!doctype html><html lang="is"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACM · Punktaský og mesh</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090d14;color:#e5eaf0;font:15px system-ui}header{padding:18px 24px;border-bottom:1px solid #29303a;display:flex;gap:24px;align-items:center}header strong{font-size:20px}small{color:#aebbc9}main{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 70px)}aside{padding:22px;border-right:1px solid #29303a;overflow:auto}label{display:block;margin:18px 0 7px}select,button{font:inherit;color:inherit;background:#1a2433;border:1px solid #3f526b;border-radius:7px;padding:8px}select{width:100%}button{cursor:pointer}button:hover{background:#2b4260}.row{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}input[type=range]{width:100%;accent-color:#74c7f5}a{color:#90d7ff;display:block;margin:12px 0}#view{min-height:400px;position:relative}canvas{display:block;width:100%;height:100%;touch-action:none}#status{line-height:1.6;color:#b8c6d8;font-size:13px}#hint{position:absolute;left:20px;bottom:15px;pointer-events:none;color:#a9b6c9;font-size:13px}p{line-height:1.5;font-size:13px;color:#aebbc9}@media(max-width:720px){main{grid-template-columns:210px 1fr}header{padding:12px}}
+@media(max-width:720px){header{display:block;font-size:13px}header strong{font-size:17px}header small{display:block;margin-top:5px}main{display:flex;flex-direction:column;height:auto}#view{order:-1;height:65vh;min-height:300px}aside{border-right:0;border-top:1px solid #29303a;padding:14px}#hint{font-size:11px;left:8px}}
+</style><script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script></head>
+<body><header><strong>ACM · Punktaský og mesh</strong><small>Upprunaleg lögun · staðbundinn skoðari</small></header>
+<main><aside>
+<label for="model">Módel</label><select id="model"></select>
+<label for="mode">Birting</label><select id="mode"><option value="gray" selected>Punktaský í grátónum</option><option value="points">Litað punktaský</option><option value="white">Hvítir punktar</option><option value="mesh">Litað mesh</option><option value="clay">Grátt yfirborð</option><option value="wire">Vírnet</option></select>
+<label for="pointSize">Skjápunktastærð <span id="pointValue">2,0</span> px</label><input id="pointSize" type="range" min="0.5" max="6" step="0.1" value="2"><p>Birting á skjá; breytir ekki leysipunktastærð eða útfluttum hnitum.</p>
+<label for="density">Punktafjöldi <span id="densityValue">100</span>%</label><input id="density" type="range" min="5" max="100" step="5" value="100">
+<div class="row"><button id="front">Framan</button><button id="angle">30°</button><button id="side">Hlið</button></div>
+<div class="row"><button id="reset">Endurstilla</button><button id="save">Vista mynd</button></div>
+<label for="cubeSize">Viðmiðunarkubbur</label><select id="cubeSize"><option value="120" selected>120 × 120 × 120 mm</option><option value="150">150 × 150 × 150 mm</option></select><label><input id="showCube" type="checkbox"> Sýna ramma í réttum hlutföllum</label><p>Ramminn breytir ekki skölun módelsins. Lögunin hefur forgang.</p>
+<div id="status">Hleð…</div>
+<a id="glb" download>GLB · yfirborð</a><a id="grayPly" download>PLY · grátónar (mm)</a><a id="ply" download>PLY · litaðir punktar (mm)</a>
+<p>Dragðu til að snúa. Skrollaðu til að þysja. Hægri músarhnappur færir myndina.</p><p>Punktarnir byggja á mesh-yfirborðinu. Þegar dýptarlög eru notuð er Z fært á næsta lag. Grátónabirtingin er ekki eftirlíking af ljósbroti eða leysivinnslu kristals.</p>
+</aside><div id="view"><div id="hint">Snúa · þysja · færa</div></div></main>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from './vendor/OrbitControls.js';
+const $=id=>document.getElementById(id), host=$('view');
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;host.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x05080d);
+const camera=new THREE.PerspectiveCamera(32,1,.0001,100), controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.minDistance=.005;controls.maxDistance=3;
+scene.add(new THREE.HemisphereLight(0xffffff,0x5c6470,2));
+const light=new THREE.DirectionalLight(0xffffff,2.4);light.position.set(-1,1,2);scene.add(light);
+let group, geometry, points, surface, wire, originalColors, monoColors, active, cube, distance=.16, pointIndices, generation=0;
+function fitDistance(){if($('showCube').checked)return Number($('cubeSize').value)*.001*Math.max(1,1/camera.aspect)*2.4;return active?Math.max(active.size_mm[1],active.size_mm[0]/camera.aspect)*.001*2.15:.16}
+function updateCube(){if(cube){scene.remove(cube);cube.geometry.dispose();cube.material.dispose()}const side=Number($('cubeSize').value)*.001;const box=new THREE.BoxGeometry(side,side,side);cube=new THREE.LineSegments(new THREE.EdgesGeometry(box),new THREE.LineBasicMaterial({color:0x6a879a,transparent:true,opacity:.65}));box.dispose();cube.visible=$('showCube').checked;scene.add(cube);distance=fitDistance();camera.position.normalize().multiplyScalar(distance);controls.update()}
+const decode=(text,Type)=>{const s=atob(text),b=new Uint8Array(s.length);for(let i=0;i<s.length;i++)b[i]=s.charCodeAt(i);return new Type(b.buffer)};
+function pose(angle){controls.target.set(0,0,0);camera.position.set(Math.sin(angle)*distance,0,Math.cos(angle)*distance);controls.update()}
+function update(){if(!group)return;const mode=$('mode').value;points.visible=['points','gray','white'].includes(mode);surface.visible=['mesh','clay','wire'].includes(mode);wire.visible=mode==='wire';
+ points.material.size=Number($('pointSize').value);$('pointValue').textContent=$('pointSize').value;
+ points.material.vertexColors=mode!=='white';points.material.needsUpdate=true;
+ const attr=mode==='gray'?monoColors:originalColors;points.geometry.setAttribute('color',attr);$('hint').textContent=mode==='wire'?'Þétt þríhyrninganet · þysjaðu til að sjá einstakar brúnir':'Snúa · þysja · færa';
+ surface.material.vertexColors=mode==='mesh';surface.material.color.set(mode==='mesh'?0xffffff:0x818b98);surface.material.needsUpdate=true;
+ $('densityValue').textContent=$('density').value;points.geometry.setDrawRange(0,Math.round(pointIndices.length*Number($('density').value)/100));
+}
+async function load(item){const token=++generation;$('status').textContent='Hleð punktum og yfirborði…';const response=await fetch(`./${item.id}/geometry.json`);if(!response.ok)throw Error(response.status);const data=await response.json();if(token!==generation)return;
+ if(group){scene.remove(group);group.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}
+ active=item;geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(decode(data.positions,Float32Array),3));geometry.setAttribute('normal',new THREE.BufferAttribute(decode(data.normals,Float32Array),3));geometry.setIndex(new THREE.BufferAttribute(decode(data.triangles,Uint32Array),1));
+ const bytes=decode(data.colors,Uint8Array),colors=new Float32Array(bytes.length),mono=new Float32Array(bytes.length),c=new THREE.Color();
+ for(let i=0;i<bytes.length;i+=3){c.setRGB(bytes[i]/255,bytes[i+1]/255,bytes[i+2]/255,THREE.SRGBColorSpace);colors.set([c.r,c.g,c.b],i);const gray=.2126*bytes[i]/255+.7152*bytes[i+1]/255+.0722*bytes[i+2]/255;c.setRGB(gray,gray,gray,THREE.SRGBColorSpace);mono.set([c.r,c.g,c.b],i)}
+ originalColors=new THREE.BufferAttribute(colors,3);monoColors=new THREE.BufferAttribute(mono,3);geometry.setAttribute('color',originalColors);
+ geometry.computeBoundingBox();const center=geometry.boundingBox.getCenter(new THREE.Vector3()),size=geometry.boundingBox.getSize(new THREE.Vector3());
+ group=new THREE.Group();group.position.copy(center).multiplyScalar(-1);scene.add(group);distance=fitDistance();
+ surface=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({vertexColors:true,side:THREE.DoubleSide,roughness:1,metalness:0,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}));group.add(surface);
+ const pointGeometry=new THREE.BufferGeometry();pointGeometry.setAttribute('position',data.pointPositions?new THREE.BufferAttribute(decode(data.pointPositions,Float32Array),3):geometry.getAttribute('position'));
+ if(data.pointColors){const pb=decode(data.pointColors,Uint8Array),pc=new Float32Array(pb.length),pg=new Float32Array(pb.length);for(let i=0;i<pb.length;i+=3){c.setRGB(pb[i]/255,pb[i+1]/255,pb[i+2]/255,THREE.SRGBColorSpace);pc.set([c.r,c.g,c.b],i);const v=(.2126*pb[i]+.7152*pb[i+1]+.0722*pb[i+2])/255;c.setRGB(v,v,v,THREE.SRGBColorSpace);pg.set([c.r,c.g,c.b],i)}originalColors=new THREE.BufferAttribute(pc,3);monoColors=new THREE.BufferAttribute(pg,3)}
+ pointGeometry.setAttribute('color',originalColors);
+ // A stable shuffled index changes density across the whole image, never crops its rows.
+ pointIndices=Uint32Array.from({length:item.point_count??item.vertices},(_,i)=>i);let seed=351;
+ for(let i=pointIndices.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[pointIndices[i],pointIndices[j]]=[pointIndices[j],pointIndices[i]]}
+ pointGeometry.setIndex(new THREE.BufferAttribute(pointIndices,1));points=new THREE.Points(pointGeometry,new THREE.PointsMaterial({vertexColors:true,size:2,sizeAttenuation:false}));group.add(points);
+ wire=new THREE.LineSegments(new THREE.WireframeGeometry(geometry),new THREE.LineBasicMaterial({color:0x9ddeee}));group.add(wire);
+ $('status').textContent=`${(item.point_count??item.vertices).toLocaleString('is-IS')} punktar · ${item.triangles.toLocaleString('is-IS')} þríhyrningar. ${item.size_mm.map(n=>n.toFixed(2)).join(' × ')} mm. Mesh óbreytt.${item.sampling?.spacing_mm?' Yfirborðssýnataka: '+Number(item.sampling.spacing_mm).toFixed(2)+' mm.':''}${item.sampling?.layer_spacing_mm?' Dýptarlög: '+Number(item.sampling.layer_spacing_mm).toFixed(2)+' mm. Hámarksfærsla punkta í Z við lagskiptingu: '+item.sampling.max_z_quantization_mm.toFixed(3)+' mm.':''}`;
+ $('glb').href=`./${item.id}/relief.glb`;$('ply').href=`./${item.id}/points-color-mm.ply`;$('grayPly').href=`./${item.id}/points-gray-mm.ply`;pose(0);update();document.body.dataset.ready=item.id;
+}
+for(const id of ['mode','pointSize','density'])$(id).addEventListener('input',update);
+for(const id of ['cubeSize','showCube'])$(id).addEventListener('change',updateCube);
+$('front').onclick=()=>pose(0);$('angle').onclick=()=>pose(Math.PI/6);$('side').onclick=()=>pose(Math.PI/2);$('reset').onclick=()=>{distance=fitDistance();pose(0)};
+$('save').onclick=()=>{renderer.render(scene,camera);const a=document.createElement('a');a.download=`${active.id}-${$('mode').value}.png`;a.href=renderer.domElement.toDataURL();a.click()};
+const resize=()=>{const {width,height}=host.getBoundingClientRect();renderer.setSize(width,height);camera.aspect=width/height;camera.updateProjectionMatrix();if(active){distance=fitDistance();camera.position.normalize().multiplyScalar(distance);controls.update()}};new ResizeObserver(resize).observe(host);
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
+try{const catalog=await(await fetch('./catalog.json')).json();for(const item of catalog){const option=new Option(item.label,item.id);$('model').add(option)}$('model').onchange=()=>load(catalog.find(x=>x.id===$('model').value)).catch(e=>$('status').textContent=String(e));await load(catalog[0])}catch(e){$('status').textContent=`Villa: ${e.message}`;console.error(e)}
+</script></body></html>

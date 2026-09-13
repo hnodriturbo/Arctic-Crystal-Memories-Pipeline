@@ -1,0 +1,27 @@
+{
+  "id": "pabbi-e2-dense",
+  "label": "Pabbi E2 \u00b7 \u00fe\u00e9ttari strekkifletir",
+  "vertices": 126832,
+  "point_count": 537418,
+  "triangles": 251183,
+  "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+  "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+  "size_mm": [
+    46.447575092315674,
+    75.61815157532692,
+    20.736576057970524
+  ],
+  "ply_units": "millimetres",
+  "glb_units": "metres",
+  "sampling": {
+    "spacing_mm": 0.18,
+    "original_points": 126832,
+    "points": 537418,
+    "added_points": 410586,
+    "stretched_triangles_sampled": 174234,
+    "original_max_edge_mm": 2.995640068273179,
+    "sampling": "original vertices + shared edge subdivisions + interior barycentric rows"
+  },
+  "geometry_unchanged": true,
+  "ply_roundtrip_verified": true
+}

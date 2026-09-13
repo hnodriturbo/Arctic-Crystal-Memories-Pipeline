@@ -6,7 +6,7 @@
  */
 
 const deploymentRoot = "/home/hreidar/apps/acm-pipeline";
-const applicationRoot = `${deploymentRoot}/current/converter/ACM-Web-Pipeline`;
+const applicationRoot = `${deploymentRoot}/current/Crystal-Workshop/ACM-Web-Pipeline`;
 
 module.exports = {
   apps: [
@@ -17,6 +17,9 @@ module.exports = {
       args: "start --hostname 127.0.0.1 --port 3003",
       env: {
         NODE_ENV: "production",
+        CONVERTER_ROOT: `${deploymentRoot}/current/Crystal-Workshop/pipeline-converter`,
+        MESHY_ROOT: `${deploymentRoot}/current/Crystal-Workshop/meshy-pipeline`,
+        IMAGE_PIPELINE_ROOT: `${deploymentRoot}/current/Crystal-Workshop/image-pipeline`,
       },
       autorestart: true,
       max_memory_restart: "750M",

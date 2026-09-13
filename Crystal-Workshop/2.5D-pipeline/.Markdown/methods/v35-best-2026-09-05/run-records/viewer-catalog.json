@@ -1,0 +1,243 @@
+[
+  {
+    "id": "pabbi-e2-dense",
+    "label": "Pabbi E2 · þéttari strekkifletir",
+    "vertices": 126832,
+    "point_count": 537418,
+    "triangles": 251183,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+    "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+    "size_mm": [
+      46.447575092315674,
+      75.61815157532692,
+      20.736576057970524
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": {
+      "spacing_mm": 0.18,
+      "original_points": 126832,
+      "points": 537418,
+      "added_points": 410586,
+      "stretched_triangles_sampled": 174234,
+      "original_max_edge_mm": 2.995640068273179,
+      "sampling": "original vertices + shared edge subdivisions + interior barycentric rows"
+    },
+    "geometry_unchanged": true,
+    "ply_roundtrip_verified": true
+  },
+  {
+    "id": "pabbi-e2",
+    "label": "Pabbi-Bleikja · E2 · valið afbrigði",
+    "vertices": 126832,
+    "triangles": 251183,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+    "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+    "size_mm": [
+      46.447575092315674,
+      75.61815157532692,
+      20.736576057970524
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": "one point per original vertex; bilinear source texture RGB at its UV",
+    "geometry_unchanged": true,
+    "ply_roundtrip_verified": true
+  },
+  {
+    "id": "hreidar",
+    "label": "Hreiðar · yfirfærslupróf",
+    "vertices": 75326,
+    "triangles": 148497,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar\\04-e-transfer-edge\\relief.glb",
+    "source_sha256": "a44160600b503b9a521e5f74a2936453bb8958c58b19b08eb1b257188f2f497d",
+    "size_mm": [
+      53.83411608636379,
+      74.61658865213394,
+      16.90726913511753
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": "one point per original vertex; bilinear source texture RGB at its UV",
+    "geometry_unchanged": true,
+    "ply_roundtrip_verified": true
+  },
+  {
+    "id": "amma-1",
+    "label": "Amma 1 · yfirfærslupróf",
+    "vertices": 128580,
+    "triangles": 255441,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1\\04-e-transfer-edge\\relief.glb",
+    "source_sha256": "f31dddea095f8f2f655cf8ee7a5d583ec8a706fb5103d157de761f9af12e8796",
+    "size_mm": [
+      36.80751100182533,
+      67.85602495074272,
+      19.61900107562542
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": "one point per original vertex; bilinear source texture RGB at its UV",
+    "geometry_unchanged": true,
+    "ply_roundtrip_verified": true
+  },
+  {
+    "id": "amma-range",
+    "label": "Amma 1 · varðveitt dýptarbil",
+    "vertices": 128580,
+    "point_count": 128580,
+    "triangles": 255441,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-range-preserved\\04-e-transfer-edge\\relief.glb",
+    "source_sha256": "9e2b573e5c1c1ab02cd2b936f8b0b084b4061e89e7cc0f80f2479d36d47e7121",
+    "size_mm": [
+      36.80751100182533,
+      67.85602495074272,
+      25.08658729493618
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": "one point per original vertex; bilinear source texture RGB at its UV",
+    "geometry_unchanged": true,
+    "ply_roundtrip_verified": true
+  },
+  {
+    "id": "pabbi-e2-grid",
+    "label": "Pabbi E2 · fast 0,08 / 0,09 mm net",
+    "vertices": 126832,
+    "point_count": 593235,
+    "triangles": 251183,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\10-accepted-e-refinement\\E2-head-edge\\relief.glb",
+    "source_sha256": "4e2288abe1b3d9cdbc9feec9c18b125f667333cf4f5cf913be353609b937037e",
+    "size_mm": [
+      46.447575092315674,
+      75.61815157532692,
+      20.736576057970524
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": {
+      "spacing_mm": 0.08,
+      "original_points": 126832,
+      "points": 1884449,
+      "added_points": 1757617,
+      "stretched_triangles_sampled": 251183,
+      "original_max_edge_mm": 2.995640068273179,
+      "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+      "layer_spacing_mm": 0.09000000000000001,
+      "layer_axis": "source-camera Z (near/far)",
+      "max_z_quantization_mm": 0.044999993095794395,
+      "points_after_layer_deduplication": 593235,
+      "point_spacing_xy_mm": 0.08,
+      "unique_lattice_points": 593235,
+      "max_axis_quantization_mm": [
+        0.03999988824129105,
+        0.03999988824129105,
+        4.488229753130124E-07
+      ],
+      "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+      "max_axis_error_vs_original_surface_bound_mm": [
+        0.04,
+        0.04,
+        0.045
+      ]
+    },
+    "geometry_unchanged": false,
+    "mesh_geometry_unchanged": true,
+    "minimum_points": 350000,
+    "ply_roundtrip_verified": true,
+    "pre_lattice_sample_count": 1884449
+  },
+  {
+    "id": "amma-face-grid",
+    "label": "Amma · andlitsyfirferð · fast punktanet",
+    "vertices": 128580,
+    "point_count": 509099,
+    "triangles": 255441,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\amma-1-face-adaptive\\mesh\\relief.glb",
+    "source_sha256": "2acb6f97a08247654fab6463c5c222d2f0759924d0caed64d3df041ba7168811",
+    "size_mm": [
+      36.80751100182533,
+      67.85602495074272,
+      25.08658729493618
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": {
+      "spacing_mm": 0.08,
+      "original_points": 128580,
+      "points": 1678914,
+      "added_points": 1550334,
+      "stretched_triangles_sampled": 255441,
+      "original_max_edge_mm": 3.148068442614636,
+      "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+      "layer_spacing_mm": 0.09000000000000001,
+      "layer_axis": "source-camera Z (near/far)",
+      "max_z_quantization_mm": 0.0449999929592014,
+      "points_after_layer_deduplication": 509099,
+      "point_spacing_xy_mm": 0.08,
+      "unique_lattice_points": 509099,
+      "max_axis_quantization_mm": [
+        0.03999988824129105,
+        0.03999988824129105,
+        4.556775078795594E-07
+      ],
+      "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+      "max_axis_error_vs_original_surface_bound_mm": [
+        0.04,
+        0.04,
+        0.045
+      ]
+    },
+    "geometry_unchanged": false,
+    "mesh_geometry_unchanged": true,
+    "minimum_points": 0,
+    "ply_roundtrip_verified": true,
+    "pre_lattice_sample_count": 1678914
+  },
+  {
+    "id": "hreidar-face-grid",
+    "label": "Hreiðar · andlitsyfirferð · fast punktanet",
+    "vertices": 75326,
+    "point_count": 373097,
+    "triangles": 148497,
+    "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar-face-adaptive\\mesh\\relief.glb",
+    "source_sha256": "b7ec7c0f7d5007e8250042e3c4861ae5026dc68c1bb07eae3a8d5fd4084f14db",
+    "size_mm": [
+      53.83411608636379,
+      74.61658865213394,
+      16.90726913511753
+    ],
+    "ply_units": "millimetres",
+    "glb_units": "metres",
+    "sampling": {
+      "spacing_mm": 0.08,
+      "original_points": 75326,
+      "points": 1229089,
+      "added_points": 1153763,
+      "stretched_triangles_sampled": 148497,
+      "original_max_edge_mm": 4.243740546069105,
+      "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+      "layer_spacing_mm": 0.09000000000000001,
+      "layer_axis": "source-camera Z (near/far)",
+      "max_z_quantization_mm": 0.04499998941094292,
+      "points_after_layer_deduplication": 373097,
+      "point_spacing_xy_mm": 0.08,
+      "unique_lattice_points": 373097,
+      "max_axis_quantization_mm": [
+        0.03999988824129105,
+        0.03999993108212935,
+        4.488229753130124E-07
+      ],
+      "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+      "max_axis_error_vs_original_surface_bound_mm": [
+        0.04,
+        0.04,
+        0.045
+      ]
+    },
+    "geometry_unchanged": false,
+    "mesh_geometry_unchanged": true,
+    "minimum_points": 0,
+    "ply_roundtrip_verified": true,
+    "pre_lattice_sample_count": 1229089
+  }
+]

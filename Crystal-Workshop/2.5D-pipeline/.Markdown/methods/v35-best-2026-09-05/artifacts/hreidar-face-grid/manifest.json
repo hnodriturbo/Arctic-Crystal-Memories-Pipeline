@@ -1,0 +1,47 @@
+{
+  "id": "hreidar-face-grid",
+  "label": "Hrei\u00f0ar \u00b7 andlitsyfirfer\u00f0 \u00b7 fast punktanet",
+  "vertices": 75326,
+  "point_count": 373097,
+  "triangles": 148497,
+  "source_mesh": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-v35-transfer\\hreidar-face-adaptive\\mesh\\relief.glb",
+  "source_sha256": "b7ec7c0f7d5007e8250042e3c4861ae5026dc68c1bb07eae3a8d5fd4084f14db",
+  "size_mm": [
+    53.83411608636379,
+    74.61658865213394,
+    16.90726913511753
+  ],
+  "ply_units": "millimetres",
+  "glb_units": "metres",
+  "sampling": {
+    "spacing_mm": 0.08,
+    "original_points": 75326,
+    "points": 1229089,
+    "added_points": 1153763,
+    "stretched_triangles_sampled": 148497,
+    "original_max_edge_mm": 4.243740546069105,
+    "sampling": "original vertices + shared edge subdivisions + interior barycentric rows",
+    "layer_spacing_mm": 0.09000000000000001,
+    "layer_axis": "source-camera Z (near/far)",
+    "max_z_quantization_mm": 0.04499998941094292,
+    "points_after_layer_deduplication": 373097,
+    "point_spacing_xy_mm": 0.08,
+    "unique_lattice_points": 373097,
+    "max_axis_quantization_mm": [
+      0.03999988824129105,
+      0.03999993108212935,
+      4.488229753130124e-07
+    ],
+    "lattice_note": "Exact 0.08 mm X/Y and 0.09 mm Z cells; one point per occupied cell; unchanged source GLB.",
+    "max_axis_error_vs_original_surface_bound_mm": [
+      0.04,
+      0.04,
+      0.045
+    ]
+  },
+  "geometry_unchanged": false,
+  "mesh_geometry_unchanged": true,
+  "minimum_points": 0,
+  "ply_roundtrip_verified": true,
+  "pre_lattice_sample_count": 1229089
+}

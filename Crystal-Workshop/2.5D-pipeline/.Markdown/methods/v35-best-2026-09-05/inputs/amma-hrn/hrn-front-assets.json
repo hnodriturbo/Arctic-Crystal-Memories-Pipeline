@@ -1,0 +1,33 @@
+{
+  "input": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\03-hrn-head\\source-prepared\\hrn-head.obj",
+  "texture": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-04-portrait-v34-controls\\amma-1\\03-hrn-head\\source-prepared\\hrn-head.jpg",
+  "resolution": 1024,
+  "camera": {
+    "location": [
+      0.0,
+      -7.810817718505859,
+      0.0
+    ],
+    "ortho_scale": 3.742683398723602,
+    "near_object_y": -1.0502391457557678,
+    "far_object_y": 1.0502391457557678
+  },
+  "center_removed": [
+    0.0037505030632019043,
+    -0.23499101400375366,
+    -0.19562852382659912
+  ],
+  "original_bounds": [
+    [
+      -1.0146470069885254,
+      -1.2852301597595215,
+      -1.8228821754455566
+    ],
+    [
+      1.0221480131149292,
+      0.8152481317520142,
+      1.4316251277923584
+    ]
+  ],
+  "model_stack": "Official ModelScope HRN Head (BFM+FLAME), native geometry"
+}

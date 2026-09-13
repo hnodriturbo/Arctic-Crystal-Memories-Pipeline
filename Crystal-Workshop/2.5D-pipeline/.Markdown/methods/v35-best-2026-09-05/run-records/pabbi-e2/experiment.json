@@ -1,0 +1,82 @@
+{
+  "status": "RESEARCH_CANDIDATE_AWAITING_VISUAL_REVIEW",
+  "selected_baseline": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\06-face-variants",
+  "baseline_depth_sha256": "37a96fb69a97a2dc780b58e8c3d48ec6fc57f243ac39cdf91a44f415eaeafaaa",
+  "head_donor": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\output\\research\\2026-09-05-portrait-v35-single-surface\\pabbi-bleikja\\08-icon-source\\person_01_source_camera.glb",
+  "manual_image_specific_head_region": true,
+  "extra_edge_mm": 1.0,
+  "edge_width_grid_px": 5.0,
+  "head_depth_scale": 0.7882629102112979,
+  "head_depth_offset_mm": -9.850082203382577,
+  "head_delta_cap_mm": 4.0,
+  "head_changed_pixels": 10880,
+  "head_max_change_mm": 2.005355569433098,
+  "head_interpolator_fallback_pixels": 33,
+  "body_interior_exactly_unchanged": true,
+  "xy_uv_topology_preserved": true,
+  "metrics": {
+    "E1-edge": {
+      "vertices": 126832,
+      "triangles": 251183,
+      "bounds_mm": [
+        [
+          -19.780907668231613,
+          -40.0,
+          -10.541706085205078
+        ],
+        [
+          26.666666666666668,
+          35.61815336463224,
+          9.541706085205078
+        ]
+      ],
+      "size_mm": [
+        46.44757433489828,
+        75.61815336463224,
+        20.083412170410156
+      ],
+      "depth_height_ratio": 0.26558982568071376,
+      "boundary_edges": 2479,
+      "nonmanifold_edges": 0,
+      "zero_area_triangles": 0,
+      "finite_vertices": true,
+      "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+      "glb_units": "metres",
+      "obj_units": "millimetres"
+    },
+    "E2-head-edge": {
+      "vertices": 126832,
+      "triangles": 251183,
+      "bounds_mm": [
+        [
+          -19.780907668231613,
+          -40.0,
+          -11.194869914431965
+        ],
+        [
+          26.666666666666668,
+          35.61815336463224,
+          9.541706085205078
+        ]
+      ],
+      "size_mm": [
+        46.44757433489828,
+        75.61815336463224,
+        20.736575999637044
+      ],
+      "depth_height_ratio": 0.2742274847634121,
+      "boundary_edges": 2479,
+      "nonmanifold_edges": 0,
+      "zero_area_triangles": 0,
+      "finite_vertices": true,
+      "front_projection": "Fixed source UV grid, orthographic; relief approximation to source perspective",
+      "glb_units": "metres",
+      "obj_units": "millimetres"
+    }
+  },
+  "limitations": [
+    "Manual head region; not an automatic general pipeline.",
+    "Extra stretch is inward Z displacement, not inferred hidden anatomy.",
+    "Head depth is reused from existing ICON inference, not new model training."
+  ]
+}

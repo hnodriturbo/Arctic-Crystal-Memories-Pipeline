@@ -1,0 +1,47 @@
+{
+  "source": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\reference-gallery\\original-images\\hreidar-upscaled-bg-removed.png",
+  "source_sha256": "5ac16426e691e867ec66037e5f2b9cdf5a66677cc18cb9c1421828f0a4f4d832",
+  "checkpoint": "D:\\Hnodri\\Repos\\Arctic_Crystal_Memories\\ACM-Pipeline\\converter\\2.5D-pipeline\\Models\\moge-2-vitl-normal\\model.pt",
+  "checkpoint_sha256": "280741fd09bc3f403ccff9967784c2a391b52d2c0742ae3efdb21d9f90cc1a01",
+  "resolution_level": 9,
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GeForce RTX 3060 Laptop GPU",
+  "elapsed_seconds": 24.606050200000027,
+  "background": "neutral grey composite from supplied cutout; original background unavailable in this file",
+  "shapes": {
+    "depth": [
+      1800,
+      1546
+    ],
+    "normal": [
+      1800,
+      1546,
+      3
+    ],
+    "intrinsics": [
+      3,
+      3
+    ],
+    "mask": [
+      1800,
+      1546
+    ]
+  },
+  "intrinsics_normalized": [
+    [
+      1.2684426307678223,
+      0.0,
+      0.5
+    ],
+    [
+      0.0,
+      1.0894513130187988,
+      0.5
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ]
+}
