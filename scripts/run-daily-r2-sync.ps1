@@ -8,9 +8,10 @@ Purpose:
 param()
 $ErrorActionPreference = 'Stop'
 $workspaceRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$workshop = Join-Path $workspaceRoot 'ACM-Pipeline\Crystal-Workshop\ACM-Web-Pipeline'
+$workshop = Join-Path $workspaceRoot 'ACM-Web-Workshop\Crystal-Workshop\ACM-Web-Pipeline'
 $expenseScript = Join-Path $workspaceRoot 'ACM-Web-Bookkeeping\scripts\run-local-expense-sync.ps1'
-$logRoot = Join-Path $workspaceRoot 'ACM-Pipeline\deployment\artifacts\r2-sync-logs'
+$incomeScript = Join-Path $workspaceRoot 'ACM-Web-Bookkeeping\scripts\run-local-income-sync.ps1'
+$logRoot = Join-Path $workspaceRoot 'ACM-Web-Workshop\deployment\artifacts\r2-sync-logs'
 [IO.Directory]::CreateDirectory($logRoot) | Out-Null
 $stamp = [DateTime]::Now.ToString('yyyyMMdd-HHmmss')
 $failed = $false
@@ -31,8 +32,10 @@ function Invoke-Backup {
 }
 $expenseResult = @(Invoke-Backup 'expenses' "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', "`"$expenseScript`"") $workspaceRoot)
 $sceneResult = @(Invoke-Backup 'cockpit3d' (Get-Command node).Source @('--env-file=.env.local', 'scripts/sync-scene-files.mjs') $workshop)
+$incomeResult = @(Invoke-Backup 'income' "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', "`"$incomeScript`"") $workspaceRoot)
 $expenseResult | Where-Object { $_ -is [string] } | Write-Output
 $sceneResult | Where-Object { $_ -is [string] } | Write-Output
-if ($expenseResult[-1] -ne $true -or $sceneResult[-1] -ne $true) { exit 1 }
+$incomeResult | Where-Object { $_ -is [string] } | Write-Output
+if ($expenseResult[-1] -ne $true -or $sceneResult[-1] -ne $true -or $incomeResult[-1] -ne $true) { exit 1 }
 Write-Output 'DAILY_R2_BACKUP_OK'
 exit 0
