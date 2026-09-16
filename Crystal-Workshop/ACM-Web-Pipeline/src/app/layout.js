@@ -22,6 +22,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Crystal Workshop",
+  icons: {shortcut: "/favicon.ico?v=acm-20260916"},
   description: "Convert 3D models into printable point clouds for the SSLE crystal engraver.",
 };
 
