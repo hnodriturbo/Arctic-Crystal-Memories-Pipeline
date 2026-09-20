@@ -1,12 +1,11 @@
 /** Purpose: Accept a bounded operator GLB through the Workshop origin and persist it to R2; remove temporary bytes after every attempt. */
 import { auth } from '@/auth';
-import { uploadFile } from '@/lib/storage/r2';
+import { saveSceneModel } from '@/lib/storage/scene-model-names';
 import { safeFileName } from '@/lib/paths';
 import { mkdtemp, open, rm, stat } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
 
@@ -38,8 +37,7 @@ export async function POST(request) {
     const handle = await open(file, 'r'); const header = Buffer.alloc(12);
     try { await handle.read(header, 0, 12, 0); } finally { await handle.close(); }
     if (size < 12 || header.readUInt32LE(0) !== 0x46546c67 || header.readUInt32LE(4) !== 2 || header.readUInt32LE(8) !== size) return Response.json({ error: 'Invalid GLB.' }, { status: 400 });
-    const key = `Cockpit3D-Files/${folder}/${randomUUID()}-${name}`;
-    await uploadFile(file, key);
+    const key = await saveSceneModel(file, folder, { edited: true });
     return Response.json({ key, bytes: size });
   } catch { return Response.json({ error: 'GLB upload failed. Check the file and retry (maximum 64 MB).' }, { status: 400 }); }
   finally {

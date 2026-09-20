@@ -36,6 +36,7 @@ export default function ReconstructClient({ onSendToConverter }) {
   const [job, setJob] = useState(null);
   const [preview, setPreview] = useState(null);
   const [savedKey, setSavedKey] = useState(null);
+  const [savedOriginalKey, setSavedOriginalKey] = useState(null);
   const abortRef = useRef(null);
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -54,6 +55,7 @@ export default function ReconstructClient({ onSendToConverter }) {
           setResultSceneFolder(sceneFolder);
           setPreview(event.job.files.glb);
           setSavedKey(null);
+          setSavedOriginalKey(null);
           setNotice("GLB is ready in the working area. Download it, save it to R2, or send it to the converter.");
         } else {
           setLines((current) => [...current.slice(-499), { type: event.type, text: event.line ?? event.message ?? (event.code === 0 ? "Finished." : "Reconstruction failed.") }]);
@@ -72,6 +74,7 @@ export default function ReconstructClient({ onSendToConverter }) {
       const result = await readResponseJson(response);
       if (!response.ok) throw new Error(result.error || 'R2 publication failed.');
       setSavedKey(result.key);
+      setSavedOriginalKey(result.originalKey || null);
       setNotice('Vistað á R2: ' + result.key + '. Veldu módelið í showroom-admin til að birta það.');
     } catch (error) {setNotice(error.message);} finally {setPublishing(false);}
   }
@@ -116,6 +119,7 @@ export default function ReconstructClient({ onSendToConverter }) {
         </div>
         <div className="min-w-0 space-y-5">
           <section className={`${CARD} space-y-4`}>
+            {job?.files.original && preview === job.files.glb && <a className="inline-block rounded-lg border border-accent/40 px-4 py-2 text-sm" href={savedOriginalKey ? '/api/r2/browser?download=' + encodeURIComponent(savedOriginalKey) : fileUrl(job.files.original, true)}>Download original photo</a>}
             <div className="flex items-center justify-between"><h2 className="text-base font-semibold">03 · 2.5D Model Preview</h2><span className="rounded-full bg-accent-soft px-3 py-1 text-xs text-accent-soft-text">{running ? "Building…" : preview ? "Ready to review" : "Awaiting export"}</span></div>
             {preview ? <ModelViewer key={preview} src={fileUrl(preview)} alt="Reconstructed Cockpit relief surface" aspectClassName="h-[min(65vh,680px)] min-h-80" /> : <div className="flex h-[min(65vh,680px)] min-h-80 flex-col items-center justify-center rounded-xl border border-surface-border bg-gradient-to-b from-surface-sunken to-surface p-8 text-center"><div aria-hidden="true" className="mb-6 flex h-24 w-24 rotate-12 items-center justify-center rounded-3xl border border-accent/30 bg-accent-soft text-4xl text-accent-soft-text shadow-lg">◇</div><h3 className="text-lg font-medium">Your piece, reconstructed</h3><p className="mt-2 max-w-xs text-sm leading-6 text-muted">Choose an exported point cloud and build a surface. The rotating model will appear here.</p></div>}
             {job && preview === job.files.glb && <div className="grid grid-cols-3 gap-3">{[[job.vertices.toLocaleString(), "vertices"], [job.triangles.toLocaleString(), "triangles"], [mb(job.glbBytes), "GLB size"]].map(([value, label]) => <div key={label} className="rounded-lg bg-surface-sunken p-3"><p className="text-sm font-semibold sm:text-lg">{value}</p><p className="text-xs text-muted">{label}</p></div>)}</div>}

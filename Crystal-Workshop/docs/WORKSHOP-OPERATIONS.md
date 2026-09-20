@@ -16,6 +16,13 @@ in ACM-Web-Main; do not reuse that name here.
 - Company source collection: workspace-root `Cockpit3D-Files/[number]-[name]/`.
 - Private Pipeline bucket: `acm-pipeline-eu`, with the same `Cockpit3D-Files/` prefix.
 - Finished GLBs: `Cockpit3D-Files/[number]-[name]/<unique>.glb`.
+- New saved models use `[number]-[name]-v001.glb`; uploads through the Blender
+  button use `[number]-[name]-edited-v002.glb`. Both read the highest existing
+  version in the selected folder before allocating the next name. Conditional
+  R2 writes prevent overwriting a concurrent save. Existing model keys are not
+  renamed, because published showroom records may refer to them. Temporary job
+  IDs remain internal. Use the scene browser upload rather than generic presign
+  for Blender GLBs so this naming rule is always applied.
 - Windows task `ACM-Bookkeeping-Expense-R2-Sync` runs once daily at **15:00**.
   `ACM-Pipeline/scripts/run-daily-r2-sync.ps1` runs the separate Expenses and
   Cockpit backups even when one fails. Never propagate local deletions to R2.
@@ -24,6 +31,25 @@ The old `converter` path must not be recreated. Archived cache backups were
 preserved during renaming and are not runtime inputs.
 
 ## Create a showroom model on the website
+
+Versioned Reconstruct outputs now reserve a number in R2
+`Cockpit3D-Files/<scene>/.versions/vNNN.json` before conversion. Downloads and
+R2 saves therefore use exactly `<scene>-vNNN.glb` and `<scene>-vNNN.jpg` (or
+the actual original PNG/JPEG extension). Blender uploads use
+`<scene>-edited-vNNN.glb` in the same sequence. Aborted/download-only jobs can
+leave number gaps; never recycle reservations. Repeated Save accepts identical
+SHA-256 content and rejects replacement content. The report and GLB extras
+record the exact original photograph name/hash/member. Existing hash-named
+originals and legacy published keys remain valid and are not renamed.
+
+Original photographs: Windows scene backup first runs `extract_scene_original.py`
+for numbered folders. It extracts only the single textured SolidEntity's named
+member, byte-for-byte, to `original-<16 SHA256 characters>.jpg` (or the original
+PNG/JPEG extension). Existing originals remain unchanged. Cockpit Reconstruct
+also extracts that original into its temporary result folder; Save to R2 uploads
+the verified photograph alongside the GLB in the selected source scene folder.
+Existing showroom mappings are independent; uploading a photo alone does not
+automatically publish it or change a previously curated exhibit.
 
 1. Save the correct Cockpit scene, then export its corresponding portrait DXF.
    Keep scene and export together in a numbered folder. Remove unrelated text

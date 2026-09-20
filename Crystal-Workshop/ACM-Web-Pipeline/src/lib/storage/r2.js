@@ -22,6 +22,7 @@ import { pipeline } from "node:stream/promises";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -84,7 +85,7 @@ function getClient() {
 }
 
 /** Upload one file. Returns the key it was stored under. */
-export async function uploadFile(localPath, key) {
+export async function uploadFile(localPath, key, { ifNoneMatch, metadata } = {}) {
   const info = await stat(localPath);
   const extension = path.extname(localPath).toLowerCase();
 
@@ -95,9 +96,22 @@ export async function uploadFile(localPath, key) {
       Body: createReadStream(localPath),
       ContentLength: info.size,
       ContentType: CONTENT_TYPES[extension] || "application/octet-stream",
+      ...(ifNoneMatch ? { IfNoneMatch: ifNoneMatch } : {}),
+      ...(metadata ? { Metadata: metadata } : {}),
     }),
   );
   return key;
+}
+
+/** Reserve a scene version without uploading unfinished model content. */
+export async function reserveObject(key, value) {
+  await getClient().send(new PutObjectCommand({ Bucket: BUCKET, Key: key,
+    Body: JSON.stringify(value), ContentType: 'application/json', IfNoneMatch: '*' }));
+}
+
+/** Inspect a previously saved immutable result on an idempotent retry. */
+export async function objectMetadata(key) {
+  return getClient().send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
 }
 
 /**

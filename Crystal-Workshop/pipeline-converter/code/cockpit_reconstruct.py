@@ -7,6 +7,7 @@ Purpose:
 import argparse
 from datetime import datetime, timezone
 import json
+import re
 from pathlib import Path
 from uuid import uuid4
 
@@ -26,6 +27,7 @@ def main():
     parser.add_argument("--file", type=Path)
     parser.add_argument("--inspect-scene", type=Path)
     parser.add_argument("--output-subdir", default='cockpit-reconstruct')
+    parser.add_argument("--output-stem")
     parser.add_argument("--pose-override", action="store_true")
     for kind in ('rotation', 'position'):
         for axis in 'xyz':
@@ -56,6 +58,8 @@ def main():
         return
     if not args.file:
         parser.error('--file is required for reconstruction.')
+    if args.output_stem and not re.fullmatch(r'\d+-[a-zA-Z0-9_-]+-v\d+', args.output_stem):
+        parser.error('Invalid versioned output name.')
     if Path(args.output_subdir).is_absolute() or '..' in Path(args.output_subdir).parts:
         parser.error('Output subdirectory must remain inside output/.')
     if args.sample_rate < 1 or args.limit < 0 or not 3 <= args.stl_limit <= 500000:
@@ -98,9 +102,10 @@ def main():
         mesh = reconstruct_mesh(points, args.stl_method, args.stl_limit)
     job_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-") + uuid4().hex[:8]
     directory = ROOT / "output" / args.output_subdir
-    glb = directory / f"{job_id}.glb"
-    stl = directory / f"{job_id}.stl"
-    report_path = directory / f"{job_id}.json"
+    stem = args.output_stem or job_id
+    glb = directory / f"{stem}.glb"
+    stl = directory / f"{stem}.stl"
+    report_path = directory / f"{stem}.json"
     # A failed color pass never leaves a finished-looking job behind.
     try:
         if args.stl_method == 'smooth' and args.color_mode == 'texture' and args.texture_from and args.texture_plane == 'xy':
@@ -135,6 +140,11 @@ def main():
             "files": {"glb": f"{args.output_subdir}/{glb.name}", "stl": f"{args.output_subdir}/{stl.name}", "report": f"{args.output_subdir}/{report_path.name}"},
         }
         report['provenance'] = build_provenance(args.file, args.texture_from, report)
+        if args.texture_from and args.texture_from.suffix.lower() == '.cockpit':
+            from extract_scene_original import extract_original
+            report['originalPhoto'] = extract_original(args.texture_from, directory, args.output_stem)
+            report['files']['original'] = f"{args.output_subdir}/{report['originalPhoto']['name']}"
+            report['provenance']['originalPhoto'] = report['originalPhoto']
         embed_provenance(glb, report['provenance'])
         report['glbBytes'] = glb.stat().st_size
         report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

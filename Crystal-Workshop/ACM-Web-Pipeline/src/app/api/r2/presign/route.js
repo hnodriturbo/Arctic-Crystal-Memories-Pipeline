@@ -43,6 +43,7 @@ export async function POST(request) {
   }
 
   const { fileName, prefix = "uploads", sceneFolder } = await request.json();
+  if (prefix === 'showroom') return Response.json({ error: 'Use the Blender GLB upload in the scene browser for versioned model names.' }, { status: 400 });
   if (prefix === 'showroom' && (typeof sceneFolder !== 'string' || !/^\d+-[a-zA-Z0-9_-]+$/.test(sceneFolder))) return Response.json({ error: 'Choose a numbered scene folder first.' }, { status: 400 });
   if (!fileName) {
     return Response.json({ error: "Need a fileName" }, { status: 400 });

@@ -14,7 +14,12 @@ let user = null; const writes = [];
 try {
   const dependencies = {
     '@/auth': { auth: async () => user },
-    '@/lib/storage/r2': { uploadFile: async (file, key) => writes.push({ key, bytes: await fs.readFile(file) }) },
+    '@/lib/storage/scene-model-names': { saveSceneModel: async (file, folder, options) => {
+      assert.equal(options.edited, true);
+      const key = `Cockpit3D-Files/${folder}/${folder}-edited-v001.glb`;
+      writes.push({ key, bytes: await fs.readFile(file) });
+      return key;
+    } },
     '@/lib/paths': { safeFileName: (name) => path.basename(name) },
     'node:fs/promises': fs, 'node:fs': disk, 'node:stream': stream,
     'node:stream/promises': promises, 'node:crypto': crypto,

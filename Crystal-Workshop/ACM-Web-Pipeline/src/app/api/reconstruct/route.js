@@ -6,6 +6,7 @@ import path from "node:path";
 import { realpath, stat, readFile, writeFile } from "node:fs/promises";
 import { auth } from '@/auth';
 import { createTemporaryWorkspace } from '@/lib/temporary-workspace';
+import { reserveSceneModel } from '@/lib/storage/scene-model-names';
 import { RECONSTRUCT } from "@/lib/operations";
 import { CODE_DIR, CONVERTER_ROOT, INPUT_DIR, OUTPUT_DIR, PYTHON_EXE, resolveInside } from "@/lib/paths";
 import { runPython, interpreterReady } from "@/lib/python";
@@ -56,8 +57,10 @@ export async function POST(request) {
   if (reconstructionSlot.busy) return Response.json({ error: "Another surface is being reconstructed. Wait for it to finish or stop it first." }, { status: 409 });
   reconstructionSlot.busy = true;
   try {
-    const temporary = await createTemporaryWorkspace(OUTPUT_DIR, { sourceKeys: sourceMetadata.sourceKeys, sceneFolder: sourceMetadata.sceneFolder });
+    const outputStem = await reserveSceneModel(sourceMetadata.sceneFolder);
+    const temporary = await createTemporaryWorkspace(OUTPUT_DIR, { sourceKeys: sourceMetadata.sourceKeys, sceneFolder: sourceMetadata.sceneFolder, outputStem });
     args.push('--output-subdir', temporary.relative);
+    args.push('--output-stem', outputStem);
   } catch {
     reconstructionSlot.busy = false;
     return Response.json({error:'Could not create temporary output.'},{status:500});

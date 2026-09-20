@@ -8,6 +8,7 @@ import { readdir, stat, copyFile, rm, mkdtemp } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { S3Client, HeadObjectCommand, PutObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
 
@@ -43,6 +44,9 @@ async function hashFile(file) {
   return digest.digest('hex');
 }
 
+// Use the same exact-member extractor as Cockpit Reconstruct before inventory.
+if (!dryRun) execFileSync(path.resolve(app, '../pipeline-converter/.venv/Scripts/python.exe'),
+  [path.resolve(app, '../pipeline-converter/code/extract_scene_original.py'), '--collection', root], { stdio: 'inherit' });
 const files = await inventory(root);
 if (dryRun) {
   for (const item of files) console.log(prefix + item.relative);
