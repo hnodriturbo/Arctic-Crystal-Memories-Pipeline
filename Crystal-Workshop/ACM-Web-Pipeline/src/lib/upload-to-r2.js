@@ -8,7 +8,7 @@
  * Two requests: ask this server to sign a URL, then PUT the bytes to R2
  * without them passing through the server at all. That second request is
  * cross-origin, which is the whole reason the bucket needs a CORS policy
- * allowing PUT from https://pipeline.acm.is.
+ * allowing PUT from https://workshop.acm.is.
  *
  * XMLHttpRequest rather than fetch, only because fetch still has no upload
  * progress event and a 300 MB model deserves a progress bar.

@@ -163,6 +163,9 @@ archive='$remoteUpload'
 releases="`$root/releases"
 shared="`$root/shared"
 export UV_CACHE_DIR="`$shared/uv-cache"
+# Chromium is 636 MB. Shared like Blender, so npm ci finds the existing one
+# instead of downloading a fresh copy into every release.
+export PUPPETEER_CACHE_DIR="`$shared/tools/puppeteer"
 new_release="`$releases/`$release_id"
 current_link="`$root/current"
 previous_release=`$(readlink -f "`$current_link")
@@ -252,6 +255,10 @@ U2NET_HOME="`$shared/models/rembg" \
 "`$shared/venvs/meshy-pipeline/bin/python" "`$new_release/Crystal-Workshop/meshy-pipeline/code/healthcheck.py"
 "`$shared/venvs/pipeline-converter/bin/python" -c 'import numpy, scipy, ezdxf'
 "`$shared/tools/blender/blender" --background --version >/dev/null
+# The animations renderer needs both. Checked here rather than at render time,
+# so a missing one fails a deploy instead of a job an hour into its queue.
+ffmpeg -version >/dev/null
+"`$PUPPETEER_CACHE_DIR"/chrome/*/chrome-linux64/chrome --version >/dev/null
 BLENDER_EXE="`$shared/tools/blender/blender" \
   "`$shared/venvs/pipeline-converter/bin/python" -m unittest discover \
   -s "`$new_release/Crystal-Workshop/pipeline-converter/tests" -v

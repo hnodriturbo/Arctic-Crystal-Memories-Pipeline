@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  * Path: src/app/webhooks/meshy/route.js
  * Purpose: Receive Meshy's task-status callbacks at
- *          https://pipeline.acm.is/webhooks/meshy
+ *          https://workshop.acm.is/webhooks/meshy
  *
  * Not under /api on purpose - the URL registered in Meshy's portal is
  * /webhooks/meshy, and a route handler does not have to live under /api to

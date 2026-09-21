@@ -32,10 +32,12 @@ function Invoke-Backup {
 }
 $expenseResult = @(Invoke-Backup 'expenses' "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', "`"$expenseScript`"") $workspaceRoot)
 $sceneResult = @(Invoke-Backup 'cockpit3d' (Get-Command node).Source @('--env-file=.env.local', 'scripts/sync-scene-files.mjs') $workshop)
+$designResult = @(Invoke-Backup 'claude-design' (Get-Command node).Source @('--env-file=.env.local', 'scripts/sync-claude-design-r2.mjs') $workshop)
 $incomeResult = @(Invoke-Backup 'income' "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', "`"$incomeScript`"") $workspaceRoot)
 $expenseResult | Where-Object { $_ -is [string] } | Write-Output
 $sceneResult | Where-Object { $_ -is [string] } | Write-Output
+$designResult | Where-Object { $_ -is [string] } | Write-Output
 $incomeResult | Where-Object { $_ -is [string] } | Write-Output
-if ($expenseResult[-1] -ne $true -or $sceneResult[-1] -ne $true -or $incomeResult[-1] -ne $true) { exit 1 }
+if ($expenseResult[-1] -ne $true -or $sceneResult[-1] -ne $true -or $designResult[-1] -ne $true -or $incomeResult[-1] -ne $true) { exit 1 }
 Write-Output 'DAILY_R2_BACKUP_OK'
 exit 0

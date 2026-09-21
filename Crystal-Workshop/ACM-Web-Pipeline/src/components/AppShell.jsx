@@ -16,6 +16,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import R2FileBrowser from "@/components/R2FileBrowser";
+import ClaudeDesignClient from "@/components/ClaudeDesignClient";
+import ClaudeDesignZips from "@/components/ClaudeDesignZips";
 import ConverterClient from "@/components/ConverterClient";
 import WorkshopHome from "@/components/WorkshopHome";
 import ReconstructClient from "@/components/ReconstructClient";
@@ -47,6 +49,10 @@ export default function AppShell({
   const [active, setActive] = useState(initialView);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Unpacking an archive creates a collection, so the animations panel is
+  // re-keyed to pick it up rather than being left showing a stale library.
+  const [designReload, setDesignReload] = useState(0);
 
   const [imageState, setImageState] = useState(image);
   const [meshyState, setMeshyState] = useState(meshy);
@@ -229,6 +235,19 @@ export default function AppShell({
               handoff={converterHandoff}
             />
           </div>
+
+          {/*
+           * Claude Design. The animations panel stays mounted like the other
+           * long-running ones - a render runs for tens of minutes and its
+           * console must survive a look at the archives and back.
+           */}
+          <div className={active === "claude-design-animations" ? "" : "hidden"}>
+            <ClaudeDesignClient key={designReload} />
+          </div>
+
+          {active === "claude-design-zips" ? (
+            <ClaudeDesignZips onUnpacked={() => setDesignReload((value) => value + 1)} />
+          ) : null}
 
           {active === "environments" ? (
             <EnvironmentsClient initial={environments} />

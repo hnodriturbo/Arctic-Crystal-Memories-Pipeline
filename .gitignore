@@ -476,6 +476,11 @@ Main-Pipelines-Web/2.5D-pipeline/reference-gallery/
 **/3d_files/
 videos/
 **/videos/
+# ...but not source directories. The rule above is for media folders, and it
+# silently swallowed an API route called videos/ - which built locally and was
+# then absent on the VPS, because the deploy skips ignored files.
+!**/src/app/api/**/videos/
+!**/src/app/api/**/videos/**
 
 
 # ========================================

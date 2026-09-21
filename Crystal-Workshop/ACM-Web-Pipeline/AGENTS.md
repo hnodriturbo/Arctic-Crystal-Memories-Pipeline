@@ -15,3 +15,24 @@ scene storage, publication or the workshop.acm.is deployment. Company source
 files live outside this application in workspace-root Cockpit3D-Files and R2.
 Use every source DXF point and the freshly saved matching scene's named texture.
 Keep local development servers stopped after verification.
+
+## Claude Design ownership
+
+Read `docs/CLAUDE-DESIGN.md` and `docs/R2-WORKSHOP-BUCKET.md` before changing
+the animations workspace, the render queue or the R2 mirror.
+
+`Claude-Design-Stuff` is the original and stays the original. Its folders are
+mirrored up to `acm-workshop` under `claude-design/sources/`; nothing writes
+back down over an authored design, and the mirror never deletes.
+
+`acm-workshop` owns workshop R2 from 20-09-2026. `acm-pipeline-eu` still holds
+Cockpit scenes, Meshy jobs and converter outputs and is left alone — moving
+those is a separate, deliberate project, never a side effect of other work.
+
+Keep rendering to one job at a time: this VPS also serves www.acm.is. Keep the
+render token narrow, keep the design tree behind `safeJoin`, and keep the two
+readers separate — folders can be played, archives cannot until unpacked.
+
+Run `npx eslint` on the touched paths, `scripts/test-workshop-r2.mjs`, a short
+`scripts/render-design-video.mjs --seconds 3` and a full `npm run build` after
+any material change.

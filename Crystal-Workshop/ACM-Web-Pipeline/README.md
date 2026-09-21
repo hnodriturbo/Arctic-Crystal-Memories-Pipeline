@@ -47,7 +47,22 @@ src/app/api/convert       Spawns Python, relays stdout as Server-Sent Events
 src/app/api/files         Lists input/ and output/
 src/app/api/download      Streams one file back
 src/components/           Image, Meshy, converter and shared controls
+src/lib/claude-design/    Design scan, render queue and the R2 mirror
+src/app/api/claude-design Animations: library, preview, render, zips, videos
+scripts/render-design-video.mjs  One animation to one MP4, frame by frame
 ```
+
+## Claude Design animations
+
+**Claude Hreyfimyndir** in the sidebar renders the designs in
+`Claude-Design-Stuff` to video. Full notes in `docs/CLAUDE-DESIGN.md`; the
+short version is that a design is previewed in an iframe, queued one render at
+a time, and the finished MP4 is stored in the `acm-workshop` bucket and played
+back from there through presigned URLs.
+
+Rendering needs `ffmpeg` on PATH and a Chromium for puppeteer. The Animations
+page reports both before anything can be queued, so a missing one is a sentence
+on screen rather than a job that dies a minute in.
 
 ## Adding an option or a script
 
