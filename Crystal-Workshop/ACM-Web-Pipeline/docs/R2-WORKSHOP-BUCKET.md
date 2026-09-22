@@ -88,6 +88,17 @@ deliberately absent from the policy above, and the DNS record for it should be
 removed in Cloudflare — while it still resolves, a visitor reaches the default
 server and gets a certificate warning.
 
+## Object versioning
+
+`acm-workshop` should have object versioning on, so an overwritten object keeps
+its previous version. The mirror in `sync-claude-design-r2.mjs` never deletes,
+which protects a file that disappears locally - versioning is what protects one
+that is replaced by a worse copy. Together they are why the design tree no
+longer needs git, so this is not optional decoration.
+
+It cannot be set from here: `PutBucketVersioning` needs Admin, and the tokens
+are Object Read & Write on purpose. Cloudflare dashboard only.
+
 ## API token
 
 Cloudflare → R2 → API → Create API token, scoped to **this bucket only**,

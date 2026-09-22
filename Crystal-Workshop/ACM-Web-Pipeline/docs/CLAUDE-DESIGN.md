@@ -6,15 +6,17 @@ Purpose: How the Claude Design animations workspace is put together and what
 
 # Claude Design animations
 
-**Claude Hreyfimyndir** in the Crystal Workshop sidebar turns the animations in
+**Claude Design** in the Crystal Workshop sidebar turns the animations in
 `Claude-Design-Stuff` into MP4 files, stores them in the `acm-workshop` bucket,
 and plays them back from there.
 
-Two entries, deliberately:
+Two entries, deliberately. Both keep their English names in the Icelandic UI,
+the way `Cockpit Reconstruct` and `Crystal Workshop` do — they name a screen
+rather than describe one:
 
-- **Animations** reads folders. Everything it lists can be previewed, rendered
-  or played.
-- **Hönnunarsafn í zip** reads only archives. A zip cannot be previewed or
+- **Design Animations** reads folders. Everything it lists can be previewed,
+  rendered or played.
+- **Design Archives** reads only archives. A zip cannot be previewed or
   rendered until it has been unpacked, and mixing the two lists made a sealed
   archive look like an empty collection.
 
@@ -62,7 +64,7 @@ animation reports its new length without anything here being edited.
 
 The design carries its own player bar. It is hidden by default because it
 belongs to the design's preview rather than to a finished video, and
-**Hafa spilarastikuna sýnilega** turns that off. The bar has neither id nor
+**Keep the player bar** turns that off. The bar has neither id nor
 class, so it is found by shape and position: a short box across the bottom of
 the screen containing a button. When that match fails the console says so,
 which is worth reading — it means the first frame should be checked by eye.
@@ -121,6 +123,17 @@ claude-design/videos/<collection>/x.jpg   its poster, one second in
 
 The mirror never deletes. A file that has gone locally stays in the bucket,
 because a file disappearing is far more often a mistake than a decision.
+
+That covers a lost file but not an overwritten one: the sync compares size and
+writes over what is there. Object versioning on the bucket closes that gap, and
+it is the reason `Claude-Design-Stuff` stopped being a git repository on
+22-09-2026 - two commits, both "Initial commit", and 214 MB of history that
+recorded nothing. The old history is untouched at
+`github.com/hnodriturbo/claude-design-stuff`.
+
+`zip-files/` and `exported-videos/` are outside the mirror, and were outside
+git too. Rendered videos reach R2 through the render itself; those two folders
+are local-only.
 
 Uploading is triggered three ways: the **↑ R2** button beside a collection, the
 **ACM - Update R2** desktop shortcut, and the daily scheduled R2 job.

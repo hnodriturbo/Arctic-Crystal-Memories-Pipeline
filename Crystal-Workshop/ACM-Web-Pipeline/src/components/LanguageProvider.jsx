@@ -17,8 +17,8 @@ const IS = {
 
   // Claude Design - animations workspace and the zip shelf.
   "Claude Design": "Claude Design",
-  "Design Animations": "Hreyfimyndir úr hönnun",
-  "Design Archives": "Hönnunarsafn í zip",
+  "Design Animations": "Design Animations",
+  "Design Archives": "Design Archives",
   "In acm-workshop": "Í acm-workshop",
   "Fetch": "Sækja niður",
   "Fetch this collection onto this machine": "Sækja þetta safn á þessa vél",
