@@ -88,16 +88,27 @@ deliberately absent from the policy above, and the DNS record for it should be
 removed in Cloudflare — while it still resolves, a visitor reaches the default
 server and gets a certificate warning.
 
-## Object versioning
+## Version history - built here, not by R2
 
-`acm-workshop` should have object versioning on, so an overwritten object keeps
-its previous version. The mirror in `sync-claude-design-r2.mjs` never deletes,
-which protects a file that disappears locally - versioning is what protects one
-that is replaced by a worse copy. Together they are why the design tree no
-longer needs git, so this is not optional decoration.
+**R2 has no object versioning.** `PutBucketVersioning` and
+`GetBucketVersioning` are listed as unimplemented in Cloudflare's own S3
+compatibility table, and there is no dashboard setting for it either. Asking
+for it over the S3 API answers `AccessDenied`, which reads like a permissions
+problem and is not one.
 
-It cannot be set from here: `PutBucketVersioning` needs Admin, and the tokens
-are Object Read & Write on purpose. Cloudflare dashboard only.
+So the mirror keeps history itself. `sync-claude-design-r2.mjs` copies the
+object that is already there into `claude-design/history/<sha256>/` before
+replacing it, which is the same thing `sync-scene-files.mjs` does for Cockpit
+scenes under `Cockpit3D-Scene-History/`. Between that and the fact that the
+mirror never deletes, a design is recoverable whether it was lost or replaced.
+
+Change detection is size and modification time first, falling back to a SHA-256
+of the file only when those are inconclusive. That keeps an ordinary run from
+reading the whole tree, while still catching an edit that happens to leave the
+byte count unchanged - which a size comparison alone would miss forever.
+
+Nothing prunes `history/` yet. If it grows enough to matter, an R2 lifecycle
+rule on that prefix is the place to handle it; lifecycle rules R2 does support.
 
 ## API token
 

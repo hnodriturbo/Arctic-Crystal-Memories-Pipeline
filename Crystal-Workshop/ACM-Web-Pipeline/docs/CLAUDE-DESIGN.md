@@ -124,12 +124,12 @@ claude-design/videos/<collection>/x.jpg   its poster, one second in
 The mirror never deletes. A file that has gone locally stays in the bucket,
 because a file disappearing is far more often a mistake than a decision.
 
-That covers a lost file but not an overwritten one: the sync compares size and
-writes over what is there. Object versioning on the bucket closes that gap, and
-it is the reason `Claude-Design-Stuff` stopped being a git repository on
-22-09-2026 - two commits, both "Initial commit", and 214 MB of history that
-recorded nothing. The old history is untouched at
-`github.com/hnodriturbo/claude-design-stuff`.
+An overwrite is covered separately, because R2 has no object versioning to
+lean on: before replacing an object the sync copies the existing one into
+`claude-design/history/<sha256>/`. Together those two are why
+`Claude-Design-Stuff` stopped being a git repository on 22-09-2026 - its
+history was two commits, both "Initial commit", behind 214 MB that recorded no
+change. That history is untouched at `github.com/hnodriturbo/claude-design-stuff`.
 
 `zip-files/` and `exported-videos/` are outside the mirror, and were outside
 git too. Rendered videos reach R2 through the render itself; those two folders

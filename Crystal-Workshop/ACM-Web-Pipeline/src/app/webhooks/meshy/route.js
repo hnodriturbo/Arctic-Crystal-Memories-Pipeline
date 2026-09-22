@@ -13,6 +13,18 @@
  * The runner still polls, so nothing depends on this arriving. What it buys
  * is a job whose manifest finishes correctly even when the browser tab that
  * started it was closed mid-generation.
+ *
+ * Cloudflare has to be told to let it through. This host runs a managed
+ * challenge, which is right for an operator UI and fatal for a webhook: a POST
+ * from Meshy's servers gets back "Just a moment..." and an HTTP 403, and no
+ * delivery ever reaches this file. www.acm.is already allows its own webhook
+ * path through, which is the pattern to copy. The skip rule wants to be narrow
+ * - /webhooks/ only, never the whole host.
+ *
+ * Verify from outside the VPS, because from inside it you bypass Cloudflare
+ * and everything looks fine:
+ *   curl -i -X POST https://workshop.acm.is/webhooks/meshy  *     -H 'Content-Type: application/json' -d '{"id":"probe"}'
+ * A JSON body is the pass. An HTML page is the challenge.
  */
 
 import { createHmac, timingSafeEqual } from "node:crypto";
