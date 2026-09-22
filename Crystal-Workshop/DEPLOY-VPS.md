@@ -4,7 +4,7 @@ Purpose:
  - Explain how all three pipelines run together on the Ubuntu 24.04 VPS.
 -->
 
-# Deploying ACM Pipeline to `pipeline.acm.is`
+# Deploying ACM Pipeline to `workshop.acm.is`
 
 The deployable unit is the complete `converter/` tree:
 

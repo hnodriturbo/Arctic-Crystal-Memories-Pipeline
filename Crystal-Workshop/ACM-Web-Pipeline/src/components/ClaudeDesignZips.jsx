@@ -102,7 +102,7 @@ export default function ClaudeDesignZips({ onUnpacked }) {
       {/* Header - where the archives are, and how many still need opening */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold">{t("Design archives")}</h2>
+          <h2 className="text-lg font-semibold">{t("Design Archives")}</h2>
           <p className="mt-1 break-all font-mono text-xs text-muted">{zipDir}</p>
         </div>
         <button

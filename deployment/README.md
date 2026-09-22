@@ -1,10 +1,10 @@
 <!--
 File: deployment/README.md
 Purpose:
- - Document the production runtime and release policy for pipeline.acm.is.
+ - Document the production runtime and release policy for workshop.acm.is.
 -->
 
-# `pipeline.acm.is` production runtime
+# `workshop.acm.is` production runtime
 
 The website is deployed from the reviewed local checkout directly to the ACM
 VPS. Git and GitHub are not part of the deployment path.
@@ -72,10 +72,10 @@ most two rollbacks.
 
 | Component | Production value |
 | --- | --- |
-| Public URL | `https://pipeline.acm.is` |
+| Public URL | `https://workshop.acm.is` |
 | PM2 process | `acm-pipeline` |
 | Next.js origin | `127.0.0.1:3003` |
-| Nginx site | `/etc/nginx/sites-available/pipeline.acm.is` |
+| Nginx site | `/etc/nginx/sites-available/workshop.acm.is` |
 | Shared environment | `/home/hreidar/apps/acm-pipeline/shared/.env.production` |
 | Upload limit through Cloudflare | 100 MB |
 

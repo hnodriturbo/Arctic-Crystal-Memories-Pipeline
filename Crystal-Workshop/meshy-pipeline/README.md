@@ -82,7 +82,7 @@ only makes the downloaded file itself measure correctly in Blender or a slicer.
 
 ## Webhooks
 
-`https://pipeline.acm.is/webhooks/meshy` receives task-status callbacks, handled
+`https://workshop.acm.is/webhooks/meshy` receives task-status callbacks, handled
 by `../ACM-Web-Pipeline/src/app/webhooks/meshy/route.js`. Nothing depends on it —
 the runner polls — but it lets a job whose browser tab was closed still finish
 its manifest correctly.

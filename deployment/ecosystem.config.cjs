@@ -1,7 +1,7 @@
 /**
  * File: deployment/ecosystem.config.cjs
  * Purpose:
- *  - Run the pipeline.acm.is Next.js operator interface under PM2.
+ *  - Run the workshop.acm.is Next.js operator interface under PM2.
  *  - Keep the service isolated on VPS loopback port 3003.
  */
 

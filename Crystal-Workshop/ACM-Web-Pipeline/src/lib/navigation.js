@@ -120,20 +120,20 @@ export const SECTIONS = [
   {
     id: "claude-design",
     step: 5,
-    label: "Claude Animation",
+    label: "Claude Design",
     hint: "Designs in · finished video out",
     items: [
       {
         id: "claude-design-animations",
         emoji: "🎬",
-        label: "Animations",
+        label: "Design Animations",
         blurb: "Preview a Claude Design animation, choose the frame and quality, and render it to video.",
         icon: "run",
       },
       {
         id: "claude-design-zips",
         emoji: "🗜️",
-        label: "Design archives",
+        label: "Design Archives",
         blurb: "The exported zip files, and which of them have not been unpacked into a folder yet.",
         icon: "layers",
       },

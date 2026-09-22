@@ -30,23 +30,18 @@ all. New workshop storage, however, goes straight into `acm-workshop`.
 
 ## CORS policy
 
-Needed because the browser talks to R2 directly in two places: a presigned
-`PUT` when a source tree is uploaded, and a ranged `GET` when a rendered video
-is scrubbed in the player. Without `Content-Range` and `Accept-Ranges` exposed,
-Chrome refuses to seek inside an mp4.
-
-Paste this in Cloudflare → R2 → acm-workshop → Settings → CORS Policy:
+Both workshop buckets carry the same policy, because both are reached from the
+same two origins and nothing about the rules differs between them:
 
 ```json
 [
   {
     "AllowedOrigins": [
       "https://workshop.acm.is",
-      "https://pipeline.acm.is",
       "http://localhost:3100"
     ],
     "AllowedMethods": ["GET", "PUT", "HEAD"],
-    "AllowedHeaders": ["content-type", "content-length", "range"],
+    "AllowedHeaders": ["content-type", "range"],
     "ExposeHeaders": [
       "ETag",
       "Content-Length",
@@ -59,15 +54,39 @@ Paste this in Cloudflare → R2 → acm-workshop → Settings → CORS Policy:
 ]
 ```
 
-`http://localhost:3100` is the local `npm run dev` port. Leaving it in is safe:
-an attacker who could serve a page from the operator's own localhost already
-has the machine.
+`http://localhost:3100` is this app's dev port, fixed by `next dev -p 3100` in
+`package.json`. It is not 3000 — that is ACM-Web-Main, a different application.
 
-`pipeline.acm.is` was the workshop's original host and was renamed to
-`workshop.acm.is` on 21-09-2026. Nginx still answers on both and both proxy to
-the same process on port 3003, so both are listed — an origin that is dropped
-from here while it still resolves fails only in the browser, as a CORS error
-with no server-side trace.
+### What each bucket actually needs it for
+
+**`acm-pipeline-eu` needs this policy.** Two real cross-origin requests:
+
+- `PUT` — `src/lib/upload-to-r2.js` has the browser send a model straight into
+  the bucket, bypassing this server, because a 300 MB file should not be
+  streamed through Node twice.
+- `GET` — `<model-viewer>` loads a GLB through `/api/file`, which redirects to
+  a presigned URL. Unlike a `<video>` element, it fetches, so CORS applies.
+
+**`acm-workshop` does not need it today**, and carries it anyway. Video
+playback and downloads go through `/api/claude-design/videos` on this app's own
+origin, which 302-redirects to R2 — and `<video>`, `<img>` and a download link
+do not perform a CORS check. The policy is there so a direct upload added later
+works immediately rather than failing in a way that leaves no server-side
+trace.
+
+ACM-Web-Main does **not** need an entry in either policy. It reads
+`acm-pipeline-eu` server-side only and streams objects through its own routes
+(`src/lib/showroom/pipeline-library.js` is `server-only`), so the customer's
+browser never contacts R2 directly.
+
+### A retired origin
+
+The workshop's original host was `pipeline` on this domain. It was renamed to
+`workshop.acm.is`; on 22-09-2026 the old nginx site was moved to
+`/etc/nginx/retired-20260922/` and its certificate deleted. The old origin is
+deliberately absent from the policy above, and the DNS record for it should be
+removed in Cloudflare — while it still resolves, a visitor reaches the default
+server and gets a certificate warning.
 
 ## API token
 

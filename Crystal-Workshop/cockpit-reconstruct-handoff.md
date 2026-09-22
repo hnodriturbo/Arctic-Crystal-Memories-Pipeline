@@ -3,7 +3,7 @@ File: cockpit-reconstruct-handoff.md
 Purpose:
  - Agent brief for building the "Cockpit Reconstruct" feature: turning a
    Cockpit3D DXF/CAD point-cloud export into a colored, web-ready GLB, first
-   as an operator tool inside ACM-Web-Pipeline (pipeline.acm.is).
+   as an operator tool inside ACM-Web-Pipeline (workshop.acm.is).
  - Part 1 is for people. Part 2 is the agent brief. Read Part 1 first either
    way. Written for a coding agent (Claude Code / Codex) running locally with
    full filesystem and git access to this workspace.
@@ -90,7 +90,7 @@ rasterization preview), not a sparse cloud of dots:
 ## Why the operator tool comes first
 
 The owner (Hnodri) wants this proven inside `ACM-Web-Pipeline`
-(`pipeline.acm.is`, the internal operator tool) as a new menu entry —
+(`workshop.acm.is`, the internal operator tool) as a new menu entry —
 **not** built directly against `ACM-Web-Main` (www.acm.is, the public
 site). Once the reconstruction method is validated there against real
 exports, the *output GLBs* (not this feature's code) move over to a
@@ -191,7 +191,7 @@ Arctic_Crystal_Memories/
     │   ├── input/3d_files/CockPit3D_Scene_Files/*.cockpit
     │   ├── output/                             ← existing convention for converter output
     │   └── requirements.txt                    ← check whether trimesh/pygltflib are already present
-    └── ACM-Web-Pipeline/                      Next.js 16 · pipeline.acm.is — THIS is where T3 lives
+    └── ACM-Web-Pipeline/                      Next.js 16 · workshop.acm.is — THIS is where T3 lives
         ├── src/lib/navigation.js               ← add nav entry ("pipeline-converter" section)
         ├── src/lib/paths.js                    ← CONVERTER_ROOT / PYTHON_EXE / OUTPUT_DIR already resolved, use them
         ├── src/lib/operations.js               ← existing pattern for spawning python jobs — follow it
@@ -350,7 +350,7 @@ operator:
 - Save the finished GLB under
   `pipeline-converter/output/cockpit-reconstruct/<job-name>.glb`.
 
-**Acceptance:** from a browser at `pipeline.acm.is`, an operator can select
+**Acceptance:** from a browser at `workshop.acm.is`, an operator can select
 `amma-1.dxf`, optionally pair it with the right `.cockpit` for color,
 adjust sampling, run reconstruction, see the result auto-rotating in the
 page via `ModelViewer.jsx`, and end up with a saved `.glb` file. Repeat for

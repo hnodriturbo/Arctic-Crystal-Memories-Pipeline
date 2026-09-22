@@ -16,13 +16,14 @@ export const LANGUAGE_STORAGE_KEY = "acm-pipeline-language";
 const IS = {
 
   // Claude Design - animations workspace and the zip shelf.
+  "Claude Design": "Claude Design",
+  "Design Animations": "Hreyfimyndir úr hönnun",
+  "Design Archives": "Hönnunarsafn í zip",
   "In acm-workshop": "Í acm-workshop",
   "Fetch": "Sækja niður",
   "Fetch this collection onto this machine": "Sækja þetta safn á þessa vél",
   "files": "skrár",
-  "Claude Animation": "Claude Hreyfimyndir",
   "Designs in · finished video out": "Hannanir inn · tilbúið myndband út",
-  "Animations": "Hreyfimyndir",
   "Preview a Claude Design animation, choose the frame and quality, and render it to video.": "Forskoðaðu hreyfimynd úr Claude Design, veldu ramma og gæði og búðu til myndband.",
   "The exported zip files, and which of them have not been unpacked into a folder yet.": "Exportuðu zip-skrárnar og hverjar þeirra eiga enga möppu enn.",
   "Claude Design animations": "Claude Design hreyfimyndir",
@@ -92,7 +93,6 @@ const IS = {
   "fetched": "sótt",
   "uploaded": "hlaðið upp",
   "unchanged": "óbreytt",
-  "Design archives": "Hönnunarsafn í zip",
   "Reading the archive folder…": "Les zip-möppuna…",
   "Could not read the archive folder.": "Náði ekki að lesa zip-möppuna.",
   "No zip files in this folder.": "Engar zip-skrár í þessari möppu.",
