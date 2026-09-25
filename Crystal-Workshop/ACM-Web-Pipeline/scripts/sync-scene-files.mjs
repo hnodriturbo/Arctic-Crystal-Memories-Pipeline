@@ -65,6 +65,9 @@ if (dryRun) {
       // Upload a stable copy; a scene saved during copying is retried on the next run.
       const before = await stat(item.source);
       const snapshot = path.join(temporary, 'snapshot');
+      // Windows can preserve a previous source's read-only attribute on the
+      // snapshot. Remove that private copy before copying the next source.
+      await rm(snapshot, { force: true });
       await copyFile(item.source, snapshot);
       const after = await stat(item.source);
       if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) throw new Error('Source changed during backup: ' + item.relative);

@@ -5,13 +5,13 @@
  *  - Keep the service isolated on VPS loopback port 3003.
  */
 
-const deploymentRoot = "/home/hreidar/apps/acm-pipeline";
+const deploymentRoot = "/home/hreidar/apps/ccm-workshop";
 const applicationRoot = `${deploymentRoot}/current/Crystal-Workshop/ACM-Web-Pipeline`;
 
 module.exports = {
   apps: [
     {
-      name: "acm-pipeline",
+      name: "ccm-workshop",
       cwd: applicationRoot,
       script: "node_modules/next/dist/bin/next",
       args: "start --hostname 127.0.0.1 --port 3003",

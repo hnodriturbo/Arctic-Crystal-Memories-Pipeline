@@ -1,10 +1,10 @@
 <!--
 File: deployment/README.md
 Purpose:
- - Document the production runtime and release policy for workshop.acm.is.
+ - Document the production runtime and release policy for workshop.ccm.is.
 -->
 
-# `workshop.acm.is` production runtime
+# `workshop.ccm.is` production runtime
 
 The website is deployed from the reviewed local checkout directly to the ACM
 VPS. Git and GitHub are not part of the deployment path.
@@ -12,7 +12,7 @@ VPS. Git and GitHub are not part of the deployment path.
 ## Runtime layout
 
 ```text
-/home/hreidar/apps/acm-pipeline/
+/home/hreidar/apps/ccm-workshop/
 ├── current -> releases/<active-release>
 ├── releases/                         immutable application releases (max 3)
 └── shared/
@@ -55,14 +55,14 @@ For an explicitly reviewed local release before the user's manual commit:
 .\scripts\deploy-pipeline-vps.ps1 -DeployWorkingTree
 ```
 
-This packages only non-ignored local changes under `converter/` and
+This packages only non-ignored local changes under `Crystal-Workshop/` and
 `deployment/`; it does not modify Git state or contact GitHub.
 
 The script creates a secret-free archive, rejects `.env`, `node_modules`,
 `.next`, `.venv` and customer workspace content, then transfers it over SSH.
 The VPS builds an inactive release, validates all three interpreters and the
 database schema, atomically switches `current`, recreates only the
-`acm-pipeline` PM2 process and checks the login route. Recreating that process
+`ccm-workshop` PM2 process and checks the login route. Recreating that process
 is intentional because PM2 otherwise retains an obsolete absolute script/cwd
 after an application-folder rename. A failed health check restores the
 previous release. Successful deployments retain the active release and at
@@ -72,11 +72,11 @@ most two rollbacks.
 
 | Component | Production value |
 | --- | --- |
-| Public URL | `https://workshop.acm.is` |
-| PM2 process | `acm-pipeline` |
+| Public URL | `https://workshop.ccm.is` |
+| PM2 process | `ccm-workshop` |
 | Next.js origin | `127.0.0.1:3003` |
-| Nginx site | `/etc/nginx/sites-available/workshop.acm.is` |
-| Shared environment | `/home/hreidar/apps/acm-pipeline/shared/.env.production` |
+| Nginx site | `/etc/nginx/sites-available/workshop.ccm.is` |
+| Shared environment | `/home/hreidar/apps/ccm-workshop/shared/.env.production` |
 | Upload limit through Cloudflare | 100 MB |
 
 Nginx disables proxy buffering and uses one-hour read/send timeouts so SSE
@@ -86,17 +86,17 @@ copied by SSH/SFTP into the appropriate shared workspace.
 ## Verification
 
 ```bash
-readlink -f /home/hreidar/apps/acm-pipeline/current
-pm2 status acm-pipeline
+readlink -f /home/hreidar/apps/ccm-workshop/current
+pm2 status ccm-workshop
 curl -fsS http://127.0.0.1:3003/login >/dev/null
 sudo nginx -t
 
 for env in image-pipeline meshy-pipeline pipeline-converter; do
-  /home/hreidar/apps/acm-pipeline/shared/venvs/$env/bin/python -c \
+  /home/hreidar/apps/ccm-workshop/shared/venvs/$env/bin/python -c \
     'import platform; print(platform.python_version())'
 done
 
-/home/hreidar/apps/acm-pipeline/shared/tools/blender/blender --background --version
+/home/hreidar/apps/ccm-workshop/shared/tools/blender/blender --background --version
 ```
 
 The public root redirects signed-out users to Auth.js login. Meshy's webhook

@@ -63,9 +63,10 @@ function signatureOk(rawBody, provided) {
   const secret = process.env.MESHY_WEBHOOK_SECRET;
   if (!secret) return false;
 
-  const digest = createHmac("sha256", secret).update(rawBody);
-  const hex = digest.copy().digest("hex");
-  const base64 = digest.digest("base64");
+  // Hmac has no copy() method. Finalize once and encode the same digest bytes.
+  const digest = createHmac("sha256", secret).update(rawBody).digest();
+  const hex = digest.toString("hex");
+  const base64 = digest.toString("base64");
 
   const candidate = provided.replace(/^sha256[=\s]/i, "").trim();
   return matches(candidate, hex) || matches(candidate, base64);

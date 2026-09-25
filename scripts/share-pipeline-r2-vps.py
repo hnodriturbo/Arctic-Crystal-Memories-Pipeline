@@ -8,8 +8,8 @@ import shutil
 import tempfile
 from datetime import datetime, timezone
 
-source = Path('/home/hreidar/apps/acm-pipeline/shared/.env.production')
-target = Path('/home/hreidar/apps/acm-main/shared/.env')
+source = Path('/home/hreidar/apps/ccm-workshop/shared/.env.production')
+target = Path('/home/hreidar/apps/ccm-main/shared/.env')
 keys = {'R2_PIPELINE_ENDPOINT', 'R2_PIPELINE_ACCESS_KEY_ID', 'R2_PIPELINE_SECRET_ACCESS_KEY', 'R2_PIPELINE_BUCKET_NAME'}
 values = {line.split('=', 1)[0]: line for line in source.read_text().splitlines()
           if '=' in line and line.split('=', 1)[0] in keys}

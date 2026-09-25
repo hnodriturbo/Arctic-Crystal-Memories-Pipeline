@@ -519,3 +519,6 @@ Afangi_2_V24/Timaverkefni_5/verkefni_5_videos/
 # Crystal Workshop rename: preserve the same private asset exclusions.
 Crystal-Workshop/2.5D-pipeline/reference-gallery/
 Crystal-Workshop/.acm-web-cache-backup*/
+
+# Private production environments, database backups and release staging.
+Crystal-Workshop/.Production-Web-Workshop/

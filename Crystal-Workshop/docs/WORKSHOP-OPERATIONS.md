@@ -1,7 +1,7 @@
 <!-- Purpose: Current operator and agent handoff for Crystal Workshop and the R2 showroom library. -->
 # Crystal Workshop operations
 
-The primary public hostname is **https://workshop.acm.is**. Nginx proxies the
+The primary public hostname is **https://workshop.ccm.is**. Nginx proxies the
 authenticated Next.js interface to port 3003. The older pipeline hostname still
 serves compatibility traffic. Workshop owns its own HTTPS certificate and is
 the canonical Auth.js origin. Crystal Vision is a separate customer image area
@@ -9,7 +9,7 @@ in ACM-Web-Main; do not reuse that name here.
 
 ## Files and storage
 
-- Local application: `ACM-Pipeline/Crystal-Workshop/ACM-Web-Pipeline`.
+- Local application: `CCM-Web-Workshop/Crystal-Workshop/ACM-Web-Pipeline`.
 - Reconstruction engine: `Crystal-Workshop/pipeline-converter/code/cockpit_reconstruct.py`.
 - Cockpit Reconstruct is a separate navigation chapter. Its engine still shares
   the converter Python environment; it has not been moved to an independent engine folder.
@@ -24,7 +24,7 @@ in ACM-Web-Main; do not reuse that name here.
   IDs remain internal. Use the scene browser upload rather than generic presign
   for Blender GLBs so this naming rule is always applied.
 - Windows task `ACM-Bookkeeping-Expense-R2-Sync` runs once daily at **15:00**.
-  `ACM-Pipeline/scripts/run-daily-r2-sync.ps1` runs the separate Expenses and
+  `CCM-Web-Workshop/scripts/run-daily-r2-sync.ps1` runs the separate Expenses and
   Cockpit backups even when one fails. Never propagate local deletions to R2.
 
 The old `converter` path must not be recreated. Archived cache backups were
@@ -91,10 +91,10 @@ to add these two models. Admin retains publication/hide controls for each entry.
 
 ## Environment and deployment
 
-VPS root stays `/home/hreidar/apps/acm-pipeline` to preserve service identity.
+VPS root stays `/home/hreidar/apps/ccm-workshop` to preserve service identity.
 `current/Crystal-Workshop/ACM-Web-Pipeline` links its environment to
 `shared/.env.production`. Shared Python environments and job workspaces survive
-immutable releases. Keep `AUTH_URL=https://workshop.acm.is` and private R2 keys
+immutable releases. Keep `AUTH_URL=https://workshop.ccm.is` and private R2 keys
 server-only. Main has its own copy of `R2_PIPELINE_*` beside other bucket settings
 in local, production-template and VPS `.env` files.
 

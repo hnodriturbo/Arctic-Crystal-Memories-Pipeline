@@ -14,7 +14,7 @@ try {
   assert.ok(user, 'An existing active operator is required');
   const salt = '__Secure-authjs.session-token';
   const token = await encode({ secret: process.env.AUTH_SECRET, salt, maxAge: 3600, token: { sub: user.id, id: user.id, role: user.role, mustChangePassword: false } });
-  const headers = { host: 'workshop.acm.is', origin: 'https://workshop.acm.is', 'x-forwarded-host': 'workshop.acm.is', 'x-forwarded-proto': 'https', cookie: salt + '=' + token, 'content-type': 'application/json' };
+  const headers = { host: 'workshop.ccm.is', origin: 'https://workshop.ccm.is', 'x-forwarded-host': 'workshop.ccm.is', 'x-forwarded-proto': 'https', cookie: salt + '=' + token, 'content-type': 'application/json' };
   // Invoke exactly the authenticated endpoints used by the browser, with no local candidate inputs.
   async function post(route, body) {
     const response = await fetch('http://127.0.0.1:3003' + route, { method: 'POST', headers, body: JSON.stringify(body) });
@@ -44,7 +44,7 @@ try {
     assert.equal(done, 0); assert.ok(job?.files?.glb);
     const published = await (await post('/api/reconstruct/publish', { file: job.files.glb, sceneFolder: pair.sceneFolder })).json();
     manifest.push({ name, sourceKeys: pair.sourceKeys, job, published });
-    await fs.writeFile('/home/hreidar/apps/acm-pipeline/shared/requested-showroom-20260913.json', JSON.stringify(manifest, null, 2), { mode: 0o600 });
+    await fs.writeFile('/home/hreidar/apps/ccm-workshop/shared/requested-showroom-20260913.json', JSON.stringify(manifest, null, 2), { mode: 0o600 });
     console.log('Saved private R2 GLB: ' + published.key);
   }
 } finally { await database.end(); }

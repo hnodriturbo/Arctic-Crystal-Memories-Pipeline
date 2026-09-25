@@ -8,12 +8,12 @@ Purpose:
 [CmdletBinding()]
 param(
   [string]$SshHost = "acm-vps",
-  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline"
+  [string]$RemoteRoot = "/home/hreidar/apps/ccm-workshop"
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$sourceEnvironment = Join-Path $projectRoot "converter\ACM-Web-Pipeline\.env.production"
+$sourceEnvironment = Join-Path $projectRoot "Crystal-Workshop\.Production-Web-Workshop\environment\.env.production"
 $transferId = [guid]::NewGuid().ToString("N")
 $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
 $localCredentials = Join-Path $temporaryRoot "acm-pipeline-r2-$transferId.env"
@@ -23,7 +23,7 @@ $localStandardError = Join-Path $temporaryRoot "acm-pipeline-r2-$transferId.stde
 $remoteCredentials = "$RemoteRoot/shared/.r2-update-$transferId"
 
 if ($SshHost -notmatch "^[A-Za-z0-9._-]+$") { throw "Invalid SSH host alias." }
-if ($RemoteRoot -ne "/home/hreidar/apps/acm-pipeline") {
+if ($RemoteRoot -ne "/home/hreidar/apps/ccm-workshop") {
   throw "RemoteRoot must be the isolated ACM Pipeline root."
 }
 if (-not (Test-Path -LiteralPath $sourceEnvironment)) {
@@ -106,7 +106,7 @@ awk -v access_key="`$access_key" -v secret_key="`$secret_key" '
 
 chmod 600 "`$replacement"
 mv -f -- "`$replacement" "`$environment"
-pm2 restart acm-pipeline --update-env >/dev/null
+pm2 restart ccm-workshop --update-env >/dev/null
 pm2 save >/dev/null
 printf 'PIPELINE_R2_ENV_UPDATED\n'
 "@

@@ -9,7 +9,7 @@ Purpose:
 [CmdletBinding()]
 param(
   [string]$SshHost = "acm-vps",
-  [string]$RemoteRoot = "/home/hreidar/apps/acm-pipeline",
+  [string]$RemoteRoot = "/home/hreidar/apps/ccm-workshop",
   [switch]$DeployWorkingTree,
   [string]$ReleaseLabel = 'crystal-workshop'
 )
@@ -78,7 +78,7 @@ function Invoke-RemoteScript {
 
 if ($SshHost -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid SSH host alias." }
 if ($ReleaseLabel -notmatch '^[a-z0-9-]+$') { throw "Invalid release label." }
-if ($RemoteRoot -ne "/home/hreidar/apps/acm-pipeline") { throw "RemoteRoot must be the isolated ACM Pipeline root." }
+if ($RemoteRoot -ne "/home/hreidar/apps/ccm-workshop") { throw "RemoteRoot must be the isolated ACM Pipeline root." }
 if (-not $DeployWorkingTree) {
   if ($gitBranch -ne "master") { throw "Production deploys must run from master, not '$gitBranch'. Use -DeployWorkingTree only for an explicitly reviewed local release." }
   if ($gitStatus.Count -gt 0) { throw "Commit or restore local source changes before deploying master, or explicitly use -DeployWorkingTree." }
@@ -281,8 +281,8 @@ reload_service() {
   # PM2 retains the original absolute script and cwd for a same-named process.
   # Recreate this one process so an immutable release may rename its app folder.
   # Rollback calls this function again after restoring the old link and config.
-  pm2 delete acm-pipeline >/dev/null 2>&1 || true
-  pm2 start "`$ecosystem" --only acm-pipeline --update-env >/dev/null
+  pm2 delete ccm-workshop >/dev/null 2>&1 || true
+  pm2 start "`$ecosystem" --only ccm-workshop --update-env >/dev/null
   pm2 save >/dev/null
 }
 

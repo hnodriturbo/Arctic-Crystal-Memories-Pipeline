@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const main = path.resolve(app, '../../../ACM-Web-Main');
+const main = path.resolve(app, '../../../CCM-Web-Main');
 process.loadEnvFile(path.join(app, '.env.local'));
 const keys = ['R2_PIPELINE_ENDPOINT', 'R2_PIPELINE_ACCESS_KEY_ID', 'R2_PIPELINE_SECRET_ACCESS_KEY', 'R2_PIPELINE_BUCKET_NAME'];
 for (const key of keys) if (!process.env[key]) throw new Error('Missing configuration: ' + key);

@@ -4,9 +4,9 @@ Purpose:
  - Explain how all three pipelines run together on the Ubuntu 24.04 VPS.
 -->
 
-# Deploying ACM Pipeline to `workshop.acm.is`
+# Deploying ACM Pipeline to `workshop.ccm.is`
 
-The deployable unit is the complete `converter/` tree:
+The deployable unit is the complete `Crystal-Workshop/` tree:
 
 1. `image-pipeline` prepares uploads locally with CPU-safe Python tools.
 2. `meshy-pipeline` owns direct Meshy uploads, job work and diagnostics.
@@ -43,14 +43,14 @@ Production secrets live only in `shared/.env.production`. These path values
 must point through `current` or directly to the shared interpreters:
 
 ```dotenv
-CONVERTER_ROOT=/home/hreidar/apps/acm-pipeline/current/converter/pipeline-converter
-CONVERTER_PYTHON=/home/hreidar/apps/acm-pipeline/shared/venvs/pipeline-converter/bin/python
-MESHY_ROOT=/home/hreidar/apps/acm-pipeline/current/converter/meshy-pipeline
-MESHY_PYTHON=/home/hreidar/apps/acm-pipeline/shared/venvs/meshy-pipeline/bin/python
-IMAGE_PIPELINE_ROOT=/home/hreidar/apps/acm-pipeline/current/converter/image-pipeline
-IMAGE_PIPELINE_PYTHON=/home/hreidar/apps/acm-pipeline/shared/venvs/image-pipeline/bin/python
-U2NET_HOME=/home/hreidar/apps/acm-pipeline/shared/models/rembg
-BLENDER_EXE=/home/hreidar/apps/acm-pipeline/shared/tools/blender/blender
+CONVERTER_ROOT=/home/hreidar/apps/ccm-workshop/current/Crystal-Workshop/pipeline-converter
+CONVERTER_PYTHON=/home/hreidar/apps/ccm-workshop/shared/venvs/pipeline-converter/bin/python
+MESHY_ROOT=/home/hreidar/apps/ccm-workshop/current/Crystal-Workshop/meshy-pipeline
+MESHY_PYTHON=/home/hreidar/apps/ccm-workshop/shared/venvs/meshy-pipeline/bin/python
+IMAGE_PIPELINE_ROOT=/home/hreidar/apps/ccm-workshop/current/Crystal-Workshop/image-pipeline
+IMAGE_PIPELINE_PYTHON=/home/hreidar/apps/ccm-workshop/shared/venvs/image-pipeline/bin/python
+U2NET_HOME=/home/hreidar/apps/ccm-workshop/shared/models/rembg
+BLENDER_EXE=/home/hreidar/apps/ccm-workshop/shared/tools/blender/blender
 ```
 
 The same file also carries `DATABASE_URL`, Meshy/OpenAI/R2 credentials and the
@@ -76,15 +76,15 @@ manual commit, use the explicit working-tree mode:
 ```
 
 That mode starts from the current commit and overlays only changed or untracked,
-non-ignored files inside `converter/` and `deployment/`. It does not stage,
+non-ignored files inside `Crystal-Workshop/` and `deployment/`. It does not stage,
 commit, push, or include ignored environments, secrets, caches, or workspaces.
 
 ## Production checks
 
 ```bash
-cd /home/hreidar/apps/acm-pipeline/current/converter/ACM-Web-Pipeline
+cd /home/hreidar/apps/ccm-workshop/current/Crystal-Workshop/ACM-Web-Pipeline
 npm run db:status
-pm2 status acm-pipeline
+pm2 status ccm-workshop
 curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3003/login
 curl -sS -X POST http://127.0.0.1:3003/webhooks/meshy \
   -H 'Content-Type: application/json' -d '{}'

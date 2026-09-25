@@ -7,6 +7,8 @@
 #  - Preserve secrets and pipeline workspaces, then perform a rollback-safe cutover.
 # ==========================================
 
+# HISTORICAL: one-time pre-CCM layout migration. Already completed; do not run
+# against the current ccm-workshop deployment. Use deploy-pipeline-vps.ps1.
 set -euo pipefail
 
 archive=${1:?Usage: bootstrap-release-layout.sh ARCHIVE RELEASE_ID}
