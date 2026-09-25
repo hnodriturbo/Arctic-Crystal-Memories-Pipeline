@@ -16,6 +16,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ConsoleLog from "@/components/ConsoleLog";
+import SettingHelp from "@/components/SettingHelp";
+import DesignPreviewFrame from "@/components/DesignPreviewFrame";
 import { useLanguage } from "@/components/LanguageProvider";
 
 // ========================================
@@ -99,6 +101,7 @@ export default function ClaudeDesignClient() {
   const [keepChrome, setKeepChrome] = useState(false);
   const [siteScale, setSiteScale] = useState(1.6);
   const [collection, setCollection] = useState("");
+  const [newCollection, setNewCollection] = useState("");
 
   // ========================================
   // Loading
@@ -254,7 +257,7 @@ export default function ClaudeDesignClient() {
   };
 
   async function startRender() {
-    if (!selected.length) return;
+    if (!selected.length || collection === "__new__") return;
     setBusy(true);
     setNotice("");
 
@@ -314,30 +317,37 @@ export default function ClaudeDesignClient() {
     setJobs((current) => current.filter((job) => !FINISHED.includes(job.status)));
   }
 
-  async function syncCollection(name, direction) {
+  async function syncCollection(name) {
     setBusy(true);
-    setNotice(direction === "pull" ? t("Fetching from R2…") : t("Uploading to R2…"));
+    setNotice(t("Synchronizing with R2…"));
     try {
       const response = await fetch("/api/claude-design/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ collection: name, direction }),
+        body: JSON.stringify({ collection: name, direction: "sync" }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t("The sync failed."));
 
       const summary = data.summary;
-      setNotice(
-        direction === "pull"
-          ? `${name}: ${summary.fetched} ${t("fetched")}, ${summary.unchanged} ${t("unchanged")}`
-          : `${name}: ${summary.uploaded} ${t("uploaded")}, ${summary.unchanged} ${t("unchanged")}`,
-      );
+      setNotice(name + ': ' + summary.uploaded + ' ' + t('uploaded') + ', ' + summary.fetched + ' ' + t('fetched') + ', ' + summary.conflicts + ' ' + t('conflicts — both copies preserved; check the sync log') + '\n' + (data.lines || []).filter(line => line.startsWith('CONFLICT')).join('\n'));
       loadLibrary();
     } catch (error) {
       setNotice(error.message);
     } finally {
       setBusy(false);
     }
+  }
+
+  async function createCollection() {
+    setBusy(true);
+    try {
+      const name = newCollection.trim();
+      const response = await fetch('/api/claude-design/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ direction: 'create', collection: name }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t('The sync failed.'));
+      setCollection(name); setNewCollection(''); loadLibrary(); setNotice(t('Collection created.'));
+    } catch (error) { setNotice(error.message); } finally { setBusy(false); }
   }
 
   async function deleteVideo(key) {
@@ -453,9 +463,9 @@ export default function ClaudeDesignClient() {
                       disabled={busy}
                       onClick={() => syncCollection(entry.name, "pull")}
                       className="shrink-0 rounded-md border border-accent/40 px-2 py-1 text-[10px] text-accent disabled:opacity-40"
-                      title={t("Fetch this collection onto this machine")}
+                      title={t("Synchronize this collection with R2")}
                     >
-                      ↓ {t("Fetch")}
+                      ↕ R2
                     </button>
                   </div>
                 ))}
@@ -480,9 +490,9 @@ export default function ClaudeDesignClient() {
                       disabled={busy}
                       onClick={() => syncCollection(group.name, "push")}
                       className="shrink-0 rounded-md border border-surface-border px-2 py-1 text-[10px] text-muted hover:bg-surface-hover disabled:opacity-40"
-                      title={t("Upload this collection to acm-workshop")}
+                      title={t("Synchronize this collection with R2")}
                     >
-                      ↑ R2
+                      ↕ R2
                     </button>
                   ) : null}
                 </div>
@@ -559,36 +569,11 @@ export default function ClaudeDesignClient() {
                   : undefined
               }
               src={`/api/claude-design/videos?key=${encodeURIComponent(preview.key)}`}
-              className="w-full rounded-lg bg-black"
+              className="w-full rounded-lg bg-black object-contain"
+              style={{ height: "min(65vh, 680px)" }}
             />
           ) : (
-            /*
-             * The design runs at its own frame size inside the frame and is
-             * scaled down to fit, so what is on screen is the real layout
-             * rather than a responsive reflow of it. Anything cut off here
-             * will be cut off in the video too.
-             */
-            <div
-              className="relative w-full overflow-hidden rounded-lg border border-surface-border bg-black"
-              style={{ aspectRatio: `${preview.width} / ${preview.height}` }}
-            >
-              <iframe
-                key={preview.rootRel}
-                title={preview.name}
-                src={`/api/claude-design/preview/${preview.rootRel
-                  .split("/")
-                  .map(encodeURIComponent)
-                  .join("/")}`}
-                width={preview.width}
-                height={preview.height}
-                className="absolute left-0 top-0 origin-top-left border-0"
-                style={{
-                  transform: `scale(var(--preview-scale))`,
-                  ["--preview-scale"]: `calc(100cqw / ${preview.width})`,
-                  containerType: "inline-size",
-                }}
-              />
-            </div>
+            <DesignPreviewFrame preview={preview} />
           )}
 
           {preview?.kind === "video" ? (
@@ -624,7 +609,7 @@ export default function ClaudeDesignClient() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Frame size */}
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Frame size")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Frame size")} <SettingHelp label={t("Frame size")} text={t("Keep the original design dimensions, or choose one fixed size for all selected designs.")} /></span>
             <select
               value={sizeMode}
               onChange={(event) => setSizeMode(event.target.value)}
@@ -636,7 +621,7 @@ export default function ClaudeDesignClient() {
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Aspect ratio")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Aspect ratio")} <SettingHelp label={t("Aspect ratio")} text={t("Width compared with height: 16:9 is landscape, 9:16 is portrait, 1:1 is square and 4:5 is a portrait feed post.")} /></span>
             <select
               value={ratio}
               disabled={sizeMode === "design"}
@@ -656,7 +641,7 @@ export default function ClaudeDesignClient() {
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Resolution")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Resolution")} <SettingHelp label={t("Resolution")} text={t("The number of pixels in the video. More pixels preserve more detail but take longer to render. Upscaling does not create missing detail.")} /></span>
             <select
               value={sizeLabel}
               disabled={sizeMode === "design"}
@@ -672,24 +657,24 @@ export default function ClaudeDesignClient() {
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Frame rate")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Frame rate")} <SettingHelp label={t("Frame rate")} text={t("Frames per second. 60 fps gives smoother motion; 30 fps renders fewer frames; 24 fps has a film-like cadence. Rendering time is not guaranteed to halve.")} /></span>
             <select
               value={fps}
               onChange={(event) => setFps(Number(event.target.value))}
               className="w-full rounded-lg border border-input-border bg-input-background p-2 text-sm"
             >
               <option value={60}>60 fps</option>
-              <option value={30}>30 fps · {t("half the time")}</option>
+              <option value={30}>30 fps</option>
               <option value={24}>24 fps · {t("film")}</option>
             </select>
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Quality (CRF)")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Quality (CRF)")} <SettingHelp label={t("Quality (CRF)")} text={t("CRF controls compression, not resolution. Workshop defaults to 18; x264 defaults to 23. Lower values retain more detail and make larger files. 18: high quality, a useful starting point. 10: very little compression, much larger files. 5: even less compression, often little visible improvement over 10. 25: smaller files, with more risk of visible artefacts around text and motion. 0 is lossless; 51 is the lowest quality. There is no single best value or fixed file size: compare a short render at the intended viewing size.")} /></span>
             <input
               type="number"
-              min="12"
-              max="30"
+              min="0"
+              max="51"
               value={crf}
               onChange={(event) => setCrf(Number(event.target.value))}
               className="w-full rounded-lg border border-input-border bg-input-background p-2 text-sm"
@@ -698,7 +683,7 @@ export default function ClaudeDesignClient() {
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Test length")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Test length")} <SettingHelp label={t("Test length")} text={t("Render only this many seconds from the start. Leave blank for the whole animation. Use a short test to compare quality and framing.")} /></span>
             <input
               type="number"
               min="1"
@@ -713,7 +698,7 @@ export default function ClaudeDesignClient() {
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Closing www.acm.is")}</span>
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Closing www.ccm.is")} <SettingHelp label={t("Closing www.ccm.is")} text={t("Scale the website address in the final scene. 1 means its original size; 1.6 means 160%. This does not enlarge the whole video.")} /></span>
             <input
               type="number"
               step="0.1"
@@ -727,14 +712,16 @@ export default function ClaudeDesignClient() {
           </label>
 
           <label className="block text-xs">
-            <span className="mb-1 block font-semibold text-muted-strong">{t("Save into collection")}</span>
-            <input
-              type="text"
-              placeholder={t("same as the design's")}
-              value={collection}
-              onChange={(event) => setCollection(event.target.value)}
-              className="w-full rounded-lg border border-input-border bg-input-background p-2 text-sm"
-            />
+            <span className="mb-1 block font-semibold text-muted-strong">{t("Save into collection")} <SettingHelp label={t("Save into collection")} text={t("Choose a collection for the finished video, or create a new one. Design sources stay in their original collection.")} /></span>
+            <select value={collection} onChange={(event) => setCollection(event.target.value)} className="w-full rounded-lg border border-input-border bg-input-background p-2 text-sm">
+              <option value="">{t("same as the design's")}</option>
+              {[...new Set([...collections.map(x => x.name), ...remote.map(x => x.name), ...(library.videos || []).map(x => x.collection), ...(collection && collection !== '__new__' ? [collection] : [])])].sort().map(name => <option key={name} value={name}>{name}</option>)}
+              <option value="__new__">{t("Create a new collection…")}</option>
+            </select>
+            {collection === '__new__' && <span className="mt-2 flex flex-wrap gap-2">
+              <input aria-label={t("New collection name")} value={newCollection} onChange={event => setNewCollection(event.target.value)} className="min-w-0 w-full rounded-lg border border-input-border bg-input-background p-2 text-sm" />
+              <button type="button" onClick={createCollection} disabled={busy || !newCollection.trim()} className="rounded-lg border border-accent px-3 py-2 disabled:opacity-40">{t("Create collection")}</button>
+            </span>}
           </label>
         </div>
 
@@ -758,7 +745,7 @@ export default function ClaudeDesignClient() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            disabled={busy || !selected.length || !capability.ready}
+            disabled={busy || collection === "__new__" || !selected.length || !capability.ready}
             onClick={startRender}
             className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent-hover disabled:opacity-40"
           >

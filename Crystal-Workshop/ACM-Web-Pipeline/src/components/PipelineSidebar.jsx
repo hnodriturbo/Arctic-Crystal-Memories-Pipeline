@@ -8,7 +8,7 @@
  * Purpose: Responsive navigation with one numbered section per pipeline.
  */
 
-import { SECTIONS } from "@/lib/navigation";
+import { SECTIONS, sectionNavId } from "@/lib/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 
 // One path each, drawn on a 24-box, so the rail stays one visual weight.
@@ -82,14 +82,14 @@ export default function PipelineSidebar({ active, onSelect, open = false, onClos
           {SECTIONS.map((section) => (
             <div key={section.id}>
           {/* Section heading - which numbered step this group is */}
-          <div className="px-3 pb-2">
+          <button type="button" onClick={() => onSelect(sectionNavId(section.id))} aria-current={active === sectionNavId(section.id) ? "page" : undefined} className="w-full rounded-lg px-3 pb-2 text-left hover:text-accent focus-visible:outline-2 focus-visible:outline-accent">
             <p className="flex items-baseline gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-strong">
               {t(section.label)}
             </p>
             {section.hint ? (
               <p className="mt-0.5 text-[10px] leading-tight text-muted">{t(section.hint)}</p>
             ) : null}
-          </div>
+          </button>
 
           <ul className="space-y-0.5">
             {section.items.map((item) => {

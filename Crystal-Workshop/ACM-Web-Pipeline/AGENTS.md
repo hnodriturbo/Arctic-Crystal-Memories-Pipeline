@@ -36,3 +36,7 @@ readers separate — folders can be played, archives cannot until unpacked.
 Run `npx eslint` on the touched paths, `scripts/test-workshop-r2.mjs`, a short
 `scripts/render-design-video.mjs --seconds 3` and a full `npm run build` after
 any material change.
+
+## Owner-authorized two-way design sync — 25-09-2026
+
+The owner now requests Windows/R2 synchronization in both directions. This supersedes the upload-only instruction above. Use the shared baseline-aware engine for UI and scheduled tasks. Never propagate deletions. Archive local/remote versions before replacement and preserve both sides of unresolved conflicts. Keep .workshop-sync private and excluded from uploads. Domain-only updates in the four customer-journey is.json/en.json files are explicitly requested.

@@ -32,6 +32,8 @@ import ReviewClient from "@/components/ReviewClient";
 import ThemeToggle from "@/components/ThemeToggle";
 import {
   NAV_ITEMS,
+  SECTION_VIEWS,
+  sectionNavId,
   NAVIGATION_QUERY_PARAM,
   meshyModeFor,
   navIdForSlug,
@@ -182,6 +184,10 @@ export default function AppShell({
         <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-8 sm:py-8">
           {active === "r2-browser" && <R2FileBrowser onUse={receiveIntoConverter} />}
           {active === 'home' && <WorkshopHome onSelect={selectView} />}
+          {SECTION_VIEWS[active] && <WorkshopHome section={SECTION_VIEWS[active]} onSelect={selectView} />}
+          {active !== 'home' && !SECTION_VIEWS[active] && current?.section?.id && (
+            <button type="button" onClick={() => selectView(sectionNavId(current.section.id))} className="mb-5 rounded-lg px-3 py-2 text-sm text-accent hover:bg-accent-soft">← {t(current.section.label)}</button>
+          )}
           {/* Shared image library - stateless enough to mount on demand */}
           {active === "library" ? (
             <PhotoLibrary

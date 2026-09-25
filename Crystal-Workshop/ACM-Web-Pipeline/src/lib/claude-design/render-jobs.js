@@ -110,6 +110,9 @@ export function enqueue(spec) {
       .replace(/[\\/:*?"<>|]/g, "-")
       .replace(/\.mp4$/i, "") + ".mp4";
 
+  const crf = spec.crf == null ? 18 : Number(spec.crf);
+  if (!Number.isInteger(crf) || crf < 0 || crf > 51) throw new Error("CRF must be an integer from 0 to 51.");
+
   const id = `render-${++store.counter}-${Date.now()}`;
   const job = {
     id,
@@ -123,7 +126,7 @@ export function enqueue(spec) {
     width: Number(spec.width) || 1920,
     height: Number(spec.height) || 1080,
     fps: Number(spec.fps) || 60,
-    crf: Number(spec.crf) || 18,
+    crf,
     seconds: spec.seconds ? Number(spec.seconds) : null,
     siteScale: spec.siteScale == null ? 1.6 : Number(spec.siteScale),
     keepChrome: Boolean(spec.keepChrome),

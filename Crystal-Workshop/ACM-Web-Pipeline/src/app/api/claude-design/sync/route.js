@@ -13,8 +13,10 @@
  * what it is about to render.
  */
 
+import { validCollection } from "@/lib/claude-design/sync-engine.mjs";
+import { designStore } from "@/lib/claude-design/sync-store.mjs";
 import { auth } from "@/auth";
-import { listRemoteCollections, pullCollection, pushCollection } from "@/lib/claude-design/mirror";
+import { listRemoteCollections, syncCollection } from "@/lib/claude-design/mirror";
 import { workshopR2Configured } from "@/lib/storage/workshop-r2";
 
 export const runtime = "nodejs";
@@ -41,8 +43,11 @@ export async function POST(request) {
     return Response.json({ error: "acm-workshop is not configured here." }, { status: 503 });
   }
 
-  const { direction, collection } = await request.json();
-  if (typeof collection !== "string" || !collection || collection.includes("/")) {
+  let body;
+  try { body = await request.json(); } catch { return Response.json({ error: "Invalid JSON" }, { status: 400 }); }
+  const { direction, collection } = body;
+  if (!["sync", "push", "pull", "create"].includes(direction)) return Response.json({ error: "Invalid direction" }, { status: 400 });
+  if (!validCollection(collection)) {
     return Response.json({ error: "Which collection?" }, { status: 400 });
   }
 
@@ -52,12 +57,13 @@ export async function POST(request) {
   const record = (line) => lines.push(line);
 
   try {
-    const summary =
-      direction === "pull"
-        ? await pullCollection(collection, record)
-        : await pushCollection(collection, record);
-    return Response.json({ ok: true, direction: direction === "pull" ? "pull" : "push", summary, lines });
+    if (direction === "create") {
+      await designStore().createCollection(collection);
+      return Response.json({ ok: true, collection });
+    }
+    const summary = await syncCollection(collection, record);
+    return Response.json({ ok: true, direction: "sync", summary, lines });
   } catch (error) {
-    return Response.json({ error: error.message, lines }, { status: 502 });
+    return Response.json({ error: error.message, lines }, { status: error.$metadata?.httpStatusCode === 412 ? 409 : 502 });
   }
 }

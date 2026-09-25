@@ -10,9 +10,7 @@ Purpose: How the Claude Design animations workspace is put together and what
 `Claude-Design-Stuff` into MP4 files, stores them in the `acm-workshop` bucket,
 and plays them back from there.
 
-Two entries, deliberately. Both keep their English names in the Icelandic UI,
-the way `Cockpit Reconstruct` and `Crystal Workshop` do — they name a screen
-rather than describe one:
+Two entries, deliberately. Icelandic labels are Hreyfi Hannanir and Hönnunar Geymsla; English keeps Design Animations and Design Archives. Cockpit Reconstruct is Cockpit Endurbygging in Icelandic.
 
 - **Design Animations** reads folders. Everything it lists can be previewed,
   rendered or played.
@@ -71,7 +69,7 @@ which is worth reading — it means the first frame should be checked by eye.
 
 ### The closing scene
 
-`www.acm.is` in the last scene is too small and sits too close to the artwork
+`www.ccm.is` in the last scene is too small and sits too close to the artwork
 above it. It is enlarged at capture time rather than in the HTML, so a fresh
 export out of Claude Design never silently overwrites the correction. The
 multiplier is on the settings panel.
@@ -164,3 +162,20 @@ Then **open the poster and look at it**. A render that captured the wrong page
 completes normally and uploads a perfectly valid MP4. Roughly 0.6 MB for three
 seconds at 1080p is healthy; tens of kilobytes means the frames were nearly
 blank, and something was captured that should not have been.
+
+
+## Preview fit and section navigation — 25-09-2026
+
+DesignPreviewFrame observes its visible frame and scales the original iframe viewport numerically to fit both dimensions. Landscape and portrait designs remain centered and uncropped; MP4 playback uses object-contain in the same bounded-height frame. This changes only operator previews, not render dimensions, source designs or exports. Workshop homepage cards open bookmarkable section menus; tool URLs and Back/Forward remain compatible. The experimental 2.5D pipeline stays absent from navigation.
+
+## Two-way sync and render help — 25-09-2026
+
+The owner authorized R2-to-Windows changes as well as uploads. The UI sync button and daily script now share sync-engine.mjs and sync-store.mjs. Sources use claude-design/sources; finished videos/posters use claude-design/videos and local exported-videos. The local .workshop-sync directory stores per-object SHA-256 baselines, a process lock, history and conflict copies; it is never uploaded. Missing files are restored, not deleted. Same-size edits are compared by hash. When both sides differ from the last baseline (or no baseline exists), neither authoritative copy is replaced: the remote copy is saved under .workshop-sync/conflicts and the run reports a conflict. Resolve by deliberately choosing the same content on both sides; the next run records the baseline. Failed or interrupted runs release their lock normally; after a process crash verify no sync is running before removing a stale lock.
+
+R2 overwrites archive the old object first and use If-Match; new writes use If-None-Match. Downloads use If-Match and a temporary file; local replacements retain the prior revision. Symlinks and unsafe Windows/path names are rejected. A dry run reads R2, hashes content and reports planned actions without replacing designs or writing R2 objects. Source files over 200 MB remain skipped with a report; videos have no such source-asset cap. Existing zip-files remain a separate local archive shelf.
+
+Save into collection offers existing names and Create a new collection. This creates a private R2 folder marker; finished renders are stored under the selected video collection, while source designs remain in their authored folder. The Windows sync also materializes empty remote collections.
+
+The info buttons work by hover, keyboard focus and touch; Escape dismisses help. CRF accepts integer 0–51, preserves explicit 0 in the render queue, defaults to 18 and explains 5/10/18/25 and x264's 23 default. Render-time closing-site detection accepts old/new domains and displays www.ccm.is without rewriting design HTML. Four existing customer-journey is.json/en.json site fields were updated separately, with originals archived locally.
+
+Validation: scripts/test-design-sync.mjs exercises same-size edits, remote changes without metadata, conflicts/history, restoring missing files, new folders, path rejection, dry run, locks and conditional-write races.

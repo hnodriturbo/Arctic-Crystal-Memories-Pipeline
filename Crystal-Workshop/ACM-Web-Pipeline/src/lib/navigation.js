@@ -90,7 +90,7 @@ export const SECTIONS = [
     ],
   },
   {
-    id: "cockpit-reconstruction", step: 4, label: "Cockpit Reconstruct",
+    id: "cockpit-reconstruction", step: 3, label: "Cockpit Reconstruct",
     hint: "Saved scenes · every point · textured GLB",
     items: [
       {
@@ -104,7 +104,7 @@ export const SECTIONS = [
   },
   {
     id: "pipeline-converter",
-    step: 3,
+    step: 4,
     label: "Pipeline converter",
     hint: "3D/CAD in · DXF, OBJ and point clouds out",
     items: [
@@ -156,10 +156,19 @@ export const SECTIONS = [
   },
 ];
 
+SECTIONS.sort((a, b) => (a.step || 99) - (b.step || 99));
+
+/** Section landing pages share bookmark/back-forward behavior with tool views. */
+export const sectionNavId = (sectionId) => 'section:' + sectionId;
+export const SECTION_VIEWS = Object.fromEntries(SECTIONS.map(section => [sectionNavId(section.id), section]));
+
 /** Flat lookup, since the shell addresses items by id. */
 export const NAV_ITEMS = Object.fromEntries(
   SECTIONS.flatMap((section) => section.items.map((item) => [item.id, { ...item, section }])),
 );
+for (const [id, section] of Object.entries(SECTION_VIEWS)) {
+  NAV_ITEMS[id] = { id, label: section.label, blurb: section.hint, section };
+}
 NAV_ITEMS.home = { id: 'home', label: 'Workshop home', blurb: 'Choose a workspace to begin.', section: { label: 'Crystal Workshop' } };
 
 /**
@@ -171,6 +180,7 @@ export const DEFAULT_NAV_ID = "home";
 export const NAVIGATION_QUERY_PARAM = "view";
 
 const NAV_SLUGS = {
+  ...Object.fromEntries(SECTIONS.map(section => [sectionNavId(section.id), section.id])),
   home: 'home',
   "r2-browser": "r2-files",
   library: "inputs-library",

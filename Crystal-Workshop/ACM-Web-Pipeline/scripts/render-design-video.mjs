@@ -188,9 +188,10 @@ function installSiteStyle(scale, gap) {
 function markSiteText(scale) {
   if (document.querySelector("[data-acm-site]")) return true;
   const element = [...document.querySelectorAll("div")].find(
-    (node) => node.children.length === 0 && node.textContent.trim().toLowerCase() === "www.acm.is",
+    (node) => node.children.length === 0 && /^(www\.)?(acm|ccm)\.is$/.test(node.textContent.trim().toLowerCase()),
   );
   if (!element) return false;
+  element.textContent = "www.ccm.is";
   const original = parseFloat(getComputedStyle(element).fontSize);
   document.documentElement.style.setProperty("--acm-site-fs", (original * scale).toFixed(1) + "px");
   element.setAttribute("data-acm-site", "");
@@ -456,7 +457,7 @@ async function render() {
     await encoded;
     await page.close();
 
-    if (!siteMarked) console.log("  !! never found www.acm.is - the closing scene is unchanged");
+    if (!siteMarked) console.log("  !! never found the website address - the closing scene is unchanged");
 
     const megabytes = (fs.statSync(OUT_PATH).size / 1048576).toFixed(1);
     const minutes = ((Date.now() - startedAt) / 1000 / 60).toFixed(1);
