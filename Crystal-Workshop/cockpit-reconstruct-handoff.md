@@ -3,7 +3,7 @@ File: cockpit-reconstruct-handoff.md
 Purpose:
  - Agent brief for building the "Cockpit Reconstruct" feature: turning a
    Cockpit3D DXF/CAD point-cloud export into a colored, web-ready GLB, first
-   as an operator tool inside ACM-Web-Pipeline (workshop.acm.is).
+   as an operator tool inside CCM-Web-Pipeline (workshop.acm.is).
  - Part 1 is for people. Part 2 is the agent brief. Read Part 1 first either
    way. Written for a coding agent (Claude Code / Codex) running locally with
    full filesystem and git access to this workspace.
@@ -89,7 +89,7 @@ rasterization preview), not a sparse cloud of dots:
 
 ## Why the operator tool comes first
 
-The owner (Hnodri) wants this proven inside `ACM-Web-Pipeline`
+The owner (Hnodri) wants this proven inside `CCM-Web-Pipeline`
 (`workshop.acm.is`, the internal operator tool) as a new menu entry —
 **not** built directly against `ACM-Web-Main` (www.acm.is, the public
 site). Once the reconstruction method is validated there against real
@@ -106,13 +106,13 @@ condition" in Part 2.
   `parse_dxf_points_fast`, `parse_cad_points`, `calculate_bounds`,
   `center_points`, `dedupe_points`. `utils/writers.py` owns
   `write_selected_formats`.
-- `ACM-Web-Pipeline/src/components/ModelViewer.jsx` — a working GLB viewer
+- `CCM-Web-Pipeline/src/components/ModelViewer.jsx` — a working GLB viewer
   (`@google/model-viewer`, camera-controls, auto-rotate). Reuse as-is for
   previewing this feature's output; do not write a second viewer.
-- `ACM-Web-Pipeline/src/lib/paths.js` — already resolves `CONVERTER_ROOT`,
+- `CCM-Web-Pipeline/src/lib/paths.js` — already resolves `CONVERTER_ROOT`,
   `PYTHON_EXE` (the pipeline-converter venv), `INPUT_DIR`, `OUTPUT_DIR`,
   and safe-filename helpers. Use these, don't re-derive paths.
-- `ACM-Web-Pipeline/src/lib/navigation.js` — the sidebar's single source of
+- `CCM-Web-Pipeline/src/lib/navigation.js` — the sidebar's single source of
   truth (`SECTIONS`). A new page is one new entry here, not a parallel nav
   system.
 - An existing operator UI pattern for exactly this kind of job
@@ -153,7 +153,7 @@ downsampling logic.
 From `Arctic_Crystal_Memories/AGENTS.md` (workspace-wide) and
 `converter/own_3d_preview_plan.md`:
 
-- Stop any dev server you start (`npm run dev` for `ACM-Web-Pipeline`) as
+- Stop any dev server you start (`npm run dev` for `CCM-Web-Pipeline`) as
   soon as you're done verifying — don't leave it running.
 - Each Python pipeline keeps its own venv and `requirements.txt`; never
   merge them. Only `pipeline-converter`'s venv is touched by this task.
@@ -191,7 +191,7 @@ Arctic_Crystal_Memories/
     │   ├── input/3d_files/CockPit3D_Scene_Files/*.cockpit
     │   ├── output/                             ← existing convention for converter output
     │   └── requirements.txt                    ← check whether trimesh/pygltflib are already present
-    └── ACM-Web-Pipeline/                      Next.js 16 · workshop.acm.is — THIS is where T3 lives
+    └── CCM-Web-Pipeline/                      Next.js 16 · workshop.acm.is — THIS is where T3 lives
         ├── src/lib/navigation.js               ← add nav entry ("pipeline-converter" section)
         ├── src/lib/paths.js                    ← CONVERTER_ROOT / PYTHON_EXE / OUTPUT_DIR already resolved, use them
         ├── src/lib/operations.js               ← existing pattern for spawning python jobs — follow it
@@ -212,7 +212,7 @@ Read, in this order, before writing any code:
 5. `ACM-Pipeline/converter/pipeline-converter/docs/format-notes.md`
 6. `ACM-Pipeline/converter/pipeline-converter/code/convert_cad.py`,
    `convert_dxf.py`, `code/utils/parsers.py`, `code/utils/writers.py`
-7. `ACM-Web-Pipeline/src/lib/navigation.js`, `src/lib/paths.js`,
+7. `CCM-Web-Pipeline/src/lib/navigation.js`, `src/lib/paths.js`,
    `src/lib/operations.js`, `src/components/ConverterClient.jsx`,
    `src/components/ModelViewer.jsx`
 

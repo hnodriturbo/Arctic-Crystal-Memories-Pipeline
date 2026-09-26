@@ -8,7 +8,7 @@ The active website and pipeline modules live together in [converter](converter/R
 The requested name is **Main-Pipelines-Web**; the directory rename is pending
 because Windows currently locks the folder through running Blender MCP environments.
 
-- `converter/ACM-Web-Pipeline/` — operator website, including Cockpit Reconstruct.
+- `converter/CCM-Web-Pipeline/` — operator website, including Cockpit Reconstruct.
 - `converter/pipeline-converter/` — model conversion and relief reconstruction.
 - `converter/image-pipeline/` and `converter/meshy-pipeline/` — existing production stages.
 - `converter/2.5D-pipeline/` — preserved research and reference gallery.

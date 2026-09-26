@@ -1,6 +1,28 @@
 <!-- Purpose: Current operator and agent handoff for Crystal Workshop and the R2 showroom library. -->
 # Crystal Workshop operations
 
+## Verified CCM storage and deployment — 26-09-2026
+
+Workshop now runs release `20260926T164418Z-ccm-r2-29c9b1bc` on the VPS and
+uses the private EU bucket `ccm-workshop` for both existing R2 role groups.
+All 535 objects (6,464,172,134 bytes) from the two legacy buckets were copied
+and SHA-256 verified again while Workshop writes were paused. Legacy source
+data remains intact. Existing object prefixes and scene names are unchanged.
+Local, canonical production and VPS env values were reconciled. PM2 loads the
+private env file at startup, without retaining copied credentials in its config.
+Live authentication, all pipeline endpoint checks and exact CCM downloads passed.
+Main's separate read-only Workshop credential is active and verified: library
+reads and exact asset downloads passed, and write access was denied. Windows synchronization uses the local CCM env groups.
+
+## Local application rename — 26-09-2026
+
+The local app is now `Crystal-Workshop/CCM-Web-Pipeline`. Daily backup runners,
+Order Processing imports, package identity and the next-release deployment paths
+follow this name. The deploy script normalizes an older Git archive's app folder
+before overlaying reviewed local files. The current VPS release now uses the
+same `CCM-Web-Pipeline` path. Historical
+bootstrap/recovery records deliberately retain the source layout they describe.
+
 The primary public hostname is **https://workshop.ccm.is**. Nginx proxies the
 authenticated Next.js interface to port 3003. The older pipeline hostname still
 serves compatibility traffic. Workshop owns its own HTTPS certificate and is
@@ -9,12 +31,12 @@ in ACM-Web-Main; do not reuse that name here.
 
 ## Files and storage
 
-- Local application: `CCM-Web-Workshop/Crystal-Workshop/ACM-Web-Pipeline`.
+- Local application: `CCM-Web-Workshop/Crystal-Workshop/CCM-Web-Pipeline`.
 - Reconstruction engine: `Crystal-Workshop/pipeline-converter/code/cockpit_reconstruct.py`.
 - Cockpit Reconstruct is a separate navigation chapter. Its engine still shares
   the converter Python environment; it has not been moved to an independent engine folder.
-- Company source collection: workspace-root `Cockpit3D-Files/[number]-[name]/`.
-- Private Pipeline bucket: `acm-pipeline-eu`, with the same `Cockpit3D-Files/` prefix.
+- Company source collection: workspace-root `CCM-Crystal-Production/Cockpit3D-Files/[number]-[name]/`.
+- Private Workshop bucket: `ccm-workshop`, with the same `Cockpit3D-Files/` prefix.
 - Finished GLBs: `Cockpit3D-Files/[number]-[name]/<unique>.glb`.
 - New saved models use `[number]-[name]-v001.glb`; uploads through the Blender
   button use `[number]-[name]-edited-v002.glb`. Both read the highest existing
@@ -55,7 +77,7 @@ automatically publish it or change a previously curated exhibit.
    Keep scene and export together in a numbered folder. Remove unrelated text
    in Cockpit before export; a front text layer is not part of the photo surface.
 2. Back up the folder to R2. The Windows daily task does this, or run
-   `node --env-file=.env.local scripts/sync-scene-files.mjs` from ACM-Web-Pipeline.
+   `node --env-file=.env.local scripts/sync-scene-files.mjs` from CCM-Web-Pipeline.
 3. Open Cockpit Reconstruct on Workshop. Refresh the R2 folder browser and
    explicitly select the matching DXF/CAD and saved `.cockpit` file.
 4. Reconstruct using the approved preset: every source point, no point limit,
@@ -92,7 +114,7 @@ to add these two models. Admin retains publication/hide controls for each entry.
 ## Environment and deployment
 
 VPS root stays `/home/hreidar/apps/ccm-workshop` to preserve service identity.
-`current/Crystal-Workshop/ACM-Web-Pipeline` links its environment to
+`current/Crystal-Workshop/CCM-Web-Pipeline` links its environment to
 `shared/.env.production`. Shared Python environments and job workspaces survive
 immutable releases. Keep `AUTH_URL=https://workshop.ccm.is` and private R2 keys
 server-only. Main has its own copy of `R2_PIPELINE_*` beside other bucket settings

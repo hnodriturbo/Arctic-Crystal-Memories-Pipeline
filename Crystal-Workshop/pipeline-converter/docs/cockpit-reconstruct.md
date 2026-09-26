@@ -131,7 +131,7 @@ On 2026-09-13:
   and `convert_cad.py` also completed `--formats glb stl --limit 5000 --dedupe --center`
   on the selected exports. Their partial GLBs were moved to `output/diagnostics/cli-smoke/`.
 
-Screenshots are local under `ACM-Web-Pipeline/output/playwright/`:
+Screenshots are local under `CCM-Web-Pipeline/output/playwright/`:
 `amma-afi-raw.png`, `amma-afi-continuous.png`, `amma-afi-textured.png`, and
 `reconstruct-mobile.png`. Initial visually inadequate amma trials are retained
 under `output/diagnostics/initial-amma-tests/` instead of the saved-surface library.

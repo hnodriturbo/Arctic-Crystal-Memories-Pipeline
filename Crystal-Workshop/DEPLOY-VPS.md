@@ -12,7 +12,7 @@ The deployable unit is the complete `Crystal-Workshop/` tree:
 2. `meshy-pipeline` owns direct Meshy uploads, job work and diagnostics.
 3. `pipeline-converter` turns Meshy or uploaded models into OBJ, DXF and the
    point-cloud formats used by the engraving workflow.
-4. `ACM-Web-Pipeline` is the authenticated Next.js operator interface joining the
+4. `CCM-Web-Pipeline` is the authenticated Next.js operator interface joining the
    three pipelines together.
 
 ## Python policy
@@ -82,7 +82,7 @@ commit, push, or include ignored environments, secrets, caches, or workspaces.
 ## Production checks
 
 ```bash
-cd /home/hreidar/apps/ccm-workshop/current/Crystal-Workshop/ACM-Web-Pipeline
+cd /home/hreidar/apps/ccm-workshop/current/Crystal-Workshop/CCM-Web-Pipeline
 npm run db:status
 pm2 status ccm-workshop
 curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3003/login

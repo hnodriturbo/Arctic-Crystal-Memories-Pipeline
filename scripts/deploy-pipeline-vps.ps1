@@ -11,7 +11,9 @@ param(
   [string]$SshHost = "acm-vps",
   [string]$RemoteRoot = "/home/hreidar/apps/ccm-workshop",
   [switch]$DeployWorkingTree,
-  [string]$ReleaseLabel = 'crystal-workshop'
+  [string]$ReleaseLabel = 'crystal-workshop',
+  [switch]$PrepareOnly,
+  [switch]$PreserveExistingReleases
 )
 
 $ErrorActionPreference = "Stop"
@@ -104,11 +106,21 @@ try {
       $stageBoundary = [System.IO.Path]::GetFullPath($stagingPath) + [System.IO.Path]::DirectorySeparatorChar
       if (-not $oldStage.StartsWith($stageBoundary) -or -not $newStage.StartsWith($stageBoundary)) { throw 'Unsafe staging paths' }
       Copy-Item -LiteralPath $oldStage -Destination $newStage -Recurse
-      if (-not (Test-Path -LiteralPath (Join-Path $newStage 'ACM-Web-Pipeline/package.json'))) { throw 'Staged runtime missing' }
     }
 
+    # Older commits keep the former app folder; normalize only the disposable archive.
+    $legacyApp = [IO.Path]::GetFullPath((Join-Path $stagingPath "$sourceFolder/ACM-Web-Pipeline"))
+    $currentApp = [IO.Path]::GetFullPath((Join-Path $stagingPath "$sourceFolder/CCM-Web-Pipeline"))
+    $stageBoundary = [IO.Path]::GetFullPath($stagingPath) + [IO.Path]::DirectorySeparatorChar
+    if (-not $legacyApp.StartsWith($stageBoundary) -or -not $currentApp.StartsWith($stageBoundary)) { throw 'Unsafe staged application paths' }
+    if (Test-Path -LiteralPath $legacyApp) {
+      if (Test-Path -LiteralPath $currentApp) { throw 'Ambiguous staged application folders' }
+      Rename-Item -LiteralPath $legacyApp -NewName 'CCM-Web-Pipeline'
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $currentApp 'package.json'))) { throw 'Staged runtime missing' }
+
     # Only runtime applications enter the overlay; unrelated research and lessons stay local.
-    $runtimePaths = @('Crystal-Workshop/ACM-Web-Pipeline', 'Crystal-Workshop/pipeline-converter', 'Crystal-Workshop/image-pipeline', 'Crystal-Workshop/meshy-pipeline', 'Crystal-Workshop/docs/WORKSHOP-OPERATIONS.md', 'Crystal-Workshop/docs/GLB-POINT-CLOUD-DXF.md', 'deployment')
+    $runtimePaths = @('Crystal-Workshop/CCM-Web-Pipeline', 'Crystal-Workshop/pipeline-converter', 'Crystal-Workshop/image-pipeline', 'Crystal-Workshop/meshy-pipeline', 'Crystal-Workshop/docs/WORKSHOP-OPERATIONS.md', 'Crystal-Workshop/docs/GLB-POINT-CLOUD-DXF.md', 'deployment')
     $changedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=ACMRTUXB -- @runtimePaths)
     $untrackedPaths = @(& git -C $projectRoot ls-files --others --exclude-standard -- @runtimePaths)
     $deletedPaths = @(& git -C $projectRoot diff HEAD --name-only --diff-filter=D -- @runtimePaths)
@@ -173,6 +185,8 @@ next_link="`$root/.current-`$release_id"
 ecosystem="`$shared/ecosystem.config.cjs"
 ecosystem_previous="`$shared/.ecosystem-`$release_id.previous"
 switched=0
+prepare_only='$([int]$PrepareOnly.IsPresent)'
+preserve_releases='$([int]$PreserveExistingReleases.IsPresent)'
 
 case "`$new_release" in "`$releases"/*) ;; *) echo 'Unsafe release path.' >&2; exit 1 ;; esac
 test -L "`$current_link"
@@ -214,7 +228,7 @@ link_shared_directory Crystal-Workshop/meshy-pipeline/output "`$shared/workspace
 link_shared_directory Crystal-Workshop/pipeline-converter/.venv "`$shared/venvs/pipeline-converter"
 link_shared_directory Crystal-Workshop/pipeline-converter/input "`$shared/workspaces/pipeline-converter/input"
 link_shared_directory Crystal-Workshop/pipeline-converter/output "`$shared/workspaces/pipeline-converter/output"
-ln -s "`$shared/.env.production" "`$new_release/Crystal-Workshop/ACM-Web-Pipeline/.env.production"
+ln -s "`$shared/.env.production" "`$new_release/Crystal-Workshop/CCM-Web-Pipeline/.env.production"
 
 sync_environment() {
   local name="`$1"
@@ -263,13 +277,20 @@ BLENDER_EXE="`$shared/tools/blender/blender" \
   "`$shared/venvs/pipeline-converter/bin/python" -m unittest discover \
   -s "`$new_release/Crystal-Workshop/pipeline-converter/tests" -v
 
-cd "`$new_release/Crystal-Workshop/ACM-Web-Pipeline"
+cd "`$new_release/Crystal-Workshop/CCM-Web-Pipeline"
 npm ci --no-audit --no-fund
 npm run db:generate
 node --input-type=module -e 'import argon2 from "argon2"; const hash = await argon2.hash("runtime-probe"); if (!await argon2.verify(hash, "runtime-probe")) process.exit(1)'
 npm run build
 npm run db:status
 test -s .next/BUILD_ID
+
+# Keep a built candidate inactive while storage and authenticated checks run.
+if test "`$prepare_only" -eq 1; then
+  switched=1
+  printf 'WORKSHOP_RELEASE_PREPARED=%s\n' "`$new_release"
+  exit 0
+fi
 
 cp -p -- "`$ecosystem" "`$ecosystem_previous"
 cp -- "`$new_release/deployment/ecosystem.config.cjs" "`$ecosystem"
@@ -310,6 +331,7 @@ fi
 
 current_release=`$(readlink -f "`$current_link")
 rollback_count=0
+if test "`$preserve_releases" -eq 0; then
 while IFS= read -r old_release; do
   test "`$old_release" = "`$current_release" && continue
   if test "`$rollback_count" -lt 2; then
@@ -318,6 +340,7 @@ while IFS= read -r old_release; do
   fi
   case "`$old_release" in "`$releases/"*) rm -rf -- "`$old_release" ;; *) exit 1 ;; esac
 done < <(find "`$releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' | sort -nr | cut -d' ' -f2-)
+fi
 
 printf 'PIPELINE_RELEASE_ACTIVE release=%s previous=%s\n' "`$new_release" "`$previous_release"
 printf 'PIPELINE_HEALTHCHECK_OK\n'
