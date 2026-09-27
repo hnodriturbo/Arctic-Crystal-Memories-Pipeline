@@ -11,7 +11,7 @@ import { stableJson, readIdentity, snapshotIdentity, orderToken } from '../src/l
 import { saveDxf, versions, downloadDxf } from '../src/lib/orders/storage.mjs';
 const key = 'salescloud-orders/CCM-123/recovery/v1/20260926.json';
 function fixture() {
-  const payload = { order: { id: 'canonical-123', orderNumber: 'CCM-123', source: 'IN_STORE', createdAt: '2026-09-26T12:00:00Z' }, orderItems: [] };
+  const payload = { order: { id: 'canonical-123', orderNumber: 'CCM-123', source: 'IN_STORE', status: 'CONFIRMED', paymentStatus: 'PAID_IN_STORE', createdAt: '2026-09-26T12:00:00Z' }, orderItems: [] };
   return { format: 'acm-order-recovery', schemaVersion: 1, checksumAlgorithm: 'sha256', checksum: createHash('sha256').update(stableJson(payload)).digest('hex'), orderId: payload.order.id, orderNumber: payload.order.orderNumber, capturedAt: '2026-09-26T13:00:00Z', payload };
 }
 test('canonical identity excludes payment claims; corruption, channel mismatch and traversal fail', () => {
@@ -29,6 +29,15 @@ test('cash evidence is separate from SalesCloud and cannot be reclassified by it
   assert.equal(readIdentity(doc, key.replace('salescloud-orders', 'cash-orders')).paymentMethod, 'CASH');
   assert.throws(() => readIdentity(doc, key), /channel/);
   assert.throws(() => readIdentity(fixture(), key.replace('salescloud-orders', 'cash-orders')), /channel/);
+});
+test('retained unpaid drafts and tests remain readable evidence, excluded from production writes', async () => {
+  for (const patch of [{ status: 'OPEN', paymentStatus: 'UNPAID' }, { isTestOrder: true }, { status: 'REFUNDED' }]) {
+    const doc = fixture(); Object.assign(doc.payload.order, patch);
+    doc.checksum = createHash('sha256').update(stableJson(doc.payload)).digest('hex');
+    const order = readIdentity(doc, key);
+    assert.equal(order.productionEligible, false);
+    await assert.rejects(saveDxf({ order }), /cannot receive/);
+  }
 });
 test('DXF manifest last, repeat idempotent, versions isolated; corrupt readback never creates manifest', async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'ccm-orders-test-'));

@@ -20,7 +20,8 @@ export function readIdentity(document, key) {
   if (!['ONLINE', 'IN_STORE'].includes(order.source)) throw Error('Unknown order channel');
   if ((identity.root.startsWith('cash-orders/') && (order.source !== 'IN_STORE' || order.paymentMethodType !== 'CASH')) || (order.paymentMethodType === 'CASH' && !identity.root.startsWith('cash-orders/')) || (identity.root.startsWith('salescloud-orders/') && order.source !== 'IN_STORE') || (identity.root.startsWith('web-orders/') && order.source !== 'ONLINE')) throw Error('Order channel mismatch');
   if (![document.capturedAt, order.createdAt].every(date => typeof date === 'string' && Number.isFinite(Date.parse(date)))) throw Error('Invalid evidence date');
-  return { id: order.id, orderNumber: order.orderNumber, channel: order.source, paymentMethod: order.paymentMethodType ?? null, capturedAt: document.capturedAt, orderedAt: order.createdAt, itemCount: document.payload.orderItems.length, snapshotKey: key };
+  const productionEligible = !order.isTestOrder && !order.testArchivedAt && ['CONFIRMED','IN_PRODUCTION','READY','SHIPPED','DELIVERED'].includes(order.status) && ['PAID','PAID_IN_STORE'].includes(order.paymentStatus);
+  return { id: order.id, orderNumber: order.orderNumber, channel: order.source, paymentMethod: order.paymentMethodType ?? null, capturedAt: document.capturedAt, orderedAt: order.createdAt, itemCount: document.payload.orderItems.length, snapshotKey: key, productionEligible };
 }
 export function orderToken(orderId) {
   if (typeof orderId !== 'string' || !orderId || orderId.length > 200) throw Error('Invalid order identity');

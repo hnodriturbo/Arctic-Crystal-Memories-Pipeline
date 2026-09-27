@@ -53,7 +53,7 @@ export default function ProductionOrders() {
   return <section className="space-y-5">
     <h2 className="text-2xl font-semibold">Orders &amp; DXF files</h2>
     <p className="text-sm text-muted">{text('Veldu pöntun, vistaðu yfirfarna DXF-skrá úr Cockpit3D og sæktu valda útgáfu á tölvunni við vélina.', 'Choose an order, save your reviewed Cockpit3D DXF and download the chosen version on the machine computer.')}</p>
-    <p className="text-sm text-muted">{text('Pöntunarlistinn byggir á varðveittum Main-afritum. Dagsetning afrits sést við pöntun; núverandi greiðslustaða er í Main.', 'Orders come from retained Main snapshots. The snapshot date is shown per order; Main holds current payment status.')}</p>
+    <p className="text-sm text-muted">{text('Listinn sýnir framleiðslupantanir úr varðveittum CCM-afritum. Ógreidd drög og prófanir eru undanskilin. Núverandi greiðslustaða er í CCM.', 'The list shows production orders from retained CCM snapshots. Unpaid drafts and tests are excluded. CCM holds current payment status.')}</p>
     <div className="flex flex-wrap gap-3">
       <input aria-label={text('Leita að pöntun', 'Find order')} placeholder={text('Pöntunarnúmer', 'Order number')} value={search} onChange={event => setSearch(event.target.value)} className={input} />
       <select aria-label={text('Sölurás', 'Sales channel')} value={channel} onChange={event => setChannel(event.target.value)} className={input}><option value="">{text('Allar pantanir', 'All orders')}</option><option value="ONLINE">Web</option><option value="IN_STORE">In-store</option></select>

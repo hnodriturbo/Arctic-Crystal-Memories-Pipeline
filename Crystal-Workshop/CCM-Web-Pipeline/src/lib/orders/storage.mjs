@@ -42,7 +42,7 @@ export async function listOrders() {
     }
     const orders = [];
     for (const { key } of latest.values()) orders.push(readIdentity(await json(source, key), key));
-    return orders.sort((a, b) => b.orderedAt.localeCompare(a.orderedAt));
+    return orders.filter(order => order.productionEligible).sort((a, b) => b.orderedAt.localeCompare(a.orderedAt));
   } finally { source.client.destroy(); }
 }
 function manifestKey(orderId, hash) {
@@ -70,6 +70,7 @@ async function verifyBody(target, key, expectedHash, expectedBytes) {
   return object.ETag;
 }
 export async function saveDxf({ order, path, sha256, bytes, filename, userId }) {
+  if (!order.productionEligible) throw Error('Archived draft, test or unpaid order cannot receive production files');
   const target = store('R2_PIPELINE', 'ccm-workshop');
   const key = manifestKey(order.id, sha256);
   const fileKey = `production-orders/${orderToken(order.id)}/files/${sha256}.dxf`;
