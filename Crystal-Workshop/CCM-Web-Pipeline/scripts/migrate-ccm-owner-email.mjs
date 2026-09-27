@@ -13,7 +13,7 @@ const db=new PrismaClient({adapter:new PrismaPg({connectionString:process.env.DA
 try{
  const rows=await db.user.findMany({where:{email:{in:['hreidar@acm.is','hreidar@ccm.is']}}});
  assert.equal(rows.length,1,'Expected exactly one existing owner; never merge accounts');
- const before=rows[0];assert.equal(before.role,'OWNER');assert.equal(before.isActive,true);
+ const before=rows[0];assert.ok(['OWNER','ADMIN'].includes(before.role)); // OWNER became ADMIN on 27-09-2026assert.equal(before.isActive,true);
  if(apply&&before.email!=='hreidar@ccm.is'){
   const backupArg=process.argv.find(a=>a.startsWith('--backup-dir='));assert.ok(backupArg,'Explicit backup directory required');
   const folder=path.resolve(backupArg.slice(13));fs.mkdirSync(folder,{recursive:true,mode:0o700});

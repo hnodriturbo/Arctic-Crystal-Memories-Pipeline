@@ -12,8 +12,8 @@
  * agent did something, and the account can be switched off on its own without
  * touching the owner's access.
  *
- * ADMIN rather than OWNER: of the two roles this schema has, it is the lesser,
- * and nothing an agent does to review the workshop needs more.
+ * ADMIN: since 27-09-2026 the only Workshop role (owner decision). The separate
+ * account still keeps agent actions distinguishable from the owner's in the auth log.
  *
  * Idempotent, and it never prints the password - run it again to rotate one.
  */

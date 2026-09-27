@@ -18,7 +18,7 @@ export async function POST(request) {
   const session = await auth();
   if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isActive: true, role: true } });
-  if (!user?.isActive || !['OWNER', 'ADMIN'].includes(user.role)) return Response.json({ error: 'Forbidden' }, { status: 403 });
+  if (!user?.isActive || user.role !== 'ADMIN') return Response.json({ error: 'Forbidden' }, { status: 403 });
   // Next's internal URL may use localhost behind the proxy; compare against the configured public origin.
   if (request.headers.get('origin') !== new URL(process.env.AUTH_URL || request.url).origin) return Response.json({ error: 'Foreign origin' }, { status: 403 });
   if (!sharedConfigured()) return Response.json({ error: 'Shared handoff is not configured.' }, { status: 503 });

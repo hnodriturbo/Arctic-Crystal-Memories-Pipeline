@@ -18,8 +18,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// One role since 27-09-2026 (owner decision): the owner and staff are all ADMIN.
 enum UserRole {
-  OWNER
   ADMIN
 }
 
@@ -30,7 +30,7 @@ model User {
   email              String   @unique
   name               String?
   passwordHash       String
-  role               UserRole @default(OWNER)
+  role               UserRole @default(ADMIN)
   isActive           Boolean  @default(true)
   mustChangePassword Boolean  @default(false)
   createdAt          DateTime @default(now())

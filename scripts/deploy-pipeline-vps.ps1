@@ -13,7 +13,9 @@ param(
   [switch]$DeployWorkingTree,
   [string]$ReleaseLabel = 'crystal-workshop',
   [switch]$PrepareOnly,
-  [switch]$PreserveExistingReleases
+  [switch]$PreserveExistingReleases,
+  # Back up the Workshop database and apply committed Prisma migrations before the build.
+  [switch]$ApplyMigrations
 )
 
 $ErrorActionPreference = "Stop"
@@ -186,6 +188,7 @@ ecosystem="`$shared/ecosystem.config.cjs"
 ecosystem_previous="`$shared/.ecosystem-`$release_id.previous"
 switched=0
 prepare_only='$([int]$PrepareOnly.IsPresent)'
+apply_migrations='$([int]$ApplyMigrations.IsPresent)'
 preserve_releases='$([int]$PreserveExistingReleases.IsPresent)'
 
 case "`$new_release" in "`$releases"/*) ;; *) echo 'Unsafe release path.' >&2; exit 1 ;; esac
@@ -280,6 +283,12 @@ BLENDER_EXE="`$shared/tools/blender/blender" \
 cd "`$new_release/Crystal-Workshop/CCM-Web-Pipeline"
 npm ci --no-audit --no-fund
 npm run db:generate
+if test "`$apply_migrations" -eq 1; then
+  set -a; . "`$shared/.env.production"; set +a
+  mkdir -p "`$shared/backups"
+  pg_dump "`${DATABASE_URL%%\?*}" -Fc -f "`$shared/backups/workshop-before-migrate-`$(date -u +%Y%m%dT%H%M%SZ).dump"
+  npm run db:deploy
+fi
 node --input-type=module -e 'import argon2 from "argon2"; const hash = await argon2.hash("runtime-probe"); if (!await argon2.verify(hash, "runtime-probe")) process.exit(1)'
 npm run build
 npm run db:status

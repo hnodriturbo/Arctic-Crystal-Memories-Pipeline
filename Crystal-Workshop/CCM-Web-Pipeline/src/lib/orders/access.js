@@ -5,7 +5,7 @@ export async function operator(request, write = false) {
   const session = await auth();
   if (!session?.user?.id) throw Error('ACCESS');
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, isActive: true, role: true } });
-  if (!user?.isActive || !['OWNER', 'ADMIN'].includes(user.role)) throw Error('ACCESS');
+  if (!user?.isActive || user.role !== 'ADMIN') throw Error('ACCESS');
   if (write && request.headers.get('origin') !== new URL(process.env.AUTH_URL || request.url).origin) throw Error('ACCESS');
   return user;
 }

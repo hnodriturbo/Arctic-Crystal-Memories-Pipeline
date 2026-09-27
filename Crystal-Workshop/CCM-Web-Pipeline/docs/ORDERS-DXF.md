@@ -38,7 +38,7 @@ bytes, object ETag, upload date, operator ID and explicit `OPERATOR_REVIEWED`
 state. This is the operator's review declaration; container recognition is not
 a geometric, DXF dialect or laser-machine compatibility certificate.
 
-Every endpoint rechecks the active Workshop OWNER/ADMIN in the database.
+Every endpoint rechecks the active Workshop ADMIN in the database.
 Uploads also require the configured same origin. Downloads resolve a manifest
 inside that exact order and stream the original body with an ETag condition,
 attachment disposition, SHA header and private/no-store caching. No general R2
