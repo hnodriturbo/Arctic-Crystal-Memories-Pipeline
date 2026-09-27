@@ -6,12 +6,14 @@
  */
 
 import LanguageToggle from "@/components/LanguageToggle";
+import Image from "next/image";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function LoginHeader() {
   const { locale } = useLanguage();
   return (
     <header className="space-y-3 text-center">
+      <Image src="/logo/ccm-crystal-workshop-v1.png" alt="CCM Crystal Workshop" width={2172} height={724} preload unoptimized className="h-auto w-full" />
       <div className="flex justify-center">
         <LanguageToggle />
       </div>

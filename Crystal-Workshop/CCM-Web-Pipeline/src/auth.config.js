@@ -65,6 +65,8 @@ export const authConfig = {
      */
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
+      // Only the approved service logo is public; private workspace files stay guarded.
+      if (pathname === '/logo/ccm-crystal-workshop-v1.png') return true;
       if (pathname === '/login' && auth?.user) return Response.redirect(new URL('/', request.nextUrl));
       if (PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
       if (

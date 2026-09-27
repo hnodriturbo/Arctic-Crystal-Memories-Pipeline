@@ -14,6 +14,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 export const LANGUAGE_STORAGE_KEY = "acm-pipeline-language";
 
 const IS = {
+  'Order-linked production files': 'Framleiðsluskrár tengdar pöntun',
+  'Save reviewed DXF versions and download them on the machine computer.': 'Vista yfirfarnar DXF-útgáfur og sækja þær á tölvunni við vélina.',
   "Synchronizing with R2…": "Samstilli við R2…",
   "Synchronize this collection with R2": "Samstilla þetta safn við R2",
   "conflicts — both copies preserved; check the sync log": "árekstrar — bæði eintök varðveitt; skoðaðu samstillingarskrána",
@@ -38,6 +40,18 @@ const IS = {
   "Part": "Partur",
 
   // Claude Design - animations workspace and the zip shelf.
+  "Fetch this collection from R2 to check its dependencies.": "Sæktu þetta safn af R2 til að athuga tengdar skrár.",
+  "Missing or unsupported dependencies:": "Tengdar skrár vantar eða eru óstuddar:",
+  "External or dynamic dependencies: verify a short render first.": "Ytri eða kvikar tengingar: yfirfarðu stutta myndbandsprufu fyrst.",
+  "Supporting files and archives": "Stoðskrár og safnskrár",
+  "Extract the archive before rendering.": "Afþjappaðu safnskránni áður en myndband er unnið.",
+  "Component source requires an HTML entry point.": "Frumkóði íhlutar þarf HTML-inngang.",
+  "Transfer to shared": "Færa yfir í shared",
+  "Shared package language and device": "Tungumál og tæki fyrir shared-pakka",
+  "Copying and verifying the shared package…": "Afrita og sannprófa shared-pakkann…",
+  "Shared transfer failed.": "Afhending í shared mistókst.",
+  "Shared package verified. Main publication is a separate step.": "Shared-pakki staðfestur. Birting á Main er sérstakt skref.",
+  "Copies the selected package; originals stay in Workshop. This does not publish to Main.": "Afritar valinn pakka; frumgögn haldast í Workshop. Þetta birtir ekki efnið á Main.",
   "Claude Design": "Claude Design",
   "Design Animations": "Hreyfi Hannanir",
   "Design Archives": "Hönnunar Geymsla",

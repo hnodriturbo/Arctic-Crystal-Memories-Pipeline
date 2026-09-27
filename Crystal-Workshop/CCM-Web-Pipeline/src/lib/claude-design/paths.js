@@ -14,10 +14,10 @@
 
 import path from "node:path";
 
-// The repository sits beside ACM-Web-Workshop in the shared workspace root, four
+// Claude-Design-Stuff sits in the shared workspace root, four
 // levels above this app. The env var wins whenever it is set, which is how the
 // VPS points at its workspace instead.
-const FALLBACK_ROOT = path.resolve(process.cwd(), "..", "..", "..", "Claude-Design-Stuff");
+const FALLBACK_ROOT = path.resolve(process.cwd(), "..", "..", "..", "..", "Claude-Design-Stuff");
 
 export const DESIGN_ROOT = process.env.CLAUDE_DESIGN_ROOT
   ? path.resolve(process.env.CLAUDE_DESIGN_ROOT)

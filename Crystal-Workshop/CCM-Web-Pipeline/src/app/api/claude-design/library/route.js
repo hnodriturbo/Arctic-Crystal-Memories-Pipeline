@@ -14,8 +14,9 @@
 import { spawnSync } from "node:child_process";
 
 import { auth } from "@/auth";
-import { listCollections, listExported, rootPresent } from "@/lib/claude-design/scan";
-import { DESIGN_ROOT, R2_VIDEO_PREFIX } from "@/lib/claude-design/paths";
+import { listCollections, listExported, rootPresent, guessSize } from "@/lib/claude-design/scan";
+import { mergeRemote } from "@/lib/claude-design/discovery.mjs";
+import { DESIGN_ROOT, R2_VIDEO_PREFIX, R2_SOURCE_PREFIX } from "@/lib/claude-design/paths";
 import { listObjects, workshopR2Configured } from "@/lib/storage/workshop-r2";
 
 export const runtime = "nodejs";
@@ -84,11 +85,13 @@ export async function GET() {
 
   const local = rootPresent();
   let videos = [];
+  let remoteSources = [];
   let r2Error = null;
 
   if (workshopR2Configured()) {
     try {
       videos = groupVideos(await listObjects(R2_VIDEO_PREFIX));
+      remoteSources = await listObjects(R2_SOURCE_PREFIX);
     } catch (error) {
       r2Error = error.message;
     }
@@ -98,7 +101,9 @@ export async function GET() {
     {
       root: DESIGN_ROOT,
       rootPresent: local,
-      collections: local ? listCollections() : [],
+      collections: mergeRemote(local ? listCollections() : [], remoteSources).map(group => ({
+        ...group, designs: group.designs.map(design => ({ ...guessSize(design.name), ...design })),
+      })),
       exported: local ? listExported() : [],
       videos,
       r2Configured: workshopR2Configured(),

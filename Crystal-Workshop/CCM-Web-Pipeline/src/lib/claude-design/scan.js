@@ -11,10 +11,11 @@
  * glance which archives still had no folder behind them.
  */
 
+import { discoverLocal } from "./discovery.mjs";
 import fs from "node:fs";
 import path from "node:path";
 
-import { DESIGN_ROOT, EXPORT_ROOT, ZIP_DIR, IGNORED_DIRS, toPosix } from "./paths";
+import { DESIGN_ROOT, EXPORT_ROOT, ZIP_DIR, toPosix } from "./paths";
 
 /** `.dc.html` fetches its `.jsx` scenes at runtime; plain `.html` is self-contained. */
 function kindOf(fileName) {
@@ -54,75 +55,17 @@ function normalize(name) {
   return name.toLowerCase().replace(/\.zip$/, "").replace(/[^a-z0-9]/g, "");
 }
 
-/**
- * Walk one collection for HTML files, three levels deep. Three is enough for
- * `customer-journey/cj-video-full/file.html` and shallow enough that the scan
- * never disappears into an assets folder full of images.
- */
-function walkHtml(directoryAbsolute, relativePrefix, depth, found) {
-  if (depth > 3) return;
-
-  let entries;
-  try {
-    entries = fs.readdirSync(directoryAbsolute, { withFileTypes: true });
-  } catch {
-    return;
-  }
-
-  for (const entry of entries) {
-    const relative = relativePrefix ? `${relativePrefix}/${entry.name}` : entry.name;
-
-    if (entry.isDirectory()) {
-      if (IGNORED_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
-      walkHtml(path.join(directoryAbsolute, entry.name), relative, depth + 1, found);
-      continue;
-    }
-    if (!/\.html$/i.test(entry.name)) continue;
-
-    const absolute = path.join(directoryAbsolute, entry.name);
-    const info = fs.statSync(absolute);
-    found.push({
-      name: entry.name,
-      relPath: relative,
-      kind: kindOf(entry.name),
-      bytes: info.size,
-      modified: info.mtimeMs,
-      duration: readDuration(absolute),
-      ...guessSize(entry.name),
-    });
-  }
-}
-
-/** Every collection that actually contains a design. Empty folders are dropped. */
+/** Discover local entries and explain dependency-incomplete sources. */
 export function listCollections() {
-  let entries;
-  try {
-    entries = fs.readdirSync(DESIGN_ROOT, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-
-  const collections = [];
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    if (IGNORED_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
-
-    const found = [];
-    walkHtml(path.join(DESIGN_ROOT, entry.name), "", 0, found);
-    if (!found.length) continue;
-
-    found.sort((a, b) => a.relPath.localeCompare(b.relPath, "is"));
-    collections.push({
-      name: entry.name,
-      designs: found.map((design) => ({
-        ...design,
-        rootRel: toPosix(path.join(entry.name, design.relPath)),
-      })),
-    });
-  }
-
-  collections.sort((a, b) => a.name.localeCompare(b.name, "is"));
-  return collections;
+  return discoverLocal(DESIGN_ROOT).map(group => ({
+    ...group,
+    designs: group.designs.map(design => ({
+      ...design,
+      kind: kindOf(design.name),
+      duration: readDuration(path.join(DESIGN_ROOT, design.rootRel)),
+      ...guessSize(design.name),
+    })),
+  }));
 }
 
 /**

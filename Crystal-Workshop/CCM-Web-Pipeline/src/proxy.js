@@ -31,11 +31,14 @@ export default function proxy(request, event) {
 
 export const config = {
   /*
-   * Everything except Next's own static output.
+   * Everything except Next's own static output and the streamed DXF endpoint.
+   * That endpoint independently rechecks auth + active database role and write
+   * origin. Excluding it avoids Next 16's 10MB proxy body-clone truncation and
+   * preserves its bounded streaming upload instead of buffering DXF in memory.
    *
    * /login, /api/auth and /webhooks are still matched here and then let
    * through by the `authorized` callback, which keeps the whole public list in
    * one place rather than splitting it between a regex and a callback.
    */
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/production-orders/dxf(?:/|$)).*)"],
 };

@@ -87,6 +87,8 @@ export default function ClaudeDesignClient() {
   const [jobs, setJobs] = useState([]);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [handoffVariant, setHandoffVariant] = useState('');
+  const [handoffReceipt, setHandoffReceipt] = useState(null);
 
   // Render settings. `sizeMode` of "design" means each design keeps the size
   // read from its own file, which is right far more often than one global
@@ -247,7 +249,7 @@ export default function ClaudeDesignClient() {
 
   /** Select or clear a whole collection in one click - editions come in sets. */
   const toggleCollection = (group) => {
-    const paths = group.designs.map((design) => design.rootRel);
+    const paths = group.designs.filter(design => design.readiness?.ready).map((design) => design.rootRel);
     const allSelected = paths.every((path) => selected.includes(path));
     setSelected((current) =>
       allSelected
@@ -368,6 +370,20 @@ export default function ClaudeDesignClient() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function promoteSelected() {
+    if (!preview || !handoffVariant) return;
+    setBusy(true); setHandoffReceipt(null); setNotice(t('Copying and verifying the shared package…'));
+    try {
+      const response = await fetch('/api/claude-design/promote', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: preview.kind, rootRel: preview.rootRel, key: preview.key, variant: handoffVariant }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || t('Shared transfer failed.'));
+      setHandoffReceipt(result.receipt); setNotice(t('Shared package verified. Main publication is a separate step.'));
+    } catch (error) { setNotice(error.message); } finally { setBusy(false); }
   }
 
   // ========================================
@@ -511,6 +527,7 @@ export default function ClaudeDesignClient() {
                         >
                           <input
                             type="checkbox"
+                            disabled={!design.readiness?.ready}
                             checked={isSelected}
                             onChange={() => toggleDesign(design.rootRel)}
                             aria-label={`${t("Select")} ${design.name}`}
@@ -518,6 +535,7 @@ export default function ClaudeDesignClient() {
                           />
                           <button
                             type="button"
+                            disabled={design.remoteOnly}
                             onClick={() =>
                               setPreview({
                                 kind: "design",
@@ -536,10 +554,23 @@ export default function ClaudeDesignClient() {
                             </span>
                           </button>
                         </div>
+                        {!design.readiness?.ready ? (
+                          <p className="break-words px-2 pb-2 text-xs text-warning-text">
+                            {design.remoteOnly ? t('Fetch this collection from R2 to check its dependencies.') : t('Missing or unsupported dependencies:') + ' ' + (design.readiness?.issues || []).join('; ')}
+                          </p>
+                        ) : design.readiness.runtimeCheckRequired ? (
+                          <p className="px-2 pb-2 text-xs text-muted">{t('External or dynamic dependencies: verify a short render first.')}</p>
+                        ) : null}
                       </li>
                     );
                   })}
                 </ul>
+                {(group.unsupported || []).length ? (
+                  <details className="mt-2 text-xs text-muted">
+                    <summary>{t('Supporting files and archives')} ({group.unsupported.length})</summary>
+                    <ul>{group.unsupported.map(item => <li className="break-words py-1" key={item.rootRel}>{item.rootRel} — {t(item.reason === 'archive-needs-extraction' ? 'Extract the archive before rendering.' : 'Component source requires an HTML entry point.')}</li>)}</ul>
+                  </details>
+                ) : null}
               </div>
             ))}
           </div>
@@ -592,6 +623,19 @@ export default function ClaudeDesignClient() {
               >
                 {t("Delete from R2")}
               </button>
+            </div>
+          ) : null}
+          {preview ? (
+            <div className="space-y-2 border-t border-surface-border pt-3">
+              <label className="block text-xs">{t('Shared package language and device')}
+                <select className="ml-2 rounded border border-input-border bg-input-background p-2" value={handoffVariant} onChange={event => setHandoffVariant(event.target.value)}>
+                  <option value="">{t('Select')}</option>
+                  {['is-desktop', 'is-tablet', 'is-mobile', 'en-desktop', 'en-tablet', 'en-mobile'].map(value => <option key={value} value={value}>{value}</option>)}
+                </select>
+              </label>
+              <button type="button" disabled={busy || !handoffVariant || (preview.kind === 'design' && !designsByPath.get(preview.rootRel)?.readiness?.ready)} onClick={promoteSelected} className="rounded-lg bg-accent px-4 py-2 text-sm text-accent-foreground disabled:opacity-40">{t('Transfer to shared')}</button>
+              <p className="text-xs text-muted">{t('Copies the selected package; originals stay in Workshop. This does not publish to Main.')}</p>
+              {handoffReceipt ? <pre className="overflow-x-auto whitespace-pre-wrap break-all text-xs" aria-live="polite">{JSON.stringify(handoffReceipt, null, 2)}</pre> : null}
             </div>
           ) : null}
         </section>

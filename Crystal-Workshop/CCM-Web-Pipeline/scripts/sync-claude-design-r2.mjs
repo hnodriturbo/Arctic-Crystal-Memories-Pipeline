@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { syncTree } from '../src/lib/claude-design/sync-engine.mjs';
 import { designStore } from '../src/lib/claude-design/sync-store.mjs';
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const root = process.env.CLAUDE_DESIGN_ROOT ? path.resolve(process.env.CLAUDE_DESIGN_ROOT) : path.resolve(app, '../../../Claude-Design-Stuff');
+const root = process.env.CLAUDE_DESIGN_ROOT ? path.resolve(process.env.CLAUDE_DESIGN_ROOT) : path.resolve(app, '../../../../Claude-Design-Stuff');
 const store = designStore();
 const options = { store, dryRun: process.argv.includes('--dry-run'), onLine: console.log };
 const sources = await syncTree({ ...options, root });

@@ -19,6 +19,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { inspectDesign } from "./discovery.mjs";
 
 import { DESIGN_ROOT, EXPORT_ROOT, R2_VIDEO_PREFIX, safeJoin } from "./paths";
 import { putFile, workshopR2Configured } from "@/lib/storage/workshop-r2";
@@ -98,6 +99,8 @@ export function enqueue(spec) {
   if (!sourceAbsolute || !fs.existsSync(sourceAbsolute)) {
     throw new Error(`Design not found: ${spec.rootRel}`);
   }
+  const readiness = inspectDesign(DESIGN_ROOT, spec.rootRel);
+  if (!readiness.ready) throw new Error('Design dependencies: ' + readiness.issues.join('; '));
 
   const collection = String(spec.collection || "untitled").replace(/[\\/:*?"<>|]/g, "-");
   const outDir = safeJoin(EXPORT_ROOT, collection);

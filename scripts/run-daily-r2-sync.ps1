@@ -7,11 +7,12 @@ Purpose:
 [CmdletBinding()]
 param()
 $ErrorActionPreference = 'Stop'
-$workspaceRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$workshop = Join-Path $workspaceRoot 'CCM-Web-Workshop\Crystal-Workshop\CCM-Web-Pipeline'
+$repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$workspaceRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..\..'))
+$workshop = Join-Path $repositoryRoot 'Crystal-Workshop\CCM-Web-Pipeline'
 $expenseScript = Join-Path $workspaceRoot 'CCM-Web-Bookkeeping\scripts\run-local-expense-sync.ps1'
 $incomeScript = Join-Path $workspaceRoot 'CCM-Web-Bookkeeping\scripts\run-local-income-sync.ps1'
-$logRoot = Join-Path $workspaceRoot 'CCM-Web-Workshop\deployment\artifacts\r2-sync-logs'
+$logRoot = Join-Path $repositoryRoot 'deployment\artifacts\r2-sync-logs'
 [IO.Directory]::CreateDirectory($logRoot) | Out-Null
 $stamp = [DateTime]::Now.ToString('dd-MM-yyyy-HHmmss')
 $failed = $false

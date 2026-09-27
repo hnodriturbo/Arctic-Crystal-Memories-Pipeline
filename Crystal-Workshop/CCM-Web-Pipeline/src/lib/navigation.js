@@ -17,6 +17,11 @@
 
 export const SECTIONS = [
   {
+    id: 'production-orders', step: 0.5, label: 'Orders & DXF files',
+    hint: 'Order-linked production files',
+    items: [{ id: 'production-orders', label: 'Orders & DXF files', blurb: 'Save reviewed DXF versions and download them on the machine computer.', icon: 'printer' }],
+  },
+  {
     id: "image-pipeline",
     step: 1,
     label: "Image pipeline",
@@ -182,6 +187,7 @@ export const NAVIGATION_QUERY_PARAM = "view";
 const NAV_SLUGS = {
   ...Object.fromEntries(SECTIONS.map(section => [sectionNavId(section.id), section.id])),
   home: 'home',
+  'production-orders': 'orders-dxf',
   "r2-browser": "r2-files",
   library: "inputs-library",
   image: "prepare-images",

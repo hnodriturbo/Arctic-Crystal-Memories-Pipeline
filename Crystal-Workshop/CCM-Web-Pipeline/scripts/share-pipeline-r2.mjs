@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const main = path.resolve(app, '../../../CCM-Web-Main');
+const main = path.resolve(app, '../../../../CCM-Web-Main');
 process.loadEnvFile(path.join(app, '.env.local'));
 const keys = ['R2_PIPELINE_ENDPOINT', 'R2_PIPELINE_ACCESS_KEY_ID', 'R2_PIPELINE_SECRET_ACCESS_KEY', 'R2_PIPELINE_BUCKET_NAME'];
 const readerValues = Object.fromEntries(keys.map(key => [key, process.env[key.replace('R2_PIPELINE_', 'R2_PIPELINE_READONLY_')]]));

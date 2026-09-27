@@ -1,6 +1,17 @@
 <!-- Purpose: Current operator and agent handoff for Crystal Workshop and the R2 showroom library. -->
 # Crystal Workshop operations
 
+## Local repository move — 26-09-2026
+
+The one authoritative repository now lives at
+`CCM-Crystal-Production/CCM-Web-Workshop`; the old workspace-root folder is gone.
+Git identity/history, all private environment files and Python packages were
+preserved. All three Python 3.11 interpreters, activation scripts and existing
+console launchers resolve the new path. The existing daily Windows task action
+now targets this repository's `scripts/run-daily-r2-sync.ps1` and keeps 15:00.
+VPS paths are unchanged. Local Orders & DXF implementation and release gate:
+`../CCM-Web-Pipeline/docs/ORDERS-DXF.md`.
+
 ## Verified CCM storage and deployment — 26-09-2026
 
 Workshop now runs release `20260926T164418Z-ccm-r2-29c9b1bc` on the VPS and
@@ -31,7 +42,7 @@ in ACM-Web-Main; do not reuse that name here.
 
 ## Files and storage
 
-- Local application: `CCM-Web-Workshop/Crystal-Workshop/CCM-Web-Pipeline`.
+- Local application: `CCM-Crystal-Production/CCM-Web-Workshop/Crystal-Workshop/CCM-Web-Pipeline`.
 - Reconstruction engine: `Crystal-Workshop/pipeline-converter/code/cockpit_reconstruct.py`.
 - Cockpit Reconstruct is a separate navigation chapter. Its engine still shares
   the converter Python environment; it has not been moved to an independent engine folder.
@@ -46,7 +57,7 @@ in ACM-Web-Main; do not reuse that name here.
   IDs remain internal. Use the scene browser upload rather than generic presign
   for Blender GLBs so this naming rule is always applied.
 - Windows task `ACM-Bookkeeping-Expense-R2-Sync` runs once daily at **15:00**.
-  `CCM-Web-Workshop/scripts/run-daily-r2-sync.ps1` runs the separate Expenses and
+  `CCM-Crystal-Production/CCM-Web-Workshop/scripts/run-daily-r2-sync.ps1` runs the separate Expenses and
   Cockpit backups even when one fails. Never propagate local deletions to R2.
 
 The old `converter` path must not be recreated. Archived cache backups were

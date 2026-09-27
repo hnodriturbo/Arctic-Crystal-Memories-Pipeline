@@ -360,6 +360,14 @@ async function render() {
 
   try {
     const page = await browser.newPage();
+    const loadFailures = new Set();
+    page.on('pageerror', error => loadFailures.add('Script: ' + error.message));
+    page.on('response', response => {
+      if (response.status() >= 400 && !response.url().endsWith('/favicon.ico')) loadFailures.add('HTTP ' + response.status() + ': ' + new URL(response.url()).pathname);
+    });
+    page.on('requestfailed', request => {
+      if (!request.url().endsWith('/favicon.ico')) loadFailures.add('Failed resource: ' + request.resourceType());
+    });
     await page.setViewport({ width: WIDTH, height: HEIGHT });
     await page.evaluateOnNewDocument(installVirtualClock);
 
@@ -374,11 +382,25 @@ async function render() {
     await page.evaluate(() => {
       for (let index = 0; index < 10; index++) window.__vt.step(1000 / 60);
     });
+    if (loadFailures.size) throw new Error('Design did not load completely: ' + [...loadFailures].join('; '));
 
     const hidden = KEEP_CHROME ? await page.evaluate(hideLoadingOnly) : await page.evaluate(hideChrome);
     if (!hidden) {
       console.log("  !! could not find the player bar - check the first frame before using this file");
     }
+
+    // Capture the full composition after hiding editor chrome, without its reserved 44px gutter.
+    if (!KEEP_CHROME) await page.evaluate(async () => {
+      await document.fonts.ready;
+      const canvas = document.querySelector('[data-om-exportable-video-with-duration-secs]');
+      if (canvas) {
+        const width = Number(canvas.getAttribute('width'));
+        const height = Number(canvas.getAttribute('height'));
+        const style = document.createElement('style');
+        style.textContent = `[data-om-exportable-video-with-duration-secs]{transform:scale(${Math.min(innerWidth / width, innerHeight / height)}) !important;box-shadow:none !important}`;
+        document.head.appendChild(style);
+      }
+    });
 
     await page.evaluate(installSiteStyle, SITE_SCALE, SITE_GAP);
     let siteMarked = await page.evaluate(markSiteText, SITE_SCALE);
@@ -397,6 +419,7 @@ async function render() {
         "-c:v", "libx264",
         "-crf", String(CRF),
         "-preset", "slow",
+        "-threads", "2",
         "-pix_fmt", "yuv420p", // required by Facebook and Instagram
         "-movflags", "+faststart", // playback can start before the file finishes arriving
         "-an",

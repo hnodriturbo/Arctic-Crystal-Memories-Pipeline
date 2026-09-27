@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { S3Client, HeadObjectCommand, PutObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const root = path.resolve(app, '../../../CCM-Crystal-Production/Cockpit3D-Files');
+const root = path.resolve(app, '../../../Cockpit3D-Files');
 const bucket = process.env.R2_PIPELINE_BUCKET_NAME;
 const prefix = 'Cockpit3D-Files/';
 const dryRun = process.argv.includes('--dry-run');

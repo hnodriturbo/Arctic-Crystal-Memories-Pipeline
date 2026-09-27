@@ -14,8 +14,10 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 import R2FileBrowser from "@/components/R2FileBrowser";
+import ProductionOrders from "@/components/ProductionOrders";
 import ClaudeDesignClient from "@/components/ClaudeDesignClient";
 import ClaudeDesignZips from "@/components/ClaudeDesignZips";
 import ConverterClient from "@/components/ConverterClient";
@@ -23,14 +25,12 @@ import WorkshopHome from "@/components/WorkshopHome";
 import ReconstructClient from "@/components/ReconstructClient";
 import EnvironmentsClient from "@/components/EnvironmentsClient";
 import ImageClient from "@/components/ImageClient";
-import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageProvider";
 import MeshyClient from "@/components/MeshyClient";
 import PhotoLibrary from "@/components/PhotoLibrary";
 import PipelineSidebar from "@/components/PipelineSidebar";
 import ReviewClient from "@/components/ReviewClient";
-import CreateUser from "@/components/CreateUser";
-import ThemeToggle from "@/components/ThemeToggle";
+import WorkshopSettings from "@/components/WorkshopSettings";
 import {
   NAV_ITEMS,
   SECTION_VIEWS,
@@ -48,7 +48,7 @@ export default function AppShell({
   environments,
   initialView,
 }) {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const [active, setActive] = useState(initialView);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -157,9 +157,9 @@ export default function AppShell({
       />
 
       <div className="min-w-0 flex-1">
-        {/* Top bar - which step you are on, and the theme control */}
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-surface-border bg-background/95 px-4 py-4 backdrop-blur sm:px-8">
-          <div className="flex min-w-0 items-center gap-3">
+        {/* Keep the service identity visible while the current workspace scrolls. */}
+        <header className="sticky top-0 z-20 grid min-h-20 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-surface-border bg-background/95 px-3 backdrop-blur sm:px-6">
+          <div className="flex min-w-0 max-w-56 items-center gap-2">
             {sidebarCollapsed && <button type="button" onClick={() => setSidebarCollapsed(false)} aria-label="Expand navigation" className="hidden rounded-md border border-surface-border px-3 py-2 lg:block">→</button>}
             <button
               type="button"
@@ -169,18 +169,12 @@ export default function AppShell({
             >
               ☰
             </button>
-            <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-              {t(current?.section?.label)} · Crystal Workshop
-            </p>
-            <p className="truncate text-sm text-muted-strong">{t(current?.blurb)}</p>
+            <div className="min-w-0" title={t(current?.label)}>
+            <p className="truncate text-xs font-medium text-muted-strong">{t(current?.label)}</p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <CreateUser en={locale === "en"} />
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
+          <Image src="/logo/ccm-crystal-workshop-v1.png" alt="CCM Crystal Workshop" width={2172} height={724} preload unoptimized className="h-auto w-[clamp(150px,32vw,420px)]" />
+          <WorkshopSettings />
         </header>
 
         <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-8 sm:py-8">
@@ -257,6 +251,7 @@ export default function AppShell({
             <ClaudeDesignZips onUnpacked={() => setDesignReload((value) => value + 1)} />
           ) : null}
 
+          {active === "production-orders" ? <ProductionOrders /> : null}
           {active === "environments" ? (
             <EnvironmentsClient initial={environments} />
           ) : null}
