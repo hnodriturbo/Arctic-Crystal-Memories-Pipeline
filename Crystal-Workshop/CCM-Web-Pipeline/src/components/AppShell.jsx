@@ -160,11 +160,11 @@ export default function AppShell({
         {/* Keep the service identity visible while the current workspace scrolls. */}
         <header className="sticky top-0 z-20 grid min-h-20 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-surface-border bg-background/95 px-3 backdrop-blur sm:px-6">
           <div className="flex min-w-0 max-w-56 items-center gap-2">
-            {sidebarCollapsed && <button type="button" onClick={() => setSidebarCollapsed(false)} aria-label="Expand navigation" className="hidden rounded-md border border-surface-border px-3 py-2 lg:block">→</button>}
+            {sidebarCollapsed && <button type="button" onClick={() => setSidebarCollapsed(false)} aria-label={t("Expand navigation")} className="hidden rounded-md border border-surface-border px-3 py-2 lg:block">→</button>}
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              aria-label="Open pipeline navigation"
+              aria-label={t("Open pipeline navigation")}
               className="rounded-md border border-surface-border px-2.5 py-1.5 text-sm lg:hidden"
             >
               ☰

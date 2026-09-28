@@ -66,7 +66,7 @@ export default function PipelineSidebar({ active, onSelect, open = false, onClos
             <p className="text-sm font-semibold">Crystal Workshop</p>
             <p className="text-[10px] uppercase tracking-wider text-muted">{t("Operator workspace")}</p>
           </div>
-          <button type="button" onClick={onCollapse} aria-label="Collapse navigation" className="hidden rounded-md border border-surface-border px-2 py-1 lg:block">←</button>
+          <button type="button" onClick={onCollapse} aria-label={t("Collapse navigation")} className="hidden rounded-md border border-surface-border px-2 py-1 lg:block">←</button>
           <button
             type="button"
             onClick={onClose}

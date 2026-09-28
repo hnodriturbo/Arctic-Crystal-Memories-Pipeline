@@ -37,7 +37,7 @@ function FieldLabel({ field, htmlFor }) {
         </span>
       ) : null}
       <span>{t(field.label)}</span>
-      {field.helpHref ? <a href={field.helpHref} aria-label={"Explain " + field.label} className="text-accent">ⓘ</a> : field.help ? <Tooltip text={t(field.help)} /> : null}
+      {field.helpHref ? <a href={field.helpHref} aria-label={t("Explain") + " " + t(field.label)} className="text-accent">ⓘ</a> : field.help ? <Tooltip text={t(field.help)} /> : null}
     </label>
   );
 }
@@ -70,7 +70,7 @@ function Field({ field, value, onChange, fileOptions }) {
               </span>
             ) : null}
             <span>{t(field.label)}</span>
-            {field.helpHref ? <a href={field.helpHref} aria-label={"Explain " + field.label} className="text-accent">ⓘ</a> : field.help ? <Tooltip text={t(field.help)} /> : null}
+            {field.helpHref ? <a href={field.helpHref} aria-label={t("Explain") + " " + t(field.label)} className="text-accent">ⓘ</a> : field.help ? <Tooltip text={t(field.help)} /> : null}
           </span>
           <InlineHelp field={field} value={value} />
         </span>

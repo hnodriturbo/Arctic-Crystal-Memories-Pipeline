@@ -94,8 +94,8 @@ export default function RetextureControls({ job, onJobUpdated, onNotice }) {
         } else if (event.type === "step" || event.type === "stdout") {
           setStatusLine(event.line || "");
         } else if (event.type === "error") {
-          streamError = new Error(event.message || "Retexture failed.");
-          setStatusLine(event.message || "Retexture failed.");
+          streamError = new Error(event.message || (isIcelandic ? "Nýr textúr mistókst." : "Retexture failed."));
+          setStatusLine(event.message || (isIcelandic ? "Nýr textúr mistókst." : "Retexture failed."));
         }
       });
 
@@ -143,7 +143,7 @@ export default function RetextureControls({ job, onJobUpdated, onNotice }) {
 
       <label className="block space-y-1.5">
         <span className="flex items-center justify-between gap-3 text-xs font-medium">
-          <span>Texture prompt</span>
+          <span>{isIcelandic ? "Lýsing á textúr" : "Texture prompt"}</span>
           <span className="font-mono text-muted">{prompt.length}/600</span>
         </span>
         <textarea
@@ -162,7 +162,7 @@ export default function RetextureControls({ job, onJobUpdated, onNotice }) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-xs font-medium">
-          <span>AI model</span>
+          <span>{isIcelandic ? "AI-líkan" : "AI model"}</span>
           <select
             value={aiModel}
             onChange={(event) => {
@@ -172,7 +172,7 @@ export default function RetextureControls({ job, onJobUpdated, onNotice }) {
             }}
             className="block w-full rounded-lg border border-input-border bg-input-background px-3 py-2 text-sm"
           >
-            <option value="latest">Latest (Meshy 7)</option>
+            <option value="latest">{isIcelandic ? "Nýjasta (Meshy 7)" : "Latest (Meshy 7)"}</option>
             <option value="meshy-7">Meshy 7</option>
             <option value="meshy-6">Meshy 6</option>
             <option value="meshy-5">Meshy 5</option>
@@ -185,9 +185,9 @@ export default function RetextureControls({ job, onJobUpdated, onNotice }) {
             onChange={(event) => setTextureResolution(event.target.value)}
             className="block w-full rounded-lg border border-input-border bg-input-background px-3 py-2 text-sm"
           >
-            <option value="2k">2K · 10 credits</option>
-            <option value="4k" disabled={aiModel === "meshy-5"}>4K · 10 credits</option>
-            <option value="8k" disabled={aiModel === "meshy-5"}>8K · 15 credits</option>
+            <option value="2k">2K · 10 {isIcelandic ? "einingar" : "credits"}</option>
+            <option value="4k" disabled={aiModel === "meshy-5"}>4K · 10 {isIcelandic ? "einingar" : "credits"}</option>
+            <option value="8k" disabled={aiModel === "meshy-5"}>8K · 15 {isIcelandic ? "einingar" : "credits"}</option>
           </select>
         </label>
       </div>
@@ -246,7 +246,7 @@ export default function RetextureControls({ job, onJobUpdated, onNotice }) {
             className="mt-0.5 accent-[var(--accent)]"
           />
           <span>
-            <span className="block font-medium">PBR maps</span>
+            <span className="block font-medium">{isIcelandic ? "PBR-kort" : "PBR maps"}</span>
             <span className="mt-1 block leading-relaxed text-muted">
               {isIcelandic
                 ? "Býr einnig til metallic, roughness og normal maps fyrir raunverulegri efnisáferð."
