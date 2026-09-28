@@ -213,8 +213,10 @@ export async function readEnvironments() {
             label: "API diagnostics",
             ready: Boolean(meshyPython.packages?.requests),
             detail: meshyPython.packages?.requests
-              ? `requests ${meshyPython.packages.requests}; generation itself remains in the Node runner`
+              ? "requests {version}; generation itself remains in the Node runner"
               : "requests is required for the isolated Meshy diagnostics environment",
+            // Filled in after translation, so the sentence has one catalogue entry for every version.
+            values: { version: meshyPython.packages?.requests },
           },
           {
             emoji: "🧱",

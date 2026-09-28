@@ -126,7 +126,7 @@ export default function EnvironmentsClient({ initial }) {
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium">{t(capability.label)}</span>
                       <span className="block text-xs leading-relaxed text-muted">
-                        {t(capability.detail)}
+                        {Object.entries(capability.values || {}).reduce((text, [key, value]) => text.replace(`{${key}}`, value ?? ""), t(capability.detail))}
                       </span>
                     </span>
                     <StatusPill ready={capability.ready} readyText="full" downText="degraded" />

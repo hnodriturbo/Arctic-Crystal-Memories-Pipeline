@@ -753,6 +753,9 @@ const IS = {
   "GFPGAN is available for explicit CPU runs; 'auto' stays on Pillow": "GFPGAN er í boði fyrir keyrslur á CPU þegar það er valið sérstaklega; 'auto' notar áfram Pillow",
   "GFPGAN is not installed; Pillow adjustments remain available": "GFPGAN er ekki uppsett; Pillow-stillingar eru áfram í boði",
   "requests is required for the isolated Meshy diagnostics environment": "requests þarf að vera uppsett fyrir einangraða Meshy-greiningarumhverfið",
+
+  // Environment detail with a filled-in package version (28-09-2026).
+  "requests {version}; generation itself remains in the Node runner": "requests {version}; sjálf vinnslan fer áfram fram í Node-keyrslunni",
 };
 
 const LanguageContext = createContext(null);
