@@ -305,6 +305,9 @@ site/
 *.ts
 *.mts
 *.m2ts
+# *.ts above means MPEG transport-stream video; keep the 2.5D workbench TypeScript source.
+!Crystal-Workshop/2.5D-pipeline/local-workbench/hooks/*.ts
+!Crystal-Workshop/2.5D-pipeline/local-workbench/lib/*.ts
 
 *.mp3
 *.wav
