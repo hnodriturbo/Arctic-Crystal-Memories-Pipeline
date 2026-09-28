@@ -50,3 +50,7 @@ any material change.
 ## Owner-authorized two-way design sync — 25-09-2026
 
 The owner now requests Windows/R2 synchronization in both directions. This supersedes the upload-only instruction above. Use the shared baseline-aware engine for UI and scheduled tasks. Never propagate deletions. Archive local/remote versions before replacement and preserve both sides of unresolved conflicts. Keep .workshop-sync private and excluded from uploads. Domain-only updates in the four customer-journey is.json/en.json files are explicitly requested.
+
+## 2.5D pipeline (owner rule 28-09-2026)
+
+2.5D pipeline: the owner's personal research pipeline, still under construction. It lives only in the Workshop repository (`Crystal-Workshop/2.5D-pipeline`) and is never part of the web design or any website (ccm.is, Crystal Studio, workshop.ccm.is). Keep its source complete on GitHub; never import, deploy or expose it. Full rule: workspace-root AGENTS.md.

@@ -203,3 +203,16 @@ Point spacing: **0.08 mm**. Layer spacing: **0.09 mm**. These are the main
 point-cloud settings specified by the owner on 2026-09-13. Keep both in the UI
 and Python defaults; do not conflate point spacing with layer spacing.
 Photo-driven density remains separate and experimental.
+
+## 2.5D pipeline — personal research, never part of the web (owner rule 28-09-2026)
+
+`CCM-Web-Workshop/Crystal-Workshop/2.5D-pipeline` is the owner's personal pipeline and is still under construction.
+It is not, and will not become, part of the web design or of any website: ccm.is, Crystal Studio and
+workshop.ccm.is never include it. It only lives inside the Workshop repository so the owner can keep researching it.
+
+- Keep its source complete on GitHub (`hnodriturbo/Arctic-Crystal-Memories-Pipeline`, branch `master`). Model weights,
+  virtual environments, outputs and personal photos stay local and ignored.
+- Never import, deploy, link or expose it in a web application. Crystal Studio's `scripts/import-workshop.mjs` and the
+  Workshop VPS release both exclude it; keep it that way.
+- Its local environments, research branches and data are the owner's research, not a website problem: do not repair,
+  delete or reorganise them unless the owner asks.

@@ -143,3 +143,7 @@ keeps more of the points that already exist; once the source's own density runs
 out, asking for tighter spacing changes nothing. The script prints the native
 dot pitch and warns when that happens. For real extra detail, re-run
 `mesh_to_pointcloud.py` from the original model.
+
+## 2.5D pipeline (owner rule 28-09-2026)
+
+2.5D pipeline: the owner's personal research pipeline, still under construction. It lives only in the Workshop repository (`Crystal-Workshop/2.5D-pipeline`) and is never part of the web design or any website (ccm.is, Crystal Studio, workshop.ccm.is). Keep its source complete on GitHub; never import, deploy or expose it. Full rule: workspace-root AGENTS.md.
