@@ -8,7 +8,7 @@ Purpose:
 param()
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$workspaceRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..\..'))
+$workspaceRoot = [IO.Path]::GetFullPath((Join-Path $repositoryRoot '..'))
 $workshop = Join-Path $repositoryRoot 'Crystal-Workshop\CCM-Web-Pipeline'
 $expenseScript = Join-Path $workspaceRoot 'CCM-Web-Bookkeeping\scripts\run-local-expense-sync.ps1'
 $incomeScript = Join-Path $workspaceRoot 'CCM-Web-Bookkeeping\scripts\run-local-income-sync.ps1'
