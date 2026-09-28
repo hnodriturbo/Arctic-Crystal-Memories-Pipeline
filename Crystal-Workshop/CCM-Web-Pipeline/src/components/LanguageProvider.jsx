@@ -524,8 +524,10 @@ function initialLocale() {
   return document.documentElement.lang === "en" ? "en" : "is";
 }
 
-export function LanguageProvider({ children }) {
-  const [locale, setLocale] = useState(initialLocale);
+// A host that knows the language on the server (Crystal Studio's language cookie) passes it
+// as serverLocale, so the server render and the first client render agree.
+export function LanguageProvider({ children, serverLocale }) {
+  const [locale, setLocale] = useState(() => serverLocale ?? initialLocale());
 
   useEffect(() => {
     document.documentElement.lang = locale;
