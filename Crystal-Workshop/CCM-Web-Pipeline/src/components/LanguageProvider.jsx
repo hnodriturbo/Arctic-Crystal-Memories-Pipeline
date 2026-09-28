@@ -730,6 +730,29 @@ const IS = {
   "Position Y (mm)": "Staðsetning Y (mm)",
   "Rotation Z (degrees)": "Snúningur Z (gráður)",
   "Position Z (mm)": "Staðsetning Z (mm)",
+
+  // Workshop in Crystal Studio, second pass: Reconstruct groups, cut-out model notes and environment details (28-09-2026).
+  "Cockpit projection pose": "Staða Cockpit-vörpunar",
+  "Saved scene values are used automatically. Overrides describe the DXF export pose, not an extra viewer rotation.": "Vistuð gildi senunnar eru notuð sjálfkrafa. Yfirskrift lýsir stöðu DXF-útflutningsins, ekki aukasnúningi í skoðaranum.",
+  "Surface detail": "Smáatriði yfirborðs",
+  "The approved defaults use every point in the export.": "Samþykkt sjálfgildi nota alla punkta útflutningsins.",
+  "Shape and color": "Lögun og litur",
+  "A paired photo adds color. Preview the alignment before keeping a result.": "Pöruð ljósmynd bætir við lit. Forskoðaðu hvernig hún passar áður en niðurstaða er geymd.",
+  "Best portrait and hair detail; roughly a 1 GB model and the heaviest CPU/RAM option.": "Best fyrir andlitsmyndir og smáatriði í hári; um 1 GB líkan og þyngsti kosturinn fyrir CPU og vinnsluminni.",
+  "High-quality cut-outs for objects and buildings; roughly a 1 GB model.": "Vönduð útklipping fyrir hluti og byggingar; um 1 GB líkan.",
+  "Balanced general-purpose CPU model with a much smaller download and memory footprint.": "Almennt líkan í jafnvægi fyrir CPU, með mun minna niðurhal og minnisnotkun.",
+  "Older person-specific model with softer edges and moderate resource use.": "Eldra líkan fyrir fólk, með mýkri brúnir og hóflega auðlindanotkun.",
+  "Original general-purpose U²-Net model; reliable but older.": "Upprunalega almenna U²-Net-líkanið; áreiðanlegt en eldra.",
+  "Tiny U²-Net variant; lowest RAM and disk use, with less fine-edge detail.": "Örsmá útgáfa af U²-Net; minnst notkun á vinnsluminni og diski, en minni smáatriði í brúnum.",
+  "Nothing generated yet. Step 3 makes the models.": "Ekkert hefur verið búið til enn. Skref 3 býr til líkönin.",
+  "{count} converter model": "{count} líkan úr skráarbreyti",
+  "{count} converter models": "{count} líkön úr skráarbreyti",
+  "Real-ESRGAN is available for explicit CPU runs; 'auto' stays on Lanczos": "Real-ESRGAN er í boði fyrir keyrslur á CPU þegar það er valið sérstaklega; 'auto' notar áfram Lanczos",
+  "Real-ESRGAN is not installed; Lanczos remains available": "Real-ESRGAN er ekki uppsett; Lanczos er áfram í boði",
+  "GFPGAN on the GPU": "GFPGAN á skjákortinu",
+  "GFPGAN is available for explicit CPU runs; 'auto' stays on Pillow": "GFPGAN er í boði fyrir keyrslur á CPU þegar það er valið sérstaklega; 'auto' notar áfram Pillow",
+  "GFPGAN is not installed; Pillow adjustments remain available": "GFPGAN er ekki uppsett; Pillow-stillingar eru áfram í boði",
+  "requests is required for the isolated Meshy diagnostics environment": "requests þarf að vera uppsett fyrir einangraða Meshy-greiningarumhverfið",
 };
 
 const LanguageContext = createContext(null);

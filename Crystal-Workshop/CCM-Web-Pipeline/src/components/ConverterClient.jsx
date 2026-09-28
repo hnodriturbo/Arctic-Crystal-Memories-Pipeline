@@ -384,7 +384,7 @@ export default function ConverterClient({
                 <summary className="cursor-pointer px-4 py-3 text-sm">
                   <span className="font-medium">{run.id}</span>
                   <span className="ml-2 text-xs text-muted">
-                    {run.files.length} converter model{run.files.length === 1 ? "" : "s"}
+                    {t(run.files.length === 1 ? "{count} converter model" : "{count} converter models").replace("{count}", run.files.length)}
                   </span>
                 </summary>
                 <ul className="border-t border-surface-border px-2 py-2">
